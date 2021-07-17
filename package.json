@@ -1,0 +1,29 @@
+{
+    "author": "Vladimir Barbarosh <vladimir.barbarosh@gmail.com>",
+    "license": "MIT",
+    "name": "@vbarbarosh/node-helpers",
+    "version": "1.0.0",
+    "description": "A set of helpers for JavaScript/Node.js",
+    "files": [
+        "src"
+    ],
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "js",
+        "node",
+        "helpers"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vbarbarosh/node-helpers.git"
+    },
+    "bugs": {
+        "url": "https://github.com/vbarbarosh/node-helpers/issues"
+    },
+    "peerDependencies": {
+        "axios": "^0.21.1",
+        "form-data": "^4.0.0"
+    }
+}
