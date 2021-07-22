@@ -2,7 +2,7 @@
     "author": "Vladimir Barbarosh <vladimir.barbarosh@gmail.com>",
     "license": "MIT",
     "name": "@vbarbarosh/node-helpers",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A set of helpers for JavaScript/Node.js",
     "files": [
         "src"
