@@ -1,20 +1,20 @@
 import fcmp_strings from './fcmp_strings';
 
 /**
- * Sort items in an `array` at the same order as in `other`. Values which
- * are not in `other` are added to the end in the order defined by `fcmp`.
+ * Sort items in an `array` at the same order as in `keys`. Values which
+ * are not in the `keys` are added to the end of the result defined by `fcmp`.
  *
  * @param array
  * @param key_from_item
- * @param other
+ * @param keys
  * @param fcmp
  * @returns {*}
  */
 
-function array_sort_by_other(array, key_from_item, other, fcmp = fcmp_strings)
+function array_sort_by_keys(array, key_from_item, keys, fcmp = fcmp_strings)
 {
     const other_map = {};
-    other.forEach((v,i) => other_map[v] = i + 1);
+    keys.forEach((v,i) => other_map[v] = i + 1);
     return array.sort(function (a, b) {
         const ax = other_map[key_from_item(a)];
         const bx = other_map[key_from_item(b)];
@@ -31,4 +31,4 @@ function array_sort_by_other(array, key_from_item, other, fcmp = fcmp_strings)
     });
 }
 
-export default array_sort_by_other;
+export default array_sort_by_keys;
