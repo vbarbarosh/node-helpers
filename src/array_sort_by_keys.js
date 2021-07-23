@@ -10,7 +10,6 @@ import fcmp_strings from './fcmp_strings';
  * @param fcmp
  * @returns {*}
  */
-
 function array_sort_by_keys(array, key_from_item, keys, fcmp = fcmp_strings)
 {
     const other_map = {};

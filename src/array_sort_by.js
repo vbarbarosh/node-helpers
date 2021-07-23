@@ -9,7 +9,6 @@ import fcmp_strings from './fcmp_strings';
  * @param fcmp
  * @returns {*}
  */
-
 function array_sort_by(array, key_from_item, fcmp = fcmp_strings)
 {
     return array.sort(function (a, b) {
