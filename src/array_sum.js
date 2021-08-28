@@ -1,6 +1,4 @@
-import identity from './identity';
-
-function array_sum(array, fn = identity)
+function array_sum(array, fn = Number)
 {
     let out = 0;
     array.forEach(function (item) {
