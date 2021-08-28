@@ -1,7 +1,7 @@
 // https://stackoverflow.com/a/39764792/1478566
-function array_gcd(array)
+function array_gcd(array, fn = Number)
 {
-    return array.reduce(gcd);
+    return array.reduce((a,b) => gcd(fn(a), fn(b)));
 }
 
 // https://stackoverflow.com/a/39764792/1478566
