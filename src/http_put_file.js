@@ -18,8 +18,8 @@ async function http_put_file(url, file, options)
     return new Promise(function (resolve, reject) {
         const chunks = [];
         const request = (url.startsWith('http:') ? http : https).request(url, {method: 'PUT', headers: {'Content-Length': total}}, function (response) {
+            response.on('error', reject);
             if (options.progress_download) {
-                console.log(response.headers);
                 const total_download = response.headers['content-length'] ? parseInt(response.headers['content-length']) : null;
                 let ready = 0;
                 response.on('data', function (chunk) {
@@ -38,15 +38,14 @@ async function http_put_file(url, file, options)
                     break;
                 default:
                     reject(new Error(`${response.statusCode} ${response.statusMessage}\n\n${Buffer.concat(chunks).toString('utf8')}`));
+                    break;
                 }
             });
         });
+        request.on('error', reject);
         // https://stackoverflow.com/a/39492211/1478566
         if (options.progress_upload) {
             let prev = 0;
-            request.on('error', function (error) {
-                reject(error);
-            });
             request.on('drain', function () {
                 const ready = request.socket.bytesWritten;
                 const delta = ready - prev;
