@@ -3,7 +3,7 @@ import fs_size from './fs_size';
 import http from 'http';
 import https from 'https';
 
-async function http_put_file(url, file, options)
+async function http_put_file(url, file, options = {})
 {
     // <?xml version="1.0" encoding="UTF-8"?>
     // <Error>
