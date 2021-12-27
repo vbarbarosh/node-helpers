@@ -15,80 +15,93 @@ cli(main);
 
 async function main()
 {
+    // Download with progress
+    if (0) {
+        await httpx({
+            url: 'https://mirrors.mivocloud.com/ubuntu-releases/20.04.3/ubuntu-20.04.3-desktop-amd64.iso',
+            method: 'GET',
+            mixins: [
+                httpx_request_as_void(),
+                httpx_response_as_file('ubuntu20.iso'),
+                httpx_request_progress(function (delta, ready, total) {
+                    console.log('http_request_progress', delta, ready, total);
+                }),
+                httpx_response_progress(function (delta, ready, total) {
+                    console.log('http_response_progress', delta, ready, total, (ready/total*100).toFixed(2) + '%');
+                }),
+            ],
+        });
+        return;
+    }
+
     // const json = await http_get_json('https://randomuser.me/api/');
-    // console.log(json);
-    // return;
+    if (0) {
+        const json = await httpx({
+            url: 'https://randomuser.me/api/',
+            method: 'GET',
+            mixins: [
+                httpx_request_as_void(),
+                httpx_response_as_json(),
+            ],
+        });
+        console.log(json);
+        return;
+    }
 
     // const image = await http_get_buffer('https://httpbin.org/image/jpeg');
-    // console.log(image);
+    if (0) {
+        const image = await httpx({
+            url: 'https://randomuser.me/api/',
+            method: 'GET',
+            mixins: [
+                httpx_request_as_void(),
+                httpx_response_as_buffer(),
+            ],
+        });
+        console.log(image);
+        return;
+    }
+
     // await http_get_file('https://httpbin.org/image/jpeg', 'a.jpg');
+    if (0) {
+        await httpx({
+            url: 'https://httpbin.org/image/jpeg',
+            method: 'GET',
+            mixins: [
+                httpx_request_as_void(),
+                httpx_response_as_file('a.jpg'),
+            ]
+        });
+        return;
+    }
+
     // const text = await http_post_json('https://echo.vbarbarosh.com', {a:1,b:2});
-    // const text = await axios.post('https://echo.vbarbarosh.com', 'xxx', {responseType: 'json'}).then(v => v.data);
-    // console.log(text);
+    if (0) {
+        const text = await httpx({
+            url: 'https://echo.vbarbarosh.com',
+            method: 'POST',
+            mixins: [
+                httpx_request_as_json({a: 1, b: 2}),
+                httpx_response_as_utf8(),
+            ]
+        });
+        console.log(text);
+        return;
+    }
 
-    if(0)await httpx({
-        url: 'https://mirrors.mivocloud.com/ubuntu-releases/20.04.3/ubuntu-20.04.3-desktop-amd64.iso',
-        method: 'GET',
-        mixins: [
-            httpx_request_as_void(),
-            httpx_response_as_file('ubuntu20.iso'),
-            httpx_request_progress(function (delta, ready, total) {
-                console.log('http_request_progress', delta, ready, total);
-            }),
-            httpx_response_progress(function (delta, ready, total) {
-                console.log('http_response_progress', delta, ready, total, (ready/total*100).toFixed(2) + '%');
-            }),
-        ],
-    });
-
-    const a = await httpx({
-        //url: 'https://httpbin.org/redirect-to?url=' + encodeURIComponent('https://randomuser.me/api/'),
-        // url: 'http://localhost:3000/redirect?url=https%3A%2F%2Frandomuser.me%2Fapi%2F',
-        url: 'http://127.0.0.1:3000/redirect?url=http://127.0.0.1:3000/redirect?url=http://127.0.0.1:3000/redirect?url=http://127.0.0.1:3000/redirect?url=https://randomuser.me/api/',
-        mixins: [
-            httpx_follow_redirects(),
-            httpx_retry(),
-            httpx_request_as_void(),
-            httpx_response_as_json(),
-        ]
-    });
-    console.log(a);
-    return;
-
-    await httpx({
-        url: 'https://httpbin.org/status/400',
-        method: 'GET',
-        mixins: [
-            httpx_follow_redirects(),
-            httpx_request_as_void(),
-            httpx_response_ignore(),
-        ]
-    });
-
-    await httpx({
-        url: 'https://httpbin.org/image/jpeg',
-        method: 'GET',
-        mixins: [
-            httpx_request_as_void(),
-            httpx_response_as_file('a.jpeg'),
-        ]
-    });
-
-    const out = 1||await httpx({
-        url: 'https://echo.vbarbarosh.com',
-        method: 'PUT',
-        mixins: [
-            httpx_request_as_json({a:1,b:2}),
-            httpx_response_as_json(),
-            httpx_request_progress(function (delta, ready, total) {
-                console.log('http_request_progress', delta, ready, total);
-            }),
-            httpx_response_progress(function (delta, ready, total) {
-                console.log('http_response_progress', delta, ready, total);
-            }),
-        ],
-    });
-    console.log(out);
+    // Follow redirects
+    if (0) {
+        const json = await httpx({
+            url: 'http://127.0.0.1:3000/redirect?url=http://127.0.0.1:3000/redirect?url=http://127.0.0.1:3000/redirect?url=http://127.0.0.1:3000/redirect?url=https://randomuser.me/api/',
+            mixins: [
+                httpx_follow_redirects(),
+                httpx_request_as_void(),
+                httpx_response_as_json(),
+            ]
+        });
+        console.log(json);
+        return;
+    }
 }
 
 function http_get_json(url, options = {})
@@ -164,7 +177,7 @@ function httpx(params)
     });
 }
 
-function httpx_retry(maximum_retries = 1)
+function httpx_retry(maximum_retries = 2)
 {
     const retries = [];
     return function (step, ctx) {
@@ -322,6 +335,46 @@ function httpx_response_as_json()
                 catch (error) {
                     ctx.reject(error);
                 }
+            });
+        }
+    };
+}
+
+function httpx_response_as_buffer()
+{
+    return function (step, ctx) {
+        switch (step) {
+        case 'response':
+            const chunks = [];
+            ctx.response.on('error', ctx.reject);
+            ctx.response.on('data', chunk => chunks.push(chunk));
+            ctx.response.on('end', function () {
+                const buffer = Buffer.concat(chunks);
+                if (ctx.response.statusCode != 200) {
+                    ctx.reject(new Error(`${ctx.response.statusCode} ${ctx.response.statusMessage}\n\n${buffer.toString('utf8').substr(0, 2048)}`.trim()));
+                    return;
+                }
+                ctx.resolve(buffer);
+            });
+        }
+    };
+}
+
+function httpx_response_as_utf8()
+{
+    return function (step, ctx) {
+        switch (step) {
+        case 'response':
+            const chunks = [];
+            ctx.response.on('error', ctx.reject);
+            ctx.response.on('data', chunk => chunks.push(chunk));
+            ctx.response.on('end', function () {
+                const utf8 = Buffer.concat(chunks).toString('utf8');
+                if (ctx.response.statusCode != 200) {
+                    ctx.reject(new Error(`${ctx.response.statusCode} ${ctx.response.statusMessage}\n\n${utf8.substr(0, 2048)}`.trim()));
+                    return;
+                }
+                ctx.resolve(utf8);
             });
         }
     };
