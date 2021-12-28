@@ -18,6 +18,7 @@ const server = http.createServer(function (req, res) {
     res.statusCode = 200;
     req.headers['content-type'] && res.setHeader('Content-Type', req.headers['content-type']);
     req.headers['content-length'] && res.setHeader('Content-Length', req.headers['content-length']);
+
     // noinspection JSCheckFunctionSignatures
     req.pipe(new Throttle(5*1024*1024)).pipe(res);
 });
