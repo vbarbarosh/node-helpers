@@ -17,7 +17,7 @@ async function http_put_file(url, file, options = {})
     const total = await fs_size(file);
     return new Promise(function (resolve, reject) {
         const chunks = [];
-        const request = (url.startsWith('http:') ? http : https).request(url, {method: 'PUT', headers: {'Content-Length': total}}, function (response) {
+        const request = (url.startsWith('http:') ? http : https).request(url, {method: 'PUT', headers: {...options.headers, 'Content-Length': total}}, function (response) {
             response.on('error', reject);
             if (options.progress_download) {
                 const total_download = response.headers['content-length'] ? parseInt(response.headers['content-length']) : null;
