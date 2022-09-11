@@ -14,7 +14,16 @@ async function fs_mkdirp(pathname)
     }
 
     while (parents.length) {
-        await fs_mkdir(parents.pop());
+        try {
+            await fs_mkdir(parents.pop());
+        }
+        catch (error) {
+            // Error: EEXIST: file already exists, mkdir [...]
+            if (error.code == 'EEXIST') {
+                break;
+            }
+            throw error;
+        }
     }
 
     return pathname;
