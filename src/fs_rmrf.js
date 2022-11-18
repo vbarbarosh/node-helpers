@@ -1,9 +1,9 @@
-import Promise from 'bluebird';
-import fs_fi from './fs_fi';
-import fs_rm from './fs_rm';
-import fs_rmdir from './fs_rmdir';
-import fs_path_resolve from './fs_path_resolve';
-import fs_readdir from './fs_readdir';
+const Promise = require('bluebird');
+const fs_fi = require('./fs_fi');
+const fs_path_resolve = require('./fs_path_resolve');
+const fs_readdir = require('./fs_readdir');
+const fs_rm = require('./fs_rm');
+const fs_rmdir = require('./fs_rmdir');
 
 async function fs_rmrf(pathname)
 {
@@ -22,4 +22,4 @@ async function fs_rmrf(pathname)
     }
 }
 
-export default fs_rmrf;
+module.exports = fs_rmrf;

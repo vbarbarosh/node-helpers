@@ -9,4 +9,4 @@ function now_atom()
     return (new Date()).toJSON();
 }
 
-export default now_atom;
+module.exports = now_atom;

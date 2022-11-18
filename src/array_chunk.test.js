@@ -1,5 +1,5 @@
-import array_chunk from './array_chunk';
-import assert from 'assert';
+const array_chunk = require('./array_chunk');
+const assert = require('assert');
 
 describe('array_chunk', function () {
     it('should accept no arguments', function () {

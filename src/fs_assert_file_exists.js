@@ -1,4 +1,4 @@
-import fs_fi from './fs_fi';
+const fs_fi = require('./fs_fi');
 
 async function fs_assert_file_exists(file)
 {
@@ -8,4 +8,4 @@ async function fs_assert_file_exists(file)
     }
 }
 
-export default fs_assert_file_exists;
+module.exports = fs_assert_file_exists;

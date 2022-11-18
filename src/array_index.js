@@ -5,4 +5,4 @@ function array_index(array, fn)
     return out;
 }
 
-export default array_index;
+module.exports = array_index;

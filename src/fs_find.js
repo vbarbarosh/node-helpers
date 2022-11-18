@@ -1,7 +1,7 @@
-import Promise from 'bluebird';
-import fs_fi from './fs_fi';
-import fs_path_resolve from './fs_path_resolve';
-import fs_readdir from './fs_readdir';
+const Promise = require('bluebird');
+const fs_fi = require('./fs_fi');
+const fs_path_resolve = require('./fs_path_resolve');
+const fs_readdir = require('./fs_readdir');
 
 async function fs_find(pathname = '.')
 {
@@ -18,4 +18,4 @@ async function fs_find(pathname = '.')
     return [fi];
 }
 
-export default fs_find;
+module.exports = fs_find;

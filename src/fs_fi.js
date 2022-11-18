@@ -1,8 +1,8 @@
-import fs_lstat from './fs_lstat';
-import fs_path_basename from './fs_path_basename';
-import fs_path_dirname from './fs_path_dirname';
-import fs_path_resolve from './fs_path_resolve';
-import fs_readlink from './fs_readlink';
+const fs_lstat = require('./fs_lstat');
+const fs_path_basename = require('./fs_path_basename');
+const fs_path_dirname = require('./fs_path_dirname');
+const fs_path_resolve = require('./fs_path_resolve');
+const fs_readlink = require('./fs_readlink');
 
 async function fs_fi(pathname)
 {
@@ -52,4 +52,4 @@ function flags(fi)
     tmp.forEach(key => fi.flags_map[key] = true);
 }
 
-export default fs_fi;
+module.exports = fs_fi;

@@ -7,4 +7,4 @@ function array_sum(array, fn = Number)
     return out;
 }
 
-export default array_sum;
+module.exports = array_sum;

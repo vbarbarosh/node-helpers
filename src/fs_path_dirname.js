@@ -1,8 +1,8 @@
-import path from 'path';
+const path = require('path');
 
 function fs_path_dirname(p)
 {
     return path.dirname(p);
 }
 
-export default fs_path_dirname;
+module.exports = fs_path_dirname;

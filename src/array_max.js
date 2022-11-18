@@ -23,4 +23,4 @@ function identity(value)
     return value;
 }
 
-export default array_max;
+module.exports = array_max;

@@ -1,6 +1,6 @@
-import fs from 'fs';
-import ignore from './ignore';
-import stream_promise from './stream_promise';
+const fs = require('fs');
+const ignore = require('./ignore');
+const stream_promise = require('./stream_promise');
 
 describe('stream_promise', function () {
     it('should handle ReadableStream', async function () {

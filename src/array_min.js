@@ -23,4 +23,4 @@ function identity(value)
     return value;
 }
 
-export default array_min;
+module.exports = array_min;

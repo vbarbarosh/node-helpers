@@ -16,4 +16,4 @@ function array_group_map(array, fn)
     return out;
 }
 
-export default array_group_map;
+module.exports = array_group_map;

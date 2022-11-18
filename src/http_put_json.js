@@ -1,8 +1,8 @@
-import axios from 'axios';
+const axios = require('axios');
 
 function http_put_json(url, body, options)
 {
     return axios.put(url, body, options).then(v => v.data);
 }
 
-export default http_put_json;
+module.exports = http_put_json;

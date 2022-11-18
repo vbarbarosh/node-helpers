@@ -2,4 +2,4 @@ function ignore()
 {
 }
 
-export default ignore;
+module.exports = ignore;

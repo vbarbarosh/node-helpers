@@ -1,1 +1,3 @@
-export {createReadStream as default} from 'fs';
+const fs = require(require('fs'));
+
+module.exports = fs.createReadStream;

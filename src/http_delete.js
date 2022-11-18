@@ -1,8 +1,8 @@
-import axios from 'axios';
+const axios = require('axios');
 
 function http_delete(url, options)
 {
     return axios.delete(url, {responseType: 'json', ...options}).then(v => v.data);
 }
 
-export default http_delete;
+module.exports = http_delete;

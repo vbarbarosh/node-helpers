@@ -1,8 +1,8 @@
-import axios from 'axios';
+const axios = require('axios');
 
 function http_patch_json(url, body, options)
 {
     return axios.patch(url, body, options).then(v => v.data);
 }
 
-export default http_patch_json;
+module.exports = http_patch_json;

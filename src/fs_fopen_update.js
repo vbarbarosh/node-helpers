@@ -1,4 +1,4 @@
-import fs_fopen from './fs_fopen';
+const fs_fopen = require('./fs_fopen');
 
 // Main use case is uploading files in chunks. Each time
 // a chunk is uploaded do update a target file. At the end
@@ -31,4 +31,4 @@ async function fs_fopen_update(pathname)
     return fs_fopen(pathname, 'r+');
 }
 
-export default fs_fopen_update;
+module.exports = fs_fopen_update;

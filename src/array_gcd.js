@@ -13,4 +13,4 @@ function gcd(a, b)
     return a;
 }
 
-export default array_gcd;
+module.exports = array_gcd;

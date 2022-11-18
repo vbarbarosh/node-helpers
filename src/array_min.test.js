@@ -1,5 +1,5 @@
-import array_min from './array_min';
-import assert from 'assert';
+const array_min = require('./array_min');
+const assert = require('assert');
 
 describe('array_min', function () {
     it('should accept empty array', function () {

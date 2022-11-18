@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 
 /**
  *
@@ -12,4 +12,4 @@ function crypto_hmac_sha256(password, data)
     return crypto.createHmac('sha256', password).update(data).digest();
 }
 
-export default crypto_hmac_sha256;
+module.exports = crypto_hmac_sha256;

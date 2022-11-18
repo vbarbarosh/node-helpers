@@ -1,8 +1,8 @@
-import fs from 'fs';
-import fs_path_resolve from './fs_path_resolve';
-import fs_path_tempdir from './fs_path_tempdir';
-import fs_rmrf from './fs_rmrf';
-import util from 'util';
+const fs = require('fs');
+const fs_path_resolve = require('./fs_path_resolve');
+const fs_path_tempdir = require('./fs_path_tempdir');
+const fs_rmrf = require('./fs_rmrf');
+const util = require('util');
 
 // https://nodejs.org/api/util.html#util_util_promisify_original
 const mkdtemp = util.promisify(fs.mkdtemp);
@@ -39,4 +39,4 @@ async function fs_tempdir(fn)
     }
 }
 
-export default fs_tempdir;
+module.exports = fs_tempdir;

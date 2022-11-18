@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 
 /**
  * @link https://nodejs.org/api/crypto.html#crypto_class_cipher
@@ -13,4 +13,4 @@ function crypto_decrypt_aes256(password, ivenc)
     return Buffer.concat([decipher.update(enc), decipher.final()]);
 }
 
-export default crypto_decrypt_aes256;
+module.exports = crypto_decrypt_aes256;

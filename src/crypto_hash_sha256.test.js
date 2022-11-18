@@ -1,5 +1,5 @@
-import crypto_hash_sha256 from './crypto_hash_sha256';
-import assert from 'assert';
+const assert = require('assert');
+const crypto_hash_sha256 = require('./crypto_hash_sha256');
 
 describe('crypto_hash_sha256', function () {
     it('should handle basic input', function () {

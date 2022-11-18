@@ -18,4 +18,4 @@ function array_chunk(array = [], limit = 1)
     return out;
 }
 
-export default array_chunk;
+module.exports = array_chunk;

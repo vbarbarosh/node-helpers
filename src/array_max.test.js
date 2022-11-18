@@ -1,5 +1,5 @@
-import array_max from './array_max';
-import assert from 'assert';
+const array_max = require('./array_max');
+const assert = require('assert');
 
 describe('array_max', function () {
     it('should accept empty array', function () {

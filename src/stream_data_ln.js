@@ -39,4 +39,4 @@ function stream_data_ln(stream, fn)
     }
 }
 
-export default stream_data_ln;
+module.exports = stream_data_ln;

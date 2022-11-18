@@ -1,5 +1,5 @@
-import fs from 'fs';
-import util from 'util';
+const fs = require('fs');
+const util = require('util');
 
 // https://nodejs.org/api/util.html#util_util_promisify_original
 const read = util.promisify(fs.read);
@@ -12,4 +12,4 @@ async function fs_fread(fp, buffer, offset = null)
     return (bytesRead == buffer.length) ? buffer : buffer.slice(0, bytesRead);
 }
 
-export default fs_fread;
+module.exports = fs_fread;

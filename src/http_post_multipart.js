@@ -1,5 +1,5 @@
-import FormData from 'form-data';
-import axios from 'axios';
+const FormData = require('form-data');
+const axios = require('axios');
 
 // Provide examples for the following common tasks:
 //
@@ -60,4 +60,4 @@ function http_post_multipart(url, items, options)
     return Promise.resolve(axios.post(url, form, options)).then(v => v.data);
 }
 
-export default http_post_multipart;
+module.exports = http_post_multipart;

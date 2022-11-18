@@ -1,5 +1,5 @@
-import array_index from './array_index';
-import assert from 'assert';
+const array_index = require('./array_index');
+const assert = require('assert');
 
 describe('array_index', function () {
     it('should accept empty array', function () {

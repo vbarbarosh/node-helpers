@@ -1,8 +1,8 @@
-import path from 'path';
+const path = require('path');
 
 function fs_path_resolve(...parts)
 {
     return path.resolve(...parts);
 }
 
-export default fs_path_resolve;
+module.exports = fs_path_resolve;

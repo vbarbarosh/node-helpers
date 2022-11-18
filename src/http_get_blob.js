@@ -1,8 +1,8 @@
-import axios from 'axios';
+const axios = require('axios');
 
 function http_get_blob(url, options)
 {
     return axios.get(url, {responseType: 'blob', ...options}).then(v => v.data);
 }
 
-export default http_get_blob;
+module.exports = http_get_blob;

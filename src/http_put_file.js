@@ -1,7 +1,7 @@
-import fs from 'fs';
-import fs_size from './fs_size';
-import http from 'http';
-import https from 'https';
+const fs = require('fs');
+const fs_size = require('./fs_size');
+const http = require('http');
+const https = require('https');
 
 async function http_put_file(url, file, options = {})
 {
@@ -57,4 +57,4 @@ async function http_put_file(url, file, options = {})
     });
 }
 
-export default http_put_file;
+module.exports = http_put_file;

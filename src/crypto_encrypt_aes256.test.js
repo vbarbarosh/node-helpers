@@ -1,6 +1,6 @@
-import assert from 'assert';
-import crypto_decrypt_aes256 from './crypto_decrypt_aes256';
-import crypto_encrypt_aes256 from './crypto_encrypt_aes256';
+const assert = require('assert');
+const crypto_decrypt_aes256 = require('./crypto_decrypt_aes256');
+const crypto_encrypt_aes256 = require('./crypto_encrypt_aes256');
 
 describe('crypto_encrypt_aes256', function () {
     it('should handle basic input', function () {

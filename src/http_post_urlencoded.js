@@ -1,9 +1,9 @@
-import axios from 'axios';
-import qs from 'querystring';
+const axios = require('axios');
+const qs = require('querystring');
 
 function http_post_urlencoded(url, body, options)
 {
     return axios.post(url, qs.stringify(body), options).then(v => v.data);
 }
 
-export default http_post_urlencoded;
+module.exports = http_post_urlencoded;

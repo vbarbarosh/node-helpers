@@ -27,4 +27,4 @@ function throttle(ms, fn)
     }
 }
 
-export default throttle;
+module.exports = throttle;

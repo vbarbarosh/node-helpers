@@ -18,4 +18,4 @@ function cli(main)
     }
 }
 
-export default cli;
+module.exports = cli;

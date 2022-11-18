@@ -1,8 +1,8 @@
-import assert from 'assert';
-import fs_fi from './fs_fi';
-import fs_mkdirp from './fs_mkdirp';
-import fs_path_resolve from './fs_path_resolve';
-import fs_tempdir from './fs_tempdir';
+const assert = require('assert');
+const fs_fi = require('./fs_fi');
+const fs_mkdirp = require('./fs_mkdirp');
+const fs_path_resolve = require('./fs_path_resolve');
+const fs_tempdir = require('./fs_tempdir');
 
 describe('fs_mkdirp', function () {
     it('should accept empty array', async function () {

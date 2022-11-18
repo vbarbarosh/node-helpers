@@ -1,7 +1,7 @@
-import Promise from 'bluebird';
-import fs_fi from './fs_fi';
-import fs_path_join from './fs_path_join';
-import fs_readdir from './fs_readdir';
+const Promise = require('bluebird');
+const fs_fi = require('./fs_fi');
+const fs_path_join = require('./fs_path_join');
+const fs_readdir = require('./fs_readdir');
 
 async function fs_lsr(pathname = '.')
 {
@@ -23,4 +23,4 @@ async function fs_lsr(pathname = '.')
     return ret;
 }
 
-export default fs_lsr;
+module.exports = fs_lsr;

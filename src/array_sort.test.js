@@ -1,5 +1,5 @@
-import array_sort from './array_sort';
-import assert from 'assert';
+const array_sort = require('./array_sort');
+const assert = require('assert');
 
 describe('array_sort', function () {
     it('should handle basic input', function () {

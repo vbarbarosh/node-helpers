@@ -1,7 +1,7 @@
-import assert from 'assert';
-import fs from 'fs';
-import stream_data_ln from './stream_data_ln';
-import stream_promise from './stream_promise';
+const assert = require('assert');
+const fs = require('fs');
+const stream_data_ln = require('./stream_data_ln');
+const stream_promise = require('./stream_promise');
 
 describe('stream_data_ln', function () {
     it('should handle basic input', async function () {

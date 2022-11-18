@@ -1,8 +1,8 @@
-import axios from 'axios';
+const axios = require('axios');
 
 function http_post_json(url, body, options)
 {
     return axios.post(url, body, options).then(v => v.data);
 }
 
-export default http_post_json;
+module.exports = http_post_json;

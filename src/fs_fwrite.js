@@ -1,5 +1,5 @@
-import fs from 'fs';
-import util from 'util';
+const fs = require('fs');
+const util = require('util');
 
 // https://nodejs.org/api/util.html#util_util_promisify_original
 const write = util.promisify(fs.write);
@@ -12,4 +12,4 @@ async function fs_fwrite(fp, buffer, offset = null)
     return bytesWritten;
 }
 
-export default fs_fwrite;
+module.exports = fs_fwrite;

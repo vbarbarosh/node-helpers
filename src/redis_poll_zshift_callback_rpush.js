@@ -1,6 +1,6 @@
-import Promise from 'bluebird';
-import random_int from './random_int';
-import redis_zshift from './redis_zshift';
+const Promise = require('bluebird');
+const random_int = require('./random_int');
+const redis_zshift = require('./redis_zshift');
 
 /**
  * Poll redis for input messages, await for callback, rpush results and user friendly statuses.
@@ -138,4 +138,4 @@ async function worker(log, message, options)
     }
 }
 
-export default redis_poll_zshift_callback_rpush;
+module.exports = redis_poll_zshift_callback_rpush;

@@ -5,4 +5,4 @@ async function redis_lshift(redis, queue, limit = 1)
     return items;
 }
 
-export default redis_lshift;
+module.exports = redis_lshift;

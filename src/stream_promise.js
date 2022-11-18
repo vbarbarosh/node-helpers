@@ -1,4 +1,4 @@
-import {finished} from 'stream/promises';
+const {finished} = require('stream/promises');
 
 // /**
 //  * Wait for a stream to finish with `await stream_promise(stream)`.
@@ -59,4 +59,4 @@ function stream_promise(stream)
     return finished(stream);
 }
 
-export default stream_promise;
+module.exports = stream_promise;

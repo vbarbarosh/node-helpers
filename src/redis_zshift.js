@@ -6,4 +6,4 @@ async function redis_zshift(redis, queue, limit = 1)
     return items;
 }
 
-export default redis_zshift;
+module.exports = redis_zshift;

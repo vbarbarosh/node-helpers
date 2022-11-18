@@ -25,4 +25,4 @@ function identity(value)
     return value;
 }
 
-export default array_unique_last;
+module.exports = array_unique_last;

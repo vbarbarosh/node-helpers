@@ -1,4 +1,4 @@
-import fcmp_strings from './fcmp_strings';
+const fcmp_strings = require('./fcmp_strings');
 
 /**
  * Sort items in an `array`.
@@ -20,4 +20,4 @@ function identity(v)
     return v;
 }
 
-export default array_sort;
+module.exports = array_sort;

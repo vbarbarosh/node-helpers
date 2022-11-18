@@ -1,5 +1,5 @@
-import fs from 'fs';
-import util from 'util';
+const fs = require('fs');
+const util = require('util');
 
 // https://nodejs.org/api/util.html#util_util_promisify_original
-export default util.promisify(fs.mkdir);
+module.exports = util.promisify(fs.mkdir);

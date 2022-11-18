@@ -4,4 +4,4 @@ function format_thousands(x)
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export default format_thousands;
+module.exports = format_thousands;

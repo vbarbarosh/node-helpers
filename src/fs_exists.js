@@ -1,4 +1,4 @@
-import fs from 'fs';
+const fs = require('fs');
 
 async function fs_exists(path)
 {
@@ -9,4 +9,4 @@ async function fs_exists(path)
     });
 }
 
-export default fs_exists;
+module.exports = fs_exists;

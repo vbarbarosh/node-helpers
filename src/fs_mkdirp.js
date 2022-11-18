@@ -1,6 +1,6 @@
-import fs_exists from './fs_exists';
-import fs_mkdir from './fs_mkdir';
-import fs_path_dirname from './fs_path_dirname';
+const fs_exists = require('./fs_exists');
+const fs_mkdir = require('./fs_mkdir');
+const fs_path_dirname = require('./fs_path_dirname');
 
 async function fs_mkdirp(pathname)
 {
@@ -29,4 +29,4 @@ async function fs_mkdirp(pathname)
     return pathname;
 }
 
-export default fs_mkdirp;
+module.exports = fs_mkdirp;

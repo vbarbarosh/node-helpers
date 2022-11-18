@@ -21,4 +21,4 @@ function array_shuffle(array)
     return array;
 }
 
-export default array_shuffle;
+module.exports = array_shuffle;

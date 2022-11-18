@@ -1,3 +1,3 @@
-import json_stringify_stable from 'json-stable-stringify';
+const json_stringify_stable = require('json-stable-stringify');
 
-export default json_stringify_stable;
+module.exports = json_stringify_stable;

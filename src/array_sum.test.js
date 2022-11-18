@@ -1,5 +1,5 @@
-import array_sum from './array_sum';
-import assert from 'assert';
+const array_sum = require('./array_sum');
+const assert = require('assert');
 
 describe('array_sum', function () {
     it('should handle basic input', function () {

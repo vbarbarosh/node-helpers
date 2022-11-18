@@ -1,9 +1,9 @@
-import * as fs from 'fs';
-import * as stream from 'stream';
-import axios from 'axios';
-import {promisify} from 'util';
+const axios = require('axios');
+const fs = require('fs');
+const stream = require('stream');
+const util = require('util');
 
-const stream_finished = promisify(stream.finished);
+const stream_finished = util.promisify(stream.finished);
 
 // https://stackoverflow.com/a/61269447
 function http_get_file(url, out_file, options)
@@ -14,4 +14,4 @@ function http_get_file(url, out_file, options)
     });
 }
 
-export default http_get_file;
+module.exports = http_get_file;

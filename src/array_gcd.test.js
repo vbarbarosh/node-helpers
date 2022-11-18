@@ -1,5 +1,5 @@
-import array_gcd from './array_gcd';
-import assert from 'assert';
+const array_gcd = require('./array_gcd');
+const assert = require('assert');
 
 describe('array_gcd', function () {
     it('should handle basic input', function () {

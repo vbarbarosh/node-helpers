@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 
 /**
  *
@@ -11,4 +11,4 @@ function crypto_hash_md5(data)
     return crypto.createHash('md5').update(data).digest();
 }
 
-export default crypto_hash_md5;
+module.exports = crypto_hash_md5;

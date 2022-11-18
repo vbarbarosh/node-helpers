@@ -1,4 +1,4 @@
-import fcmp_strings from './fcmp_strings';
+const fcmp_strings = require('./fcmp_strings');
 
 /**
  * Sort items in an `array` at the same order as in `other`. Values which
@@ -30,4 +30,4 @@ function array_sort_other(array, fn, other, fcmp = fcmp_strings)
     });
 }
 
-export default array_sort_other;
+module.exports = array_sort_other;

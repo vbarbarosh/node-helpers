@@ -1,9 +1,9 @@
-import Promise from 'bluebird';
-import child_process from 'child_process';
-import fs_tempdir from './fs_mkdirp';
-import random_int from './random_int';
-import redis_zshift from './redis_zshift';
-import stream_data_ln from './stream_data_ln';
+const Promise = require('bluebird');
+const child_process = require('child_process');
+const fs_tempdir = require('./fs_mkdirp');
+const random_int = require('./random_int');
+const redis_zshift = require('./redis_zshift');
+const stream_data_ln = require('./stream_data_ln');
 
 /**
  * Poll redis for input messages, spawn shell script, rpush results and user friendly statuses.
@@ -156,4 +156,4 @@ async function worker(log, message, options)
     log(`[${log_worker_end_ok}]`);
 }
 
-export default redis_poll_zshift_spawn_rpush;
+module.exports = redis_poll_zshift_spawn_rpush;
