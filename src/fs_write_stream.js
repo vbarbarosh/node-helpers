@@ -1,3 +1,3 @@
-const fs = require(require('fs'));
+const fs = require('fs');
 
 module.exports = fs.createWriteStream;
