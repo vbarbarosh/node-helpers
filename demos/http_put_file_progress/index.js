@@ -1,8 +1,8 @@
-import cli from '../../src/cli';
-import crypto_hash_md5 from '../../src/crypto_hash_md5';
-import crypto_hash_sha256 from '../../src/crypto_hash_sha256';
-import format_thousands from '../../src/format_thousands';
-import http_put_file from '../../src/http_put_file';
+const cli = require('../../src/cli');
+const crypto_hash_md5 = require('../../src/crypto_hash_md5');
+const crypto_hash_sha256 = require('../../src/crypto_hash_sha256');
+const format_thousands = require('../../src/format_thousands');
+const http_put_file = require('../../src/http_put_file');
 
 cli(main);
 
