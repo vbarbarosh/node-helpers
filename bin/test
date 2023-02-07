@@ -10,4 +10,4 @@ scriptname=`basename $script`
 
 cd $scriptdir/..
 
-`npm bin`/mocha -r @babel/register `find src -name \*.test.js`
+`npm bin`/mocha `find src -name \*.test.js`
