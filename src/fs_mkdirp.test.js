@@ -12,4 +12,13 @@ describe('fs_mkdirp', function () {
             assert(await fs_fi(tmp).then(v => v.isDirectory()));
         });
     });
+    it('should create the same directory structure in parallel', async function () {
+        await fs_tempdir(async function (d) {
+            const tmp = fs_path_resolve(d, 'a/b/c/d/e/f/g/h');
+            await Promise.all(Array(10).fill(tmp).map(async function (v, i) {
+                await fs_mkdirp(tmp);
+                assert(await fs_fi(tmp).then(v => v.isDirectory()));
+            }));
+        });
+    });
 });

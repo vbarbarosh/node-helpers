@@ -19,8 +19,13 @@ async function fs_mkdirp(pathname)
         }
         catch (error) {
             // Error: EEXIST: file already exists, mkdir [...]
-            if (error.code == 'EEXIST') {
-                break;
+            if (error.code === 'EEXIST') {
+                // Exiting here is not correct. When two processes are running in parallel,
+                // one tries to create `a/b/c` and another `a`. When second process creates
+                // `a`, the first process will get `EEXIST` and stops (break) creating any
+                // nested directories, which is not correct.
+                // break;
+                continue;
             }
             throw error;
         }
