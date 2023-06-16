@@ -31,6 +31,10 @@
     },
     "devDependencies": {
         "mocha": "^10.2.0",
-        "throttle": "^1.0.3"
+        "throttle": "^1.0.3",
+        "redis-v1": "npm:redis@1",
+        "redis-v2": "npm:redis@2",
+        "redis-v3": "npm:redis@3",
+        "redis-v4": "npm:redis@4"
     }
 }
