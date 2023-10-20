@@ -2,8 +2,8 @@ const child_process = require('child_process');
 
 function shell_spawn(args, options)
 {
-    const proc = child_process.spawn(args[0], args.slice(1), options);
     let promise;
+    const proc = child_process.spawn(args[0], args.slice(1), options);
     proc.promise = function () {
         let is_pending = true;
         return promise = promise || new Promise(function (resolve, reject) {
