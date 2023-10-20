@@ -4,6 +4,8 @@
 // - render items/second
 // - render percentage
 // - time spent
+//
+// https://bramcohen.livejournal.com/24122.html
 function progress(total)
 {
     let done = 0;
