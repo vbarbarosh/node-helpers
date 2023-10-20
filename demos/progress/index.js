@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node
+#!/usr/bin/env node
 
 const Promise = require('bluebird');
 const cli = require('../../src/cli');

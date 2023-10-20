@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const cli = require('../../src/cli');
 const crypto_hash_md5 = require('../../src/crypto_hash_md5');
 const crypto_hash_sha256 = require('../../src/crypto_hash_sha256');

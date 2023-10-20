@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // https://stackoverflow.com/a/46787467
 
 const Throttle = require('throttle');
