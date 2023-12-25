@@ -1,12 +1,18 @@
 const Promise = require('bluebird');
 const child_process = require('child_process');
+const fs_path_resolve = require('./fs_path_resolve');
 const fs_tempdir = require('./fs_mkdirp');
+const fs_write_json = require('./fs_write_json');
 const random_int = require('./random_int');
 const redis_zshift = require('./redis_zshift');
 const stream_data_ln = require('./stream_data_ln');
 
 /**
- * Poll redis for input messages, spawn shell script, rpush results and user friendly statuses.
+ * Constantly monitors redis queue for incoming messages. After an incoming message was hit,
+ * dumps it into `request.json` and executes `spawn_command`. The current directory will be set
+ * to a new directory with just `request.json` inside. Result (`null`) and user-friendly
+ * statuses will be `rpush`ed to the output queue.
+ *
  * @param options
  * @returns {Promise<void>}
  *
@@ -102,7 +108,7 @@ async function redis_poll_zshift_spawn_rpush(options)
     }
 }
 
-async function worker(log, message, options)
+async function worker(log, request, options)
 {
     const {redis, redis_output_queue, spawn_command, version} = options;
     const {
@@ -114,19 +120,18 @@ async function worker(log, message, options)
         log_worker_user_friendly_status,
     } = options;
 
-    log(`[${log_worker_begin}] ${message.uid}`);
+    log(`[${log_worker_begin}] ${request.uid}`);
 
     try {
-        const uid = message.uid;
-        const env = {...process.env, COLUMNS: 80, PATH: `${__dirname}:${process.env.PATH}`};
-        Object.keys(message).forEach(key => env[`BN_${key.toUpperCase()}`] = message[key]);
+        const uid = request.uid;
         // GOTCHA
-        // Promise won't update its status until at least one message would
-        // be taken from output queue. Pushing generic "Started...." message
+        // Promise won't update its status until at least one request would
+        // be taken from the output queue. Pushing generic "Started..." request
         // will tell the promise to refresh its status.
         await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: 'Started...'}));
         await fs_tempdir(async function (d) {
-            const proc = child_process.spawn(spawn_command, [], {cwd: d, env, stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
+            await fs_write_json(fs_path_resolve(d, 'request.json'), request);
+            const proc = child_process.spawn(spawn_command, [], {cwd: d, stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
             let end_stdout = function () {};
             let end_stderr = function () {};
             let end_user_friendly_status = function () {};
