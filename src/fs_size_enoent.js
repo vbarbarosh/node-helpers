@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 /**
  * Returns size of a file, or 0 if file is not present. Was created for cases
  * when you need to resume download.
