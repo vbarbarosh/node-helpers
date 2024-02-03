@@ -1,3 +1,7 @@
+const eta = require('./eta');
+const format_bytes = require('./format_bytes');
+const format_seconds = require('./format_seconds');
+
 /**
  * Monitor the progress of data through a pipe.
  */
@@ -11,10 +15,10 @@ async function* pv(stream, {total, resumed, log = s => console.log(s)})
         const bps = read/seconds;
         if (resumed) {
             const done = read + resumed;
-            log(`${bytes(done)} of ${bytes(total)} at ${bytes(bps)}/s ETA ${eta(time0, total, done, resumed)}`);
+            log(`${format_bytes(done)} of ${format_bytes(total)} at ${format_bytes(bps)}/s ETA ${eta(time0, total, done, resumed)}`);
         }
         else {
-            log(`[${format_seconds(seconds)}] ${bytes(read)} at ${bytes(bps)}/s`);
+            log(`[${format_seconds(seconds)}] ${format_bytes(read)} at ${format_bytes(bps)}/s`);
         }
         yield chunk;
     }
