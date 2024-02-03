@@ -13,8 +13,8 @@ async function* pv(stream, {total, resumed, log = s => console.log(s)})
         read += chunk.length;
         const seconds = (Date.now() - time0)/1000;
         const bps = read/seconds;
-        if (resumed) {
-            const done = read + resumed;
+        if (total) {
+            const done = read + (resumed || 0);
             log(`${format_bytes(done)} of ${format_bytes(total)} at ${format_bytes(bps)}/s ETA ${eta(time0, total, done, resumed)}`);
         }
         else {
