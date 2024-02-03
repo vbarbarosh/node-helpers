@@ -14,7 +14,7 @@ async function http_get_stream_range(url, begin, end)
         out.destroy(new Error(`First byte of a returned range (${format_thousands(out.content_range.first)}) is not as expected: [${format_thousands(a)}]`));
     }
     else if (b && out.content_range.last !== b) {
-        out.destroy(throw new Error(`Last byte of a returned range (${format_thousands(out.content_range.last)}) is not as expected: [${format_thousands(b)}]`));
+        out.destroy(new Error(`Last byte of a returned range (${format_thousands(out.content_range.last)}) is not as expected: [${format_thousands(b)}]`));
     }
     return out;
 }
