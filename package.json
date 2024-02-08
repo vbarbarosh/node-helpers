@@ -27,14 +27,15 @@
         "bluebird": "^3.7.2",
         "form-data": "^4.0.0",
         "json-stable-stringify": "^1.0.2",
-        "sanitize-filename": "^1.6.3"
+        "sanitize-filename": "^1.6.3",
+        "split": "^1.0.1"
     },
     "devDependencies": {
         "mocha": "^10.2.0",
-        "throttle": "^1.0.3",
         "redis-v1": "npm:redis@1",
         "redis-v2": "npm:redis@2",
         "redis-v3": "npm:redis@3",
-        "redis-v4": "npm:redis@4"
+        "redis-v4": "npm:redis@4",
+        "throttle": "^1.0.3"
     }
 }
