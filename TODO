@@ -1,0 +1,8 @@
+src/parse_http_content_range.js
+
+Consider replacing first/last by start/end.
+
+The following node apis use start/end names:
+
+fs.createReadStream('a.bin', {start: 100, end: 200})
+fs.createWriteStream('a.bin', {start: 100});
