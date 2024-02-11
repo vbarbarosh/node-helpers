@@ -2,10 +2,10 @@ const axios = require('axios');
 const format_thousands = require('./format_thousands');
 const parse_http_content_range = require('./parse_http_content_range');
 
-async function http_get_stream_range(url, begin, end)
+async function http_get_stream_range(url, first, last)
 {
-    const a = Number.isInteger(begin) ? begin : '';
-    const b = Number.isInteger(end) ? (end - 1) : '';
+    const a = Number.isInteger(first) ? first : '';
+    const b = Number.isInteger(last) ? last : '';
     const headers = {Range: `bytes=${a}-${b}`};
     const res = await axios.get(url, {responseType: 'stream', headers});
     const out = res.data;
