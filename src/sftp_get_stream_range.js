@@ -3,7 +3,7 @@ const waitcb = require('./waitcb');
 
 const ___stat = Symbol('sftp_get_stream_range.stat');
 
-async function sftp_get_stream_range(url, first, last, {log: log = ignore})
+async function sftp_get_stream_range(url, first, last, {log = ignore})
 {
     const u = new URL(url);
     const host = u.host;
