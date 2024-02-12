@@ -32,9 +32,9 @@ function progress(total)
             out.add(done - out.done);
         },
         refresh: function () {
-            if (history.length > 1) {
-                const now_minus_5_seconds = Date.now() - 5000;
-                const tmp = history.filter(v => v.time >= now_minus_5_seconds);
+            const now_minus_5_seconds = Date.now() - 5000;
+            const tmp = history.filter(v => v.time >= now_minus_5_seconds);
+            if (tmp.length > 1) {
                 const items = tmp.reduce((a,v) => a + v.delta, 0);
                 const time_sec = (tmp.pop().time - tmp[0].time)/1000;
                 out.rate = items/time_sec;
