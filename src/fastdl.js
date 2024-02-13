@@ -15,16 +15,17 @@ const stream = require('stream');
  *     read_stream_with_range: (first, last) => http_get_stream_range(url, first, last),
  * });
  */
-async function fastdl({file, read_stream_with_range, concurrency = 60, log = v => console.log(v)})
+async function fastdl({file, read_stream_with_range, concurrency = 60, user_friendly_status = v => console.log(v)})
 {
+    const _ = user_friendly_status;
     const M = 1024*1024;
     const chunk_min_bytes = M;
     const chunk_max_bytes = 50*M;
 
-    log(`Truncating destination file [${fs_path_basename(file)}]...`);
+    _(`Truncating destination file [${fs_path_basename(file)}]...`);
     await fs.promises.writeFile(file, '');
 
-    log('Requesting first chunk to determine total size...');
+    _('Requesting first chunk to determine total size...');
     const rs0 = await read_stream_with_range(0, chunk_min_bytes);
 
     const total = rs0.content_range.total;
@@ -40,10 +41,15 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, log = v =
         const p = progress;
         const bb = format_bytes;
         const ss = format_seconds;
-        log(`${bb(p.done)} of ${bb(p.total)} ${(p.percentage*100).toFixed(2)}% at ${bb(p.rate)}/s ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
+        if (p.rate) {
+            _(`${bb(p.done)} of ${bb(p.total)} [${(p.percentage*100).toFixed(2)}%] at ${bb(p.rate)}/s ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
+        }
+        else {
+            _(`${bb(p.done)} of ${bb(p.total)} [${(p.percentage*100).toFixed(2)}%] at ~ ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
+        }
     }
 
-    log(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
+    _(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
 
     try {
         await parallel({concurrency, spawn});

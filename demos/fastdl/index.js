@@ -16,7 +16,7 @@ async function main()
     await fastdl({
         file: fs_path_basename(new URL(url).pathname),
         read_stream_with_range: (first, last) => http_get_stream_range(url, first, last),
-        log: s => console.log(`[fastdl] ${s}`),
+        user_friendly_status: s => console.log(`[fastdl] ${s}`),
     });
     console.log('done');
 }

@@ -14,7 +14,7 @@ async function main()
         file: fs_path_basename(new URL(url).pathname),
         read_stream_with_range: (first, last) => sftp_get_stream_range(url, first, last),
         concurrency: 200,
-        log: s => console.log(`[fastdl] ${s}`),
+        user_friendly_status: s => console.log(`[fastdl] ${s}`),
     });
     console.log('done');
 }
