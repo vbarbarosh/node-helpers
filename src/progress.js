@@ -21,10 +21,10 @@ function progress(total)
         progress: null,
         percentage: null,
         add: function (delta = 0) {
-            const now_minus_5_seconds = Date.now() - 5000;
+            const now_minus_2sec = Date.now() - 2000;
             history.push({time: Date.now(), delta});
-            // Keep last 5 seconds
-            history.splice(0, history.findLastIndex(v => v.time < now_minus_5_seconds));
+            // Keep last 2 seconds
+            history.splice(0, history.findLastIndex(v => v.time < now_minus_2sec));
             out.done += delta;
             out.refresh();
         },
@@ -32,8 +32,8 @@ function progress(total)
             out.add(done - out.done);
         },
         refresh: function () {
-            const now_minus_5_seconds = Date.now() - 5000;
-            const tmp = history.filter(v => v.time >= now_minus_5_seconds);
+            const now_minus_2sec = Date.now() - 2000;
+            const tmp = history.filter(v => v.time >= now_minus_2sec);
             if (tmp.length > 1) {
                 const items = tmp.reduce((a,v) => a + v.delta, 0);
                 const time_sec = (tmp.pop().time - tmp[0].time)/1000;
