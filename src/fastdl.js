@@ -2,6 +2,7 @@ const format_bytes = require('./format_bytes');
 const format_seconds = require('./format_seconds');
 const format_thousands = require('./format_thousands');
 const fs = require('fs');
+const fs_path_basename = require('./fs_path_basename');
 const make_progress = require('./progress');
 const parallel = require('./parallel');
 const stream = require('stream');
@@ -20,7 +21,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, log = v =
     const chunk_min_bytes = M;
     const chunk_max_bytes = 50*M;
 
-    log(`Truncating destination file [${file}]...`);
+    log(`Truncating destination file [${fs_path_basename(file)}]...`);
     await fs.promises.writeFile(file, '');
 
     log('Requesting first chunk to determine total size...');
