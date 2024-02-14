@@ -1,5 +1,5 @@
 // https://github.com/nodejs/node/issues/36084#issuecomment-729894622
-class Abort extends Error
+class AbortError extends Error
 {
     constructor(message = 'The operation was aborted') {
         super(message);
@@ -21,4 +21,4 @@ class Abort extends Error
     }
 }
 
-module.exports = Abort;
+module.exports = AbortError;
