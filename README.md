@@ -10,7 +10,7 @@ A set of helpers for JavaScript/Node.js
 
 ## Conventions
 
-`concurrency` - limit of parallel processes
+`concurrency` - limit for parallel processes.
 
 * [Node • Stream • readable.every](https://nodejs.org/api/stream.html#readableeveryfn-options)
 * [Node • Stream • readable.filter](https://nodejs.org/api/stream.html#readablefilterfn-options)
