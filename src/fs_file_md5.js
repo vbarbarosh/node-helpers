@@ -9,4 +9,4 @@ async function fs_file_md5(file, encoding = 'hex')
     return md5.digest(encoding);
 }
 
-module.export = fs_file_md5;
+module.exports = fs_file_md5;
