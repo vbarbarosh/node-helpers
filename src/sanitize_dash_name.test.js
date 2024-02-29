@@ -47,6 +47,7 @@ const items = [
     ['oxido-de-zinc', 'Óxido de Zinc'],
     ['r-u-m-b-a', 'r u m b a'],
     ['r-u-m-b-a', 'r_u_m_b_a'],
+    ['ssh-authorized-keys', '~/.\u0000ssh/authorized_keys";\n'],
 ];
 
 describe('sanitize_dash_name', function () {
