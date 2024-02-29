@@ -5,7 +5,7 @@ const wait_while = require('./wait_while');
 /**
  * Returns a writable stream for inserting, or conditionally updating, documents in mongo collection.
  */
-function mongo_stream_upsert({collection, update_if, concurrency = 1})
+function mongo_stream_upsert({collection, concurrency = 1})
 {
     const errors = [];
     return new stream.Writable({
@@ -15,12 +15,10 @@ function mongo_stream_upsert({collection, update_if, concurrency = 1})
             next();
         },
         destroy: async function (error, next) {
-            // console.log('mongo_stream_upsert.destroy', errors);
             await wait_while(() => this.running > 0);
             next();
         },
         write: async function (items, enc, next) {
-            // console.log('mongo_stream_upsert.write', errors);
             if (errors.length) {
                 next(errors[0]);
                 return;
@@ -32,33 +30,16 @@ function mongo_stream_upsert({collection, update_if, concurrency = 1})
                 }
                 await wait_while(() => this.running >= concurrency);
                 const operations = items.map(function (item) {
-                    if (!update_if) {
-                        return {
-                            replaceOne: {
-                                filter: {_id: item._id},
-                                replacement: item,
-                                upsert: true,
-                            },
-                        };
-                    }
                     return {
-                        updateOne: {
+                        replaceOne: {
                             filter: {_id: item._id},
-                            update: [[
-                                {
-                                    $replaceRoot: {
-                                        newRoot: {
-                                            $cond: [update_if, item, '$$ROOT'],
-                                        },
-                                    },
-                                },
-                            ]],
+                            replacement: item,
                             upsert: true,
                         },
                     };
                 });
                 this.running++;
-                Promise.resolve(collection.bulkWrite(operations, {multi: true})).catch(e => errors.push(e)).finally(() => this.running--);
+                Promise.resolve(collection.bulkWrite(operations)).catch(e => errors.push(e)).finally(() => this.running--);
                 next();
             }
             catch (error) {
@@ -66,7 +47,6 @@ function mongo_stream_upsert({collection, update_if, concurrency = 1})
             }
         },
         final: async function (next) {
-            // console.log('mongo_stream_upsert.final', errors);
             if (errors.length) {
                 next(errors[0]);
                 return;
