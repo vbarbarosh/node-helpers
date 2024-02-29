@@ -3,7 +3,7 @@ const stream = require('stream');
 const wait_while = require('./wait_while');
 
 /**
- * Returns a writable stream for inserting, or conditionally updating, documents in mongo collection.
+ * Returns a writable stream for inserting or replacing documents in mongo collection.
  */
 function mongo_stream_upsert({collection, concurrency = 1})
 {
