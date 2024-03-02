@@ -21,10 +21,10 @@ function make_progress(total)
         progress: null,
         percents: null,
         add: function (delta = 0) {
-            const now_minus_2sec = Date.now() - 2000;
+            const now_minus_5sec = Date.now() - 5000;
             history.push({time: Date.now(), delta});
-            // Keep last 2 seconds
-            history.splice(0, history.findLastIndex(v => v.time < now_minus_2sec));
+            // Keep last 5 seconds
+            history.splice(0, history.findLastIndex(v => v.time < now_minus_5sec));
             out.done += delta;
             out.refresh();
         },
