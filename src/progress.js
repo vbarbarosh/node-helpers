@@ -2,7 +2,7 @@
 // - update progress by replacing total amount
 // - render eta
 // - render items/second
-// - render percentage
+// - render percents
 // - time spent
 //
 // https://bramcohen.livejournal.com/24122.html
@@ -19,7 +19,7 @@ function progress(total)
         rate: null,
         duration: 0,
         progress: null,
-        percentage: null,
+        percents: null,
         add: function (delta = 0) {
             const now_minus_2sec = Date.now() - 2000;
             history.push({time: Date.now(), delta});
@@ -43,7 +43,7 @@ function progress(total)
                 out.rate = out.done/out.duration;
             }
             out.duration = (Date.now() - time0)/1000;
-            out.percentage = !out.total ? null : out.done/out.total;
+            out.percents = !out.total ? null : out.done/out.total;
             out.eta = !out.total ? null : (out.total - out.done)/out.rate;
         },
     };
