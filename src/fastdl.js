@@ -3,7 +3,7 @@ const format_seconds = require('./format_seconds');
 const format_thousands = require('./format_thousands');
 const fs = require('fs');
 const fs_path_basename = require('./fs_path_basename');
-const make_progress = require('./progress');
+const make_progress = require('./make_progress');
 const parallel = require('./parallel');
 const stream = require('stream');
 

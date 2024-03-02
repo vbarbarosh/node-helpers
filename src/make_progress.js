@@ -6,7 +6,7 @@
 // - time spent
 //
 // https://bramcohen.livejournal.com/24122.html
-function progress(total)
+function make_progress(total)
 {
     const history = [];
     const time0 = Date.now();
@@ -50,4 +50,4 @@ function progress(total)
     return out;
 }
 
-module.exports = progress;
+module.exports = make_progress;
