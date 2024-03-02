@@ -21,10 +21,9 @@ function make_progress(total)
         progress: null,
         percents: null,
         add: function (delta = 0) {
-            const now_minus_5sec = Date.now() - 5000;
+            const now_minus_10sec = Date.now() - 10000;
+            history.splice(0, history.findLastIndex(v => v.time < now_minus_10sec));
             history.push({time: Date.now(), delta});
-            // Keep last 5 seconds
-            history.splice(0, history.findLastIndex(v => v.time < now_minus_5sec));
             out.done += delta;
             out.refresh();
         },
@@ -32,19 +31,17 @@ function make_progress(total)
             out.add(done - out.done);
         },
         refresh: function () {
-            const now_minus_2sec = Date.now() - 2000;
-            const tmp = history.filter(v => v.time >= now_minus_2sec);
-            if (tmp.length > 1) {
-                const items = tmp.reduce((a,v) => a + v.delta, 0);
-                const time_sec = (tmp.pop().time - tmp[0].time)/1000;
-                out.rate = items/time_sec;
+            out.duration = (Date.now() - time0)/1000;
+            out.percents = !out.total ? null : out.done/out.total;
+            out.eta = !out.total ? null : (out.total - out.done)/out.rate;
+            if (history.length) {
+                const delta = history.reduce((a,v) => a + v.delta, 0);
+                const time_sec = (Date.now() - history[0].time)/1000;
+                out.rate = delta/time_sec;
             }
             else {
                 out.rate = out.done/out.duration;
             }
-            out.duration = (Date.now() - time0)/1000;
-            out.percents = !out.total ? null : out.done/out.total;
-            out.eta = !out.total ? null : (out.total - out.done)/out.rate;
         },
     };
     return out;
