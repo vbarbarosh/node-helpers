@@ -9,7 +9,13 @@ async function http_get_stream_range(url, first, last)
     const headers = {Range: `bytes=${a}-${b}`};
     const res = await axios.get(url, {responseType: 'stream', headers});
     const out = res.data;
-    out.content_range = parse_http_content_range(res.headers['content-range']);
+    if (res.headers['content-range']) {
+        out.content_range = parse_http_content_range(res.headers['content-range']);
+    }
+    else {
+        const len = res.headers['content-length'];
+        out.content_range = parse_http_content_range(`${res.headers['accept-ranges']} 0-${len}/${len}`);
+    }
     if (a && out.content_range.first !== a) {
         out.destroy(new Error(`First byte of a returned range (${format_thousands(out.content_range.first)}) is not as expected: [${format_thousands(a)}]`));
     }
