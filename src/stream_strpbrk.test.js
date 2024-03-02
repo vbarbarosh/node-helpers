@@ -14,6 +14,8 @@ const items = [
     ['a|||b → a,b', '|', ['a|||b'], ['a', 'b']],
     ['abc → abc', '|', ['a', 'b', 'c'], ['abc']],
     ['a|b;c', '|;', ['a|b;c'], ['a', 'b', 'c']],
+    ['Buffer(a) → a', '|', ['a'].map(Buffer.from), ['a']],
+    ['Buffer(a|b) → a,b', '|', ['a|b'].map(Buffer.from), ['a', 'b']],
 ];
 
 describe('stream_strpbrk', function () {

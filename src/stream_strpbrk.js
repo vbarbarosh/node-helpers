@@ -8,10 +8,10 @@ function stream_strpbrk(chars = '\r\n')
     const pending = [];
     return new stream.Transform({
         objectMode: true,
-        decodeStrings: true,
         transform: function (str, encoding, next) {
-            for (let off = 0; off < str.length; ) {
+            str = Buffer.isBuffer(str) ? str.toString() : str;
 
+            for (let off = 0; off < str.length; ) {
                 // skip consecutive delimiters
                 while (off < str.length) {
                     let stop = true;
