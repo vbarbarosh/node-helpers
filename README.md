@@ -12,6 +12,9 @@ A set of helpers for JavaScript/Node.js
 
 `concurrency` - limit for parallel processes.
 
+`user_friendly_status` - a function that accepts a string ready to present for the end-user (i.e.
+string which is guaranteed contains no sensitive information like usernames or passwords).
+
 * [Node • Stream • readable.every](https://nodejs.org/api/stream.html#readableeveryfn-options)
 * [Node • Stream • readable.filter](https://nodejs.org/api/stream.html#readablefilterfn-options)
 * [Node • Stream • readable.find](https://nodejs.org/api/stream.html#readablefindfn-options)
