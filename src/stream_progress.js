@@ -1,6 +1,4 @@
-const format_bytes = require('./format_bytes');
-const format_percents = require('./format_percents');
-const format_seconds = require('./format_seconds');
+const format_progress = require('./format_progress');
 const make_progress = require('./make_progress');
 const stream = require('stream');
 
@@ -26,7 +24,7 @@ function stream_progress({total, user_friendly_status = s => console.log(s)})
     });
     function tick() {
         progress.update(done);
-        user_friendly_status(`${format_percents(progress.percents)} | ${format_bytes(done)} of ${format_bytes(total)} at ${format_bytes(progress.rate)}/s ETA ${format_seconds(progress.eta)} duration=${format_seconds(progress.duration)}`);
+        user_friendly_status(format_progress(progress));
     }
 }
 

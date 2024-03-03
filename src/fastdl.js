@@ -1,6 +1,5 @@
 const format_bytes = require('./format_bytes');
-const format_percents = require('./format_percents');
-const format_seconds = require('./format_seconds');
+const format_progress = require('./format_progress');
 const format_thousands = require('./format_thousands');
 const fs = require('fs');
 const fs_path_basename = require('./fs_path_basename');
@@ -38,15 +37,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
 
     const timer = setInterval(tick, 1000);
     function tick() {
-        const p = progress;
-        const bb = format_bytes;
-        const ss = format_seconds;
-        if (p.rate) {
-            user_friendly_status(`${bb(p.done)} of ${bb(p.total)} [${format_percents(p.percents)}] at ${bb(p.rate)}/s ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
-        }
-        else {
-            user_friendly_status(`${bb(p.done)} of ${bb(p.total)} [${format_percents(p.percents)}] at ~ ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
-        }
+        user_friendly_status(`${format_progress(progress)} connections=${connections}`);
     }
 
     user_friendly_status(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
