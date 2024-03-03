@@ -1,9 +1,12 @@
 const ignore = require('./ignore');
 const stream = require('stream');
-const wait_while = require('./wait_while');
 
 function stream_multiplex(...streams)
 {
+    if (streams.length === 1) {
+        return streams[0];
+    }
+
     // `new stream.Writable()` will ignore second, third, etc. calls to `destroy`
     return stream.Writable({
         objectMode: true,
@@ -12,38 +15,36 @@ function stream_multiplex(...streams)
             next();
         },
         destroy: async function (error, next) {
-            let running = streams.length;
-            streams.forEach(s => s.destroy(error, () => running--));
-            await wait_while(() => running > 0);
-            next();
-        },
-        write: async function (chunk, enc, next) {
-            let running = streams.length;
+            let done = 0;
             streams.forEach(function (stream) {
-                stream.write(chunk, function (error) {
-                    running--;
-                    if (error) {
+                stream.destroy(error, function () {
+                    if (++done === streams.length) {
+                        next();
+                    }
+                });
+            });
+        },
+        write: async function (chunk, encoding, next) {
+            let done = 0;
+            streams.forEach(function (stream) {
+                stream.write(chunk, encoding, function (error) {
+                    if (++done === streams.length || error) {
                         next(error);
                         next = ignore;
                     }
                 });
             });
-            await wait_while(() => running > 0);
-            next();
         },
         final: async function (next) {
-            let running = streams.length;
+            let done = 0;
             streams.forEach(function (stream) {
                 stream.end(function (error) {
-                    running--;
-                    if (error) {
+                    if (++done === streams.length || error) {
                         next(error);
                         next = ignore;
                     }
                 });
             });
-            await wait_while(() => running > 0);
-            next();
         },
     });
 }
