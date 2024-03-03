@@ -18,15 +18,14 @@ const stream = require('stream');
  */
 async function fastdl({file, read_stream_with_range, concurrency = 60, user_friendly_status = v => console.log(v)})
 {
-    const _ = user_friendly_status;
     const M = 1024*1024;
     const chunk_min_bytes = M;
     const chunk_max_bytes = 50*M;
 
-    _(`Truncating destination file [${fs_path_basename(file)}]...`);
+    user_friendly_status(`Truncating destination file [${fs_path_basename(file)}]...`);
     await fs.promises.writeFile(file, '');
 
-    _('Requesting first chunk to determine total size...');
+    user_friendly_status('Requesting first chunk to determine total size...');
     const rs0 = await read_stream_with_range(0, chunk_min_bytes);
 
     const total = rs0.content_range.total;
@@ -43,14 +42,14 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
         const bb = format_bytes;
         const ss = format_seconds;
         if (p.rate) {
-            _(`${bb(p.done)} of ${bb(p.total)} [${format_percents(p.percents)}] at ${bb(p.rate)}/s ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
+            user_friendly_status(`${bb(p.done)} of ${bb(p.total)} [${format_percents(p.percents)}] at ${bb(p.rate)}/s ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
         }
         else {
-            _(`${bb(p.done)} of ${bb(p.total)} [${format_percents(p.percents)}] at ~ ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
+            user_friendly_status(`${bb(p.done)} of ${bb(p.total)} [${format_percents(p.percents)}] at ~ ETA ${ss(p.eta)} duration=${ss(p.duration)} connections=${connections}`);
         }
     }
 
-    _(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
+    user_friendly_status(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
 
     try {
         await parallel({concurrency, spawn});
