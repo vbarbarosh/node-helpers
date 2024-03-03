@@ -9,6 +9,7 @@ async function http_get_stream_range(url, first, last)
     const headers = {Range: `bytes=${a}-${b}`};
     const res = await axios.get(url, {responseType: 'stream', headers});
     const out = res.data;
+    out.headers = res.headers;
     if (res.headers['content-range']) {
         out.content_range = parse_http_content_range(res.headers['content-range']);
     }
@@ -22,6 +23,7 @@ async function http_get_stream_range(url, first, last)
     else if (b && out.content_range.last !== b) {
         out.destroy(new Error(`Last byte of a returned range (${format_thousands(out.content_range.last)}) is not as expected: [${format_thousands(b)}]`));
     }
+    out.total = out.content_range.total;
     return out;
 }
 
