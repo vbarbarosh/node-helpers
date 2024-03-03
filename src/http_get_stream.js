@@ -1,8 +1,11 @@
 const axios = require('axios');
 
-function http_get_stream(url, options)
+async function http_get_stream(url, options)
 {
-    return axios.get(url, {responseType: 'stream', ...options}).then(v => v.data);
+    const res = await axios.get(url, {responseType: 'stream', ...options});
+    const out = res.data;
+    out.headers = res.headers;
+    return out;
 }
 
 module.exports = http_get_stream;
