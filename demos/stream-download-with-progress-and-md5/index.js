@@ -14,8 +14,7 @@ cli(main);
 async function main()
 {
     // const url = 'https://software.download.prss.microsoft.com/dbazure/Win10_22H2_English_x64v1.iso?t=4bc6bf41-d6d8-4439-abd6-a6abae233f12&e=1707058894&h=6b7b041774d41dd6b7836069728776592b1347b39aabc0f7a00c361d59769cc3';
-    // const url = 'https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso';
-    const url = 'http://localhost/ubuntu-22.04.4-desktop-amd64.iso';
+    const url = 'https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso';
 
     const rs = await http_get_stream_range(url);
     await stream.promises.pipeline(
