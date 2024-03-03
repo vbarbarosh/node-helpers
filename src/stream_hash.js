@@ -10,7 +10,7 @@ function stream_hash(algorithm = 'md5', options)
             next();
         },
         flush: function (next) {
-            this.push(hash.digest());
+            this.push(hash.digest('hex'));
             next();
         },
     });
