@@ -8,7 +8,7 @@ cli(main);
 
 async function main()
 {
-    const proc = shell_spawn(['7z', 'x', '-aoa', '-bsp1', '/path/to/file.zip']);
+    const proc = await shell_spawn(['7z', 'x', '-aoa', '-bsp1', '/path/to/file.zip']).init();
     for await (const line of proc.stdout.pipe(stream_strpbrk('\r\n\x08'))) {
         const m = line.match(/^\s*(\d+%.*)\s*$/);
         if (m) {
