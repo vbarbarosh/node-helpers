@@ -58,18 +58,19 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
         if (next_first >= total) {
             return;
         }
-        const first = next_first;
+        let first = next_first;
         const last = Math.min(total - 1, first + (first === 0 ? rs0.content_range.last : chunk_size));
         next_first = last + 1;
         connections++;
-        return Promise.resolve(run()).finally(() => connections--);
+        return Promise.resolve(run()).catch(run).catch(run).finally(() => connections--);
         async function run() {
             const rs = (first === 0) ? rs0 : await read_stream_with_range(first, last);
             const acc = new stream.PassThrough({
-                transform(buf, enc, cb) {
+                transform(buf, encoding, next) {
+                    first += buf.length;
                     total_written += buf.length;
                     progress.add(buf.length);
-                    cb(null, buf);
+                    next(null, buf);
                 }
             });
             const ws = fs.createWriteStream(file, {
