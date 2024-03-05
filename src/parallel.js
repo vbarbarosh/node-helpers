@@ -8,6 +8,7 @@ async function parallel({concurrency, spawn, progress})
 {
     const running = [];
     return new Promise(function (resolve, reject) {
+        let failed = false;
         const timer = setInterval(tick, 1000);
         schedule();
         if (running.length) {
@@ -15,6 +16,9 @@ async function parallel({concurrency, spawn, progress})
         }
         function schedule() {
             while (running.length < concurrency) {
+                if (failed) {
+                    break;
+                }
                 const w = spawn();
                 if (!w) {
                     break;
@@ -22,6 +26,9 @@ async function parallel({concurrency, spawn, progress})
                 const item = Promise.resolve(w).then(resolved, rejected);
                 running.push(item);
                 function resolved() {
+                    if (failed) {
+                        return;
+                    }
                     const i = running.indexOf(item);
                     if (i === -1) {
                         throw new NotImplemented();
@@ -30,8 +37,11 @@ async function parallel({concurrency, spawn, progress})
                     schedule();
                 }
                 function rejected(error) {
-                    console.log(error);
-                    throw new NotImplemented();
+                    if (failed) {
+                        return;
+                    }
+                    running.splice(0, running.length);
+                    reject(error);
                 }
             }
             if (running.length === 0) {
