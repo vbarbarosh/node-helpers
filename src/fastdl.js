@@ -1,3 +1,4 @@
+const UserFriendlyError = require('./errors/UserFriendlyError');
 const format_bytes = require('./format_bytes');
 const format_progress = require('./format_progress');
 const format_thousands = require('./format_thousands');
@@ -53,7 +54,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
     }
 
     if (total !== total_written) {
-        throw new Error(`Total bytes written differs from expected size of a file: total[${total}] - total_written[${total_written}] = ${total - total_written}`);
+        throw new UserFriendlyError(`Total bytes written differs from expected size of a file: total[${total}] - total_written[${total_written}] = ${total - total_written}`);
     }
 
     function spawn() {
@@ -73,7 +74,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
             if (rs.content_range.total !== total) {
                 rs.once('error', ignore);
                 rs.destroy();
-                throw new Error('Size of a file changed during download');
+                throw new UserFriendlyError('Size of a file changed during download');
             }
             const acc = new stream.PassThrough({
                 transform(buf, encoding, next) {
