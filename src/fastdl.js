@@ -37,6 +37,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
 
     const timer = setInterval(tick, 1000);
     function tick() {
+        progress.refresh();
         user_friendly_status(`${format_progress(progress)} connections=${connections}`);
     }
 
