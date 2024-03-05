@@ -64,6 +64,9 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
         connections++;
         return Promise.resolve(run()).catch(run).catch(run).finally(() => connections--);
         async function run() {
+            if (first > last) {
+                return;
+            }
             const rs = (first === 0) ? rs0 : await read_stream_with_range(first, last);
             const acc = new stream.PassThrough({
                 transform(buf, encoding, next) {
