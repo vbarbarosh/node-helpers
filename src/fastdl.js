@@ -53,7 +53,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
     }
 
     if (total !== total_written) {
-        throw new Error(`Total bytes written differs from size of a file: total[${total}] - total_written[${total_written}] = ${total - total_written}`);
+        throw new Error(`Total bytes written differs from expected size of a file: total[${total}] - total_written[${total_written}] = ${total - total_written}`);
     }
 
     function spawn() {
