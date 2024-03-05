@@ -3,6 +3,7 @@ const format_progress = require('./format_progress');
 const format_thousands = require('./format_thousands');
 const fs = require('fs');
 const fs_path_basename = require('./fs_path_basename');
+const ignore = require('./ignore');
 const make_progress = require('./make_progress');
 const parallel = require('./parallel');
 const stream = require('stream');
@@ -69,6 +70,11 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
                 return;
             }
             const rs = (first === 0) ? rs0 : await read_stream_with_range(first, last);
+            if (rs.content_range.total !== total) {
+                rs.once('error', ignore);
+                rs.destroy();
+                throw new Error('Size of a file changed during download');
+            }
             const acc = new stream.PassThrough({
                 transform(buf, encoding, next) {
                     first += buf.length;
