@@ -2,8 +2,6 @@ const ignore = require('./ignore');
 const ssh2 = require('ssh2');
 const waitcb = require('./waitcb');
 
-const ___stat = Symbol('sftp_get_stream_range.stat');
-
 async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
 {
     const u = new URL(url);
@@ -25,7 +23,7 @@ async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
     const sftp = await waitcb(cb => conn.sftp(cb));
 
     log('Requesting file info...');
-    const stat = url[___stat] || (url[___stat] = await waitcb(cb => sftp.stat(pathname, cb)));
+    const stat = await waitcb(cb => sftp.stat(pathname, cb));
 
     if (first < 0 || last >= stat.size) {
         throw new Error(`Invalid range: [first=${first}][last=${last}]`);
