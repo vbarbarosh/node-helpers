@@ -38,8 +38,11 @@ async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
         last,
         total: stat.size,
     };
+    out.once('error', function () {
+        conn.destroy();
+    });
     out.once('end', function () {
-        conn.end();
+        conn.destroy();
     });
     return out;
 }
