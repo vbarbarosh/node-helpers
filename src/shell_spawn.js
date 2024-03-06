@@ -29,7 +29,7 @@ function shell_spawn(args, options)
             }
             function promise_exit(code, signal) {
                 out.off('error', promise_error);
-                resolve({code, signal});
+                code ? reject(new Error(`Process terminated with code ${code}`)) : resolve(signal);
             }
         });
     };
