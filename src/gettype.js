@@ -1,9 +1,7 @@
 const const_type = require('./const_type');
 
 /**
- *
- * @param value
- * @return {"undefined"|"object"|"boolean"|"number"|"string"|"function"|"symbol"|"bigint"|string}
+ * @similar https://github.com/locutusjs/locutus/tree/master/src/php/var
  */
 function gettype(value)
 {
