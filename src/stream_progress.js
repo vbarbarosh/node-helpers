@@ -4,6 +4,8 @@ const stream = require('stream');
 
 /**
  * Monitor the progress of data through a pipe. Similar to UNIX `pv` command.
+ *
+ * @similar https://www.npmjs.com/package/progress-stream
  */
 function stream_progress({total, user_friendly_status = s => console.log(s)})
 {
