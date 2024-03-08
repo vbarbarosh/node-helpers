@@ -3,13 +3,13 @@ const stream = require('stream');
 /**
  * Call `fn` on each item.
  */
-function stream_each(fn)
+function stream_through(fn)
 {
-    return stream.Transform({
+    return new stream.Transform({
         objectMode: true,
-        transform: async function (item, encoding, next) {
+        transform: function (item, encoding, next) {
             try {
-                await fn(item);
+                fn(item);
                 this.push(item, encoding);
                 next();
             }
@@ -20,4 +20,4 @@ function stream_each(fn)
     });
 }
 
-module.exports = stream_each;
+module.exports = stream_through;
