@@ -11,7 +11,20 @@ function stream_strpbrk(chars = '\r\n')
         transform: function (str, encoding, next) {
             str = Buffer.isBuffer(str) ? str.toString() : str;
 
-            for (let off = 0; off < str.length; ) {
+            let off = 0;
+            // leading delimiters
+            while (off < str.length) {
+                if (!chars.includes(str[off])) {
+                    break;
+                }
+                off++;
+            }
+
+            if (off && pending.length) {
+                this.push(''.concat(...pending.splice(0)));
+            }
+
+            while (off < str.length) {
                 // skip consecutive delimiters
                 while (off < str.length) {
                     let stop = true;
