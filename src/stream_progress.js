@@ -7,7 +7,7 @@ const stream = require('stream');
  *
  * @similar https://www.npmjs.com/package/progress-stream
  */
-function stream_progress({total, user_friendly_status = s => console.log(s)})
+function stream_progress({total, user_friendly_status = s => console.log(s)} = {})
 {
     let done = 0;
     const timer = setInterval(tick, 1000);
