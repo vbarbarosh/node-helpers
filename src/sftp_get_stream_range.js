@@ -2,7 +2,7 @@ const ignore = require('./ignore');
 const ssh2 = require('ssh2');
 const waitcb = require('./waitcb');
 
-async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
+async function sftp_get_stream_range(url, first, last, {user_friendly_status = ignore} = {})
 {
     const u = new URL(url);
     const host = u.host;
@@ -11,7 +11,7 @@ async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
     const password = decodeURIComponent(u.password);
     const pathname = u.pathname;
 
-    log('Establishing connection...');
+    user_friendly_status('Establishing connection...');
     const conn = new ssh2.Client();
     await new Promise(function (resolve, reject) {
         conn.on('ready', resolve);
@@ -19,10 +19,10 @@ async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
         conn.connect({host, port, username, password});
     });
 
-    log('Asking for an sftp service...');
+    user_friendly_status('Asking for an sftp service...');
     const sftp = await waitcb(cb => conn.sftp(cb));
 
-    log('Requesting file info...');
+    user_friendly_status('Requesting file info...');
     const stat = await waitcb(cb => sftp.stat(pathname, cb));
 
     if (first < 0 || last >= stat.size) {
@@ -36,6 +36,7 @@ async function sftp_get_stream_range(url, first, last, {log = ignore} = {})
         last,
         total: stat.size,
     };
+    out.total = out.content_range.total;
     out.once('error', function () {
         conn.destroy();
     });

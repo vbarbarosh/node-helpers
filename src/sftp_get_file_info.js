@@ -3,7 +3,7 @@ const ignore = require('./ignore');
 const ssh2 = require('ssh2');
 const waitcb = require('./waitcb');
 
-async function sftp_get_file_info(url, {log = ignore})
+async function sftp_get_file_info(url, {user_friendly_status = ignore})
 {
     const u = new URL(url);
     const host = u.host;
@@ -12,7 +12,7 @@ async function sftp_get_file_info(url, {log = ignore})
     const password = decodeURIComponent(u.password);
     const pathname = u.pathname;
 
-    log('Establishing connection...');
+    user_friendly_status('Establishing connection...');
     const conn = new ssh2.Client();
     try {
         await new Promise(function (resolve, reject) {
@@ -21,10 +21,10 @@ async function sftp_get_file_info(url, {log = ignore})
             conn.connect({host, port, username, password});
         });
 
-        log('Asking for an sftp service...');
+        user_friendly_status('Asking for an sftp service...');
         const sftp = await waitcb(cb => conn.sftp(cb));
 
-        log('Requesting file info...');
+        user_friendly_status('Requesting file info...');
         const [stat, lstat, readdir] = await Promise.all([
             waitcb(cb => sftp.stat(pathname, cb)),
             waitcb(cb => sftp.lstat(pathname, cb)),
