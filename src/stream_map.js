@@ -1,16 +1,15 @@
 const stream = require('stream');
 
 /**
- * Call `fn` on each item.
+ * Transform each item by simple function.
  */
-function stream_through(fn)
+function stream_map(fn)
 {
     return new stream.Transform({
         objectMode: true,
         transform: function (item, encoding, callback) {
             try {
-                fn(item);
-                this.push(item, encoding);
+                this.push(fn(item));
                 callback();
             }
             catch (error) {
@@ -20,4 +19,4 @@ function stream_through(fn)
     });
 }
 
-module.exports = stream_through;
+module.exports = stream_map;

@@ -8,7 +8,7 @@ function stream_strpbrk(chars = '\r\n')
     const pending = [];
     return new stream.Transform({
         objectMode: true,
-        transform: function (str, encoding, next) {
+        transform: function (str, encoding, callback) {
             str = Buffer.isBuffer(str) ? str.toString() : str;
 
             let off = 0;
@@ -55,7 +55,7 @@ function stream_strpbrk(chars = '\r\n')
                     if (tmp.length) {
                         pending.push(tmp);
                     }
-                    next();
+                    callback();
                     return;
                 }
 
@@ -64,13 +64,13 @@ function stream_strpbrk(chars = '\r\n')
                 this.push(''.concat(...pending.splice(0)));
                 off = delims[0];
             }
-            next();
+            callback();
         },
-        flush: function (next) {
+        flush: function (callback) {
             if (pending.length) {
                 this.push(''.concat(...pending.splice(0)));
             }
-            next();
+            callback();
         },
     });
 }

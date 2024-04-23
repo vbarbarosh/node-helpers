@@ -10,38 +10,38 @@ function stream_multiplex(...streams)
     // `new stream.Writable()` will ignore second, third, etc. calls to `destroy`
     return stream.Writable({
         objectMode: true,
-        construct: function (next) {
+        construct: function (callback) {
             streams.forEach(s => s.once('error', e => this.destroy(e)));
-            next();
+            callback();
         },
-        destroy: async function (error, next) {
+        destroy: async function (error, callback) {
             let done = 0;
             streams.forEach(function (stream) {
                 stream.destroy(error, function () {
                     if (++done === streams.length) {
-                        next();
+                        callback();
                     }
                 });
             });
         },
-        write: async function (chunk, encoding, next) {
+        write: async function (chunk, encoding, callback) {
             let done = 0;
             streams.forEach(function (stream) {
                 stream.write(chunk, encoding, function (error) {
                     if (++done === streams.length || error) {
-                        next(error);
-                        next = ignore;
+                        callback(error);
+                        callback = ignore;
                     }
                 });
             });
         },
-        final: async function (next) {
+        final: async function (callback) {
             let done = 0;
             streams.forEach(function (stream) {
                 stream.end(function (error) {
                     if (++done === streams.length || error) {
-                        next(error);
-                        next = ignore;
+                        callback(error);
+                        callback = ignore;
                     }
                 });
             });

@@ -14,21 +14,21 @@ function stream_progress({objectMode = false, total, user_friendly_status = s =>
     const progress = make_progress(total);
     return new stream.Transform({
         objectMode,
-        destroy: function (error, next) {
+        destroy: function (error, callback) {
             tick();
             clearInterval(timer);
-            next();
+            callback();
         },
-        transform: function (buf, encoding, next) {
+        transform: function (buffer, encoding, callback) {
             if (objectMode) {
                 done++;
-                this.push(buf);
+                this.push(buffer);
             }
             else {
-                done += buf.length;
-                this.push(buf, encoding);
+                done += buffer.length;
+                this.push(buffer, encoding);
             }
-            next();
+            callback();
         },
     });
     function tick() {

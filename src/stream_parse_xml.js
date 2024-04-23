@@ -47,13 +47,13 @@ function stream_parse_xml(selector, mapper = stream_parse_xml.guess)
     const parser = new htmlparser2.Parser(events, options);
     return out = new stream.Transform({
         objectMode: true,
-        transform: function (buf, encoding, next) {
+        transform: function (buf, encoding, callback) {
             parser.write(buf.toString());
-            next();
+            callback();
         },
-        flush: function (next) {
+        flush: function (callback) {
             parser.end();
-            next();
+            callback();
         },
     });
 }

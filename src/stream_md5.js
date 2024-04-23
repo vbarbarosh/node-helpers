@@ -1,17 +1,20 @@
 const crypto = require('crypto');
 const stream = require('stream');
 
+/**
+ * TODO Rename to stream_hash_md5
+ */
 function stream_md5()
 {
     const md5 = crypto.createHash('md5');
     return new stream.Transform({
-        transform: function (chunk, encoding, next) {
+        transform: function (chunk, encoding, callback) {
             md5.update(chunk, encoding);
-            next();
+            callback();
         },
-        flush: function (next) {
+        flush: function (callback) {
             this.push(md5.digest('hex'));
-            next();
+            callback();
         },
     });
 }

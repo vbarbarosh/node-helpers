@@ -1,5 +1,8 @@
 const stream = require('stream');
 
+/**
+ * @deprecated Deprecated in favor of stream_map
+ */
 function stream_transform(fn)
 {
     return new stream.Transform({

@@ -40,6 +40,7 @@ const {finished} = require('stream/promises');
  *
  * @param stream
  * @returns {Promise<void>}
+ * @deprecated Deprecated in favor of `stream.promises.finished`. Should be removed in the next major release.
  */
 function stream_promise(stream)
 {
