@@ -13,7 +13,7 @@ async function main()
     // a6f470ca6d331eb353b815c043e327a347f594f37ff525f17764738fe812852e
     // const url = 'https://software.download.prss.microsoft.com/dbazure/Win10_22H2_English_x64v1.iso?t=4bc6bf41-d6d8-4439-abd6-a6abae233f12&e=1707058894&h=6b7b041774d41dd6b7836069728776592b1347b39aabc0f7a00c361d59769cc3';
 
-    // https://github.com/vbarbarosh/dev-proxy
+    // docker run --rm -p 3000:3000 vbarbarosh/dev-proxy
     const url = 'http://127.0.0.1:3000/proxy?url=https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso&throttle=256k';
 
     await fastdl({
