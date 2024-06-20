@@ -1,4 +1,5 @@
 const stream = require('stream');
+const stream_filter = require('./stream_filter');
 const stream_lines = require('./stream_lines');
 const stream_map = require('./stream_map');
 const stream_skip = require('./stream_skip');
@@ -9,6 +10,12 @@ function stream_curl_progress()
         stream_lines(),
         stream_skip(2),
         stream_map(function (v) {
+            // curl: (22) The requested URL returned error: 500
+            if (v.startsWith('curl:')) {
+                process.stderr.write(`${v}\n`);
+                return null;
+            }
+
             // % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
             //                                Dload  Upload   Total   Spent    Left  Speed
             // 0 3217M    0     0    0  128k      0   205k  4:27:16 --:--:--  4:27:16  205k
@@ -18,6 +25,7 @@ function stream_curl_progress()
             const [perc, total, perc2, recv, perc3, transferred, speed_down, speed_up, time_total, duration, eta, speed] = v.trim().split(/\s+/);
             return {
                 perc,
+                done: recv === '0' ? transferred : recv,
                 total,
                 perc2,
                 recv,
@@ -31,6 +39,7 @@ function stream_curl_progress()
                 speed
             };
         }),
+        stream_filter(v => v),
     );
 }
 

@@ -6,7 +6,16 @@ const stream_each = require('./stream_each');
 
 async function shell_curl_progress(args, {options, user_friendly_status})
 {
-    const proc = child_process.spawn(args[0], args.slice(1), {...options, stdio: ['inherit', 'inherit', 'pipe']});
+    // $ man curl
+    // > If you want a progress meter for HTTP POST or PUT requests,
+    // > you need to redirect the response output to a file, using
+    // > shell redirect (>), -o, --output or similar.
+
+    const tmp = ['--progress-meter'];
+    if (!args.includes('-o')) {
+        tmp.push('-o', '/dev/null');
+    }
+    const proc = child_process.spawn(args[0], args.slice(1).concat(tmp), {...options, stdio: ['inherit', 'inherit', 'pipe']});
 
     const promises = [];
     promises.push(new Promise(function (resolve, reject) {
@@ -19,7 +28,7 @@ async function shell_curl_progress(args, {options, user_friendly_status})
 
     function progress_fn(v) {
         const speed = v.speed === '0' ? '~' : `${v.speed}/s`;
-        user_friendly_status(`${v.perc}% | ${v.transferred} of ${v.total} at ${speed} ETA ${v.eta} duration=${v.duration}`);
+        user_friendly_status(`${v.perc}% | ${v.done} of ${v.total} at ${speed} ETA ${v.eta} duration=${v.duration}`);
     }
 }
 
