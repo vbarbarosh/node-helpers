@@ -11,9 +11,7 @@ async function main()
     const url = 'https://www.youtube.com/watch?v=jvUpiexGOaw';
     // await shell_thru(['yt-dlp', url]).promise();
     await shell_ytdlp_progress(['--limit-rate=100K', url], {
-        progress_fn: function (obj) {
-            user_friendly_status(`[progress] ${obj.done} of ${obj.of} at ${obj.speed} ETA ${obj.eta}`);
-        },
+        user_friendly_status: v => console.log(`Downloading: ${v}`),
     });
     user_friendly_status('🎉 Done');
 }
