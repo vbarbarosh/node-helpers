@@ -21,7 +21,12 @@ async function shell_ytdlp_progress(args, {user_friendly_status, ...options})
 
     function progress_fn(v) {
         const duration = format_seconds((Date.now() - time0)/1000);
-        user_friendly_status(`${v.perc} | [${v.current_part}/${v.total_parts}] ${v.done} of ${v.total} at ${v.speed} ETA ${v.eta} duration=${duration}`);
+        if (v.merging) {
+            user_friendly_status(`Merging... duration=${duration}`);
+        }
+        else {
+            user_friendly_status(`${v.perc} | [${v.current_part}/${v.total_parts}] ${v.done} of ${v.total} at ${v.speed} ETA ${v.eta} duration=${duration}`);
+        }
     }
 }
 
