@@ -1,6 +1,6 @@
 const UserFriendlyError = require('./errors/UserFriendlyError');
 const format_bytes = require('./format_bytes');
-const format_progress = require('./format_progress');
+const format_progress_bytes = require('./format_progress_bytes');
 const format_thousands = require('./format_thousands');
 const fs = require('fs');
 const fs_path_basename = require('./fs_path_basename');
@@ -40,7 +40,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
     const timer = setInterval(tick, 1000);
     function tick() {
         progress.refresh();
-        user_friendly_status(`${format_progress(progress)} connections=${connections}`);
+        user_friendly_status(`${format_progress_bytes(progress)} connections=${connections}`);
     }
 
     user_friendly_status(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);

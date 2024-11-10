@@ -1,4 +1,4 @@
-const format_progress = require('./format_progress');
+const format_progress_bytes = require('./format_progress_bytes');
 const make_progress = require('./make_progress');
 const stream = require('stream');
 
@@ -33,7 +33,7 @@ function stream_progress({objectMode = false, total, user_friendly_status = s =>
     });
     function tick() {
         progress.update(done);
-        user_friendly_status(format_progress(progress));
+        user_friendly_status(format_progress_bytes(progress));
     }
 }
 

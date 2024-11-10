@@ -3,7 +3,7 @@ const format_percents = require('./format_percents');
 const format_seconds = require('./format_seconds');
 const is_number_gt = require('./is_number_gt');
 
-function format_progress({percents, total, done, rate, eta, duration})
+function format_progress_bytes({percents, total, done, rate, eta, duration})
 {
     const bps = is_number_gt(rate, 0) ? `${format_bytes(rate)}/s` : '~';
     if (done > total) {
@@ -22,4 +22,4 @@ function format_progress({percents, total, done, rate, eta, duration})
     return '~';
 }
 
-module.exports = format_progress;
+module.exports = format_progress_bytes;

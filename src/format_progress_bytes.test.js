@@ -1,5 +1,5 @@
 const assert = require('assert');
-const format_progress = require('./format_progress');
+const format_progress_bytes = require('./format_progress_bytes');
 
 const items = [
     ['~', {percents: 0, total: 0, done: 0, rate: 0, eta: 0, duration: 0}],
@@ -10,10 +10,10 @@ const items = [
     ['15.0MB at 10.0MB/s duration=00:00:01', {percents: 5.2525, total: 5*1024*1024, done: 15*1024*1024, rate: 10*1024*1024, eta: 5, duration: 1}],
 ];
 
-describe('format_progress', function () {
+describe('format_progress_bytes', function () {
     items.forEach(function ([expected, input]) {
         it(expected, function () {
-            assert.strictEqual(format_progress(input), expected);
+            assert.strictEqual(format_progress_bytes(input), expected);
         });
     });
 });
