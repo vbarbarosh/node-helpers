@@ -16,7 +16,7 @@ async function main()
     const p = make_progress();
     const pending = ['/usr/share'];
     while (pending.length) {
-        const path = pending.shift();
+        const path = pending.pop();
         const lstat = await fs_lstat(path);
         if (lstat.isDirectory()) {
             const basenames = await fs_readdir(path);
