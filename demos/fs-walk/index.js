@@ -12,6 +12,7 @@ cli(main);
 async function main()
 {
     let last_progress = 0;
+    let delta = 0;
 
     const p = make_progress();
     const pending = ['/usr/share'];
@@ -22,13 +23,16 @@ async function main()
             const basenames = await fs_readdir(path);
             basenames.forEach(v => pending.push(fs_path_join(path, v)));
         }
-        p.add(1);
+        delta++;
         if (Date.now() - last_progress > 1000) {
+            p.add(delta);
             console.log(format_progress_kilo(p));
             last_progress = Date.now();
+            delta = 0;
         }
     }
 
+    p.add(delta);
     console.log(format_progress_kilo(p));
     console.log('🎉 Done');
 }
