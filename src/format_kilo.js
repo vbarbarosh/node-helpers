@@ -11,7 +11,7 @@ function format_kilo(num)
         return num.toString();
     }
     const i = parseInt(Math.floor(Math.log(num) / Math.log(1000)), 10);
-    return `${(num / (1000 ** i)).toFixed(2)}`.replace(/0$/, '').replace(/\.0$/, '') + sizes[i];
+    return `${(num / (1000 ** i)).toFixed(2)}${sizes[i]}`;
 }
 
 module.exports = format_kilo;
