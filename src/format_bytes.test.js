@@ -16,7 +16,7 @@ const items = [
 describe('format_bytes', function () {
     items.forEach(function ([input, expected]) {
         it(`${input} → ${expected}`, function () {
-            assert.strictEqual(expected, format_bytes(input));
+            assert.strictEqual(format_bytes(input), expected);
         });
     });
 });

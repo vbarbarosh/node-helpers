@@ -22,7 +22,7 @@ const items = [
 describe('format_thousands', function () {
     items.forEach(function ([expected, ...args]) {
         it(`${args} → ${expected}`, function () {
-            assert.strictEqual(expected, format_thousands(...args));
+            assert.strictEqual(format_thousands(...args), expected);
         });
     });
 });

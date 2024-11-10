@@ -16,7 +16,7 @@ const items = [
 describe('format_percents', function () {
     items.forEach(function ([input, expected]) {
         it(`${input} → ${expected}`, function () {
-            assert.strictEqual(expected, format_percents(input));
+            assert.strictEqual(format_percents(input), expected);
         });
     });
 });

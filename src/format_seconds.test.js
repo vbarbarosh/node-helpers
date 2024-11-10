@@ -36,7 +36,7 @@ const items = [
 describe('format_seconds', function () {
     items.forEach(function ([expected, ...args]) {
         it(`${args} → ${expected}`, function () {
-            assert.strictEqual(expected, format_seconds(...args));
+            assert.strictEqual(format_seconds(...args), expected);
         });
     });
 });
