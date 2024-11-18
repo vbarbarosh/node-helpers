@@ -5,7 +5,12 @@ function fs_touch(file)
     return new Promise(function (resolve, reject) {
         fs.open(file, 'a', function (error, fd) {
             if (error) {
-                reject(error);
+                if (error.code === 'EISDIR') {
+                    reject(new Error(`Cannot touch a directory: ${file}`));
+                }
+                else {
+                    reject(error);
+                }
                 return;
             }
             fs.close(fd, function (error) {
