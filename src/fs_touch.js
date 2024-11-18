@@ -27,4 +27,4 @@ function fs_touch(file)
     });
 }
 
-module.exports = fs;
+module.exports = fs_touch;
