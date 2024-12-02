@@ -7,9 +7,9 @@ function stream_map(fn)
 {
     return new stream.Transform({
         objectMode: true,
-        transform: function (item, encoding, callback) {
+        transform: async function (item, encoding, callback) {
             try {
-                this.push(fn(item));
+                this.push(await fn(item));
                 callback();
             }
             catch (error) {
