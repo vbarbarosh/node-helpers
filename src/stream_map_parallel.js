@@ -58,7 +58,7 @@ function stream_map_parallel({handler, concurrency})
         }
     }
     function fail(error) {
-        throw error;
+        out.destroy(error);
     }
 }
 
