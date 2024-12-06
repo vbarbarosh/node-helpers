@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const stream = require('stream');
 
 /**
- * Transform each item by simple function in parallel.
+ * Transform each item using a simple function in parallel.
  */
 function stream_map_parallel({handler, concurrency})
 {
