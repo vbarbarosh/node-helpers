@@ -1,7 +1,7 @@
 const stream = require('stream');
 
 /**
- * Split input stream by consecutive delimiters in `chars`.
+ * Split the input stream by consecutive delimiters in `chars`
  */
 function stream_strpbrk(chars = '\r\n')
 {
