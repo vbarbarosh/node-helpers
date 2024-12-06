@@ -3,14 +3,13 @@ const fs = require('fs');
 const split = require('split');
 const stream = require('stream');
 const stream_data_ln = require('./stream_data_ln');
-const stream_promise = require('./stream_promise');
 
 describe('stream_data_ln', function () {
     it('should handle basic input', async function () {
         let actual = '';
         const s = fs.createReadStream(__filename);
         const off = stream_data_ln(s, v => actual += v + '\n');
-        await stream_promise(s);
+        await stream.promises.finished(s);
         off();
         assert.deepStrictEqual(actual, fs.readFileSync(__filename, {encoding: 'utf8'}));
     });
