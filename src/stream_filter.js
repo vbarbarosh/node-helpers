@@ -7,9 +7,9 @@ function stream_filter(fn)
 {
     return new stream.Transform({
         objectMode: true,
-        transform: function (item, encoding, callback) {
+        transform: async function (item, encoding, callback) {
             try {
-                if (fn(item)) {
+                if (await fn(item)) {
                     this.push(item);
                 }
                 callback();
