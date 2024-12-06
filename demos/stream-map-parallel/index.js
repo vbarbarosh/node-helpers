@@ -2,8 +2,8 @@ const Promise = require('bluebird');
 const cli = require('../../src/cli');
 const random_int = require('../../src/random_int');
 const stream = require('stream');
+const stream_chunk = require('../../src/stream_chunk');
 const stream_each = require('../../src/stream_each');
-const stream_group = require('../../src/stream_group');
 const stream_map_parallel = require('../../src/stream_map_parallel');
 const stream_progress = require('../../src/stream_progress');
 
@@ -26,7 +26,7 @@ async function main()
             total: input.length,
             user_friendly_status,
         }),
-        stream_group(10),
+        stream_chunk(10),
         stream_each(function (items) {
             console.log(items);
         }),

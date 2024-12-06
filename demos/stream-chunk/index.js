@@ -1,7 +1,7 @@
 const cli = require('../../src/cli');
 const stream = require('stream');
+const stream_chunk = require('../../src/stream_chunk');
 const stream_each = require('../../src/stream_each');
-const stream_group = require('../../src/stream_group');
 const stream_progress = require('../../src/stream_progress');
 
 cli(main);
@@ -27,7 +27,7 @@ async function main()
             total: items.length,
             user_friendly_status: v => console.log(`[status] ${v}`),
         }),
-        stream_group(3),
+        stream_chunk(3),
         stream_each(function (item) {
             console.log('[stream_each]', item);
         }),
