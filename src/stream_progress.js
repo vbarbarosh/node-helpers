@@ -3,7 +3,7 @@ const make_progress = require('./make_progress');
 const stream = require('stream');
 
 /**
- * Monitor the progress of data through a pipe. Similar to UNIX `pv` command.
+ * Monitor the progress of data through a pipe, similar to the UNIX `pv` command.
  *
  * @similar https://www.npmjs.com/package/progress-stream
  */
