@@ -2,6 +2,9 @@ const stream = require('stream');
 
 /**
  * Call `fn` on each item.
+ *
+ * TODO Rename to stream_tap
+ * TODO Add support for async functions
  */
 function stream_through(fn)
 {
