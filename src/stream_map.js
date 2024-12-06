@@ -1,7 +1,7 @@
 const stream = require('stream');
 
 /**
- * Transform each item by simple function.
+ * Transform each item using a simple function.
  */
 function stream_map(fn)
 {
