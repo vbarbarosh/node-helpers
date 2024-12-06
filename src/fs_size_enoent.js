@@ -1,10 +1,8 @@
 const fs = require('fs');
 
 /**
- * Returns size of a file, or 0 if file is not present. Was created for cases
- * when you need to resume download.
- *
- * @returns {Promise<int>}
+ * Returns the size of a file, or 0 if the file is not present.
+ * It was created for cases when you need to resume a download.
  */
 async function fs_size_enoent(path)
 {

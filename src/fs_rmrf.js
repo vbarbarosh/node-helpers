@@ -5,6 +5,9 @@ const fs_readdir = require('./fs_readdir');
 const fs_rm = require('./fs_rm');
 const fs_rmdir = require('./fs_rmdir');
 
+/**
+ * Remove a file or directory, along with all nested files and directories, recursively.
+ */
 async function fs_rmrf(pathname)
 {
     const fi = await fs_fi(pathname).catch(() => null);

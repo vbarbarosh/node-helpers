@@ -1,15 +1,16 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-const read = util.promisify(fs.read);
-
-// Main use case is for reading chunks of data from file.
-
+/**
+ * The main use case is reading chunks of data from a file.
+ */
 async function fs_fread(fp, buffer, offset = null)
 {
-    const {bytesRead} = await read(fp, buffer, 0, buffer.length, offset);
-    return (bytesRead == buffer.length) ? buffer : buffer.slice(0, bytesRead);
+    const {bytesRead} = await new Promise(function (resolve, reject) {
+        fs.read(fp, buffer, 0, buffer.length, offset, function (error, out) {
+            error ? reject(error) : resolve(out);
+        });
+    });
+    return (bytesRead === buffer.length) ? buffer : buffer.slice(0, bytesRead);
 }
 
 module.exports = fs_fread;
