@@ -1,26 +1,13 @@
-const stream = require('stream');
+const stream_tap = require('./stream_tap');
 
 /**
  * Call `fn` on each item.
  *
- * TODO Rename to stream_tap
- * TODO Add support for async functions
+ * @deprecated Deprecated in favor of `stream_tap`.
  */
 function stream_through(fn)
 {
-    return new stream.Transform({
-        objectMode: true,
-        transform: function (item, encoding, callback) {
-            try {
-                fn(item);
-                this.push(item, encoding);
-                callback();
-            }
-            catch (error) {
-                callback(error);
-            }
-        },
-    });
+    return stream_tap(fn);
 }
 
 module.exports = stream_through;
