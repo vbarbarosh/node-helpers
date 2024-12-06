@@ -7,9 +7,14 @@ function stream_each(fn)
 {
     return stream.Writable({
         objectMode: true,
-        write: function (item, encoding, callback) {
-            fn(item);
-            callback();
+        write: async function (item, encoding, callback) {
+            try {
+                await fn(item);
+                callback();
+            }
+            catch (error) {
+                callback(error);
+            }
         }
     });
 }
