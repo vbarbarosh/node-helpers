@@ -1,22 +1,11 @@
-const stream = require('stream');
+const stream_map = require('./stream_map');
 
 /**
- * @deprecated Deprecated in favor of stream_map
+ * @deprecated Deprecated in favor of `stream_map`
  */
 function stream_transform(fn)
 {
-    return new stream.Transform({
-        objectMode: true,
-        transform: function (item, encoding, next) {
-            try {
-                this.push(fn(item));
-                next();
-            }
-            catch (error) {
-                next(error);
-            }
-        },
-    });
+    return stream_map(fn);
 }
 
 module.exports = stream_transform;
