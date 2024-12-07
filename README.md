@@ -1,5 +1,7 @@
 A set of helpers for JavaScript/Node.js
 
+![](img/node-helpers-by-chat-gpt.webp)
+
 ## Installation
 
     npm install @vbarbarosh/node-helpers
