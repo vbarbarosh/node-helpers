@@ -1,7 +1,7 @@
 const stream = require('stream');
 
 /**
- * Pass each item through a user-defined generator, which yields each item as it is passed down
+ * Pass each item through a user-defined generator, passes down each yielded item.
  */
 function stream_map_flatten(fn)
 {
