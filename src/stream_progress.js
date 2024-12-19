@@ -1,4 +1,5 @@
 const format_progress_bytes = require('./format_progress_bytes');
+const format_progress_kilo = require('./format_progress_kilo');
 const make_progress = require('./make_progress');
 const stream = require('stream');
 
@@ -12,6 +13,7 @@ function stream_progress({objectMode = false, total, user_friendly_status = s =>
     let done = 0;
     const timer = setInterval(tick, 1000);
     const progress = make_progress(total);
+    const format_progress = objectMode ? format_progress_kilo : format_progress_bytes;
     return new stream.Transform({
         objectMode,
         destroy: function (error, callback) {
@@ -33,7 +35,7 @@ function stream_progress({objectMode = false, total, user_friendly_status = s =>
     });
     function tick() {
         progress.update(done);
-        user_friendly_status(format_progress_bytes(progress));
+        user_friendly_status(format_progress(progress));
     }
 }
 
