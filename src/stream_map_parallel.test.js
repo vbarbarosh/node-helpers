@@ -6,10 +6,10 @@ const stream_map_parallel = require('./stream_map_parallel');
 
 describe('stream_map_parallel', function () {
     it('basic', async function () {
-        const r = Array(100).fill().map((v,i) => i);
-        const out = [];
+        const actual = [];
+        const expected = Array(100).fill().map((v,i) => i);
         await stream.promises.pipeline(
-            stream.Readable.from(r),
+            stream.Readable.from(expected),
             stream_map_parallel({
                 concurrency: 5,
                 handler: async function (num) {
@@ -18,9 +18,9 @@ describe('stream_map_parallel', function () {
                 },
             }),
             stream_each(function (item) {
-                out.push(item);
+                actual.push(item);
             }),
         );
-        assert.deepStrictEqual(out, r);
+        assert.deepStrictEqual(actual, expected);
     });
 });
