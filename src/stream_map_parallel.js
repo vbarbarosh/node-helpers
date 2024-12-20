@@ -53,7 +53,7 @@ function stream_map_parallel({handler, concurrency})
             callback_next = null;
             tmp();
         }
-        if (callback_flush && !buf.length) {
+        if (callback_flush && !running) {
             callback_flush();
         }
     }
