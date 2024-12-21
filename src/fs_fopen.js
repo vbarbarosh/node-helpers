@@ -1,5 +1,8 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.open);
+function fs_fopen(file, flags = 'r', mode = 0o666)
+{
+    return fs.promises.open(file, flags, mode);
+}
+
+module.exports = fs_fopen;

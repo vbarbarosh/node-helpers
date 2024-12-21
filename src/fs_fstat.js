@@ -1,5 +1,12 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.fstat);
+function fs_fstat(fp, options = {})
+{
+    return new Promise(function (resolve, reject) {
+        fs.fstat(fp, options, function (error, out) {
+            error ? reject(error) : resolve(out);
+        });
+    })
+}
+
+module.exports = fs_fstat;

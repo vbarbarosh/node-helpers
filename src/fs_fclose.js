@@ -1,5 +1,12 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.close);
+function fs_fclose(fp)
+{
+    return new Promise(function (resolve, reject) {
+        fs.close(fp, function (error) {
+            error ? reject(error) : resolve();
+        });
+    });
+}
+
+module.exports = fs_fclose;
