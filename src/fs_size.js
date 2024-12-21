@@ -1,8 +1,9 @@
-const fs_fi = require('./fs_fi');
+const fs_stat = require('./fs_stat');
 
 async function fs_size(file)
 {
-    return fs_fi(file).then(v => v.size);
+    const stat = await fs_stat(file);
+    return stat.size;
 }
 
 module.exports = fs_size;
