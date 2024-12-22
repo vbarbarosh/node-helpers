@@ -5,6 +5,7 @@ const fs_fread = require('./fs_fread');
 const fs_path_basename = require('./fs_path_basename');
 const fs_size = require('./fs_size');
 const http_range_parse = require('./http_range_parse');
+const mime_types = require('mime-types');
 
 // https://stackoverflow.com/questions/63649387/get-vs-head-methods-in-express-example#comment120040338_63649698
 // > Note: the app.get() function is automatically called for the HTTP HEAD
@@ -23,8 +24,10 @@ async function http_stream_range(req, res, file)
     // req.log(`[http_stream_range_begin] ${JSON.stringify(req.headers)}`);
 
     const total = await fs_size(file);
+    const mime = mime_types.lookup(file);
 
     if (req.method === 'HEAD') {
+        res.header('Content-Type', mime);
         res.header('Content-Length', total);
         res.header('Content-Disposition', `inline; filename=${escape_content_disposition(fs_path_basename(file))};`);
         res.status(200);
@@ -55,12 +58,14 @@ async function http_stream_range(req, res, file)
             // req.log(`[http_stream_range_range] ${JSON.stringify({range: req.headers.range, first, last, total, orig: req.headers.range})}`);
             // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
             res.status(206);
+            res.header('Content-Type', mime);
             res.header('Content-Range', `bytes ${first}-${last}/${total}`);
             res.header('Content-Length', last - first + 1);
         }
         else {
             first = 0;
             last = total - 1;
+            res.header('Content-Type', mime);
             res.header('Content-Length', last - first + 1);
         }
 
