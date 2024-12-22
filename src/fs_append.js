@@ -1,5 +1,8 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.appendFile);
+function fs_append(file, data, options = {})
+{
+    return fs.promises.appendFile(file, data, options);
+}
+
+module.exports = fs_append;
