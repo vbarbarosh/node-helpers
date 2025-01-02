@@ -1,3 +1,4 @@
+const assert = require('assert');
 const const_stream = require('./const_stream');
 const htmlparser2 = require('htmlparser2');
 const stream = require('stream');
@@ -5,7 +6,7 @@ const stream = require('stream');
 /**
  * Consume XML, produce objects.
  */
-function stream_parse_xml(selector, mapper = stream_parse_xml.guess)
+function stream_xml_parse(selector, mapper = stream_xml_parse.guess)
 {
     let out;
     let elem = {name: '#doc', parent: null, attrs: {}, text: [], children: [], raw: []};
@@ -27,6 +28,8 @@ function stream_parse_xml(selector, mapper = stream_parse_xml.guess)
             if (path_str === selector_str) {
                 const tmp = mapper(elem);
                 out.push((tmp === null ? const_stream.null : tmp));
+                elem.parent.raw.pop();
+                assert.strictEqual(elem.parent.children.pop(), elem);
             }
             elem = elem.parent;
             path.pop();
@@ -72,7 +75,7 @@ function guess(node)
         if (node.children.length > 1) {
             const tmp = node.children[0].name;
             if (node.children.every(v => v.name === tmp)) {
-                return node.children.map(v => stream_parse_xml.guess);
+                return node.children.map(v => stream_xml_parse.guess(v));
             }
         }
     }
@@ -87,7 +90,7 @@ function guess(node)
     }
 
     node.children.forEach(function (child) {
-        const tmp = stream_parse_xml.guess(child);
+        const tmp = stream_xml_parse.guess(child);
         if (child.name in out) {
             if (Array.isArray(out[child.name])) {
                 out[child.name].push(tmp);
@@ -115,7 +118,7 @@ function ashtml(node)
     }
 }
 
-stream_parse_xml.guess = guess;
-stream_parse_xml.ashtml = ashtml;
+stream_xml_parse.guess = guess;
+stream_xml_parse.ashtml = ashtml;
 
-module.exports = stream_parse_xml;
+module.exports = stream_xml_parse;
