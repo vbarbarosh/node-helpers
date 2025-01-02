@@ -39,6 +39,7 @@
         "redis-v1": "npm:redis@1",
         "redis-v2": "npm:redis@2",
         "redis-v3": "npm:redis@3",
-        "redis-v4": "npm:redis@4"
+        "redis-v4": "npm:redis@4",
+        "throttle": "^1.0.3"
     }
 }
