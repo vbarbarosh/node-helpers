@@ -45,9 +45,7 @@ function one(prop)
 
 function comp_types(a, b)
 {
-    const ta = typeof a;
-    const tb = typeof b;
-    if (ta === 'string' && ta === tb) {
+    if (typeof a === 'string' && typeof b === 'string') {
         return a.localeCompare(b);
     }
     return a - b;
