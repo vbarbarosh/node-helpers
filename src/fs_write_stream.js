@@ -1,3 +1,8 @@
 const fs = require('fs');
 
-module.exports = fs.createWriteStream;
+function fs_write_stream(path, options)
+{
+    return fs.createWriteStream(path, options);
+}
+
+module.exports = fs_write_stream;
