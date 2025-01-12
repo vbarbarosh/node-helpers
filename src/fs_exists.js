@@ -3,9 +3,7 @@ const fs = require('fs');
 async function fs_exists(path)
 {
     return new Promise(function (resolve) {
-        fs.access(path, function (error) {
-            error ? resolve(false) : resolve(true);
-        });
+        fs.access(path, error => resolve(!error));
     });
 }
 
