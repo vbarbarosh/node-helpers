@@ -27,9 +27,13 @@ async function main()
     const time0 = perf_start();
     const path = '/usr/share';
 
+    const ac = new AbortController();
+    setTimeout(() => ac.abort(), 1500);
+
     const files = await fs_walk({
         path: '/usr/share',
         user_friendly_status: s => console.log(`Reading files: ${s}`),
+        signal: ac.signal,
     });
 
     console.log();
@@ -42,13 +46,14 @@ async function main()
         files,
         base: path,
         dest: '/tmp/a',
-        user_friendly_status: s => console.log(`Copying files: ${s}`)
+        user_friendly_status: s => console.log(`Copying files: ${s}`),
+        signal: ac.signal,
     });
 
     console.log(`🎉 Done in ${perf_end_human(time0)}`);
 }
 
-async function fs_walk({path, user_friendly_status})
+async function fs_walk({path, user_friendly_status, signal})
 {
     const base = path;
     const out = [];
@@ -57,6 +62,9 @@ async function fs_walk({path, user_friendly_status})
     let delta = 0;
     let last_progress = 0;
     while (pending.length) {
+        if (signal) {
+            signal.throwIfAborted();
+        }
         const path = pending.pop();
         const lstat = await fs_lstat(path);
         out.push({base, path, lstat});
@@ -77,11 +85,12 @@ async function fs_walk({path, user_friendly_status})
     return out;
 }
 
-async function fs_copy_recursively({files, dest, user_friendly_status})
+async function fs_copy_recursively({files, dest, user_friendly_status, signal})
 {
     let delta = 0;
     const p = make_progress(files.reduce((a,v) => a + v.lstat.size, 0));
     await countdown({
+        signal,
         timeout: msval(0, 5, 0, 0),
         tick_ms: 100,
         tick: function () {
@@ -91,6 +100,9 @@ async function fs_copy_recursively({files, dest, user_friendly_status})
         },
         fn: async function () {
             for (let i = 0; i < files.length; ++i) {
+                if (signal) {
+                    signal.throwIfAborted();
+                }
                 const file = files[i];
                 const path_base = file.path.slice(file.base.length + 1);
                 const path_in = file.path;
@@ -107,6 +119,7 @@ async function fs_copy_recursively({files, dest, user_friendly_status})
                         fs_read_stream(path_in),
                         stream_tap2(buf => delta += buf.length),
                         fs_write_stream(path_out, {flags: 'wx'}),
+                        {signal},
                     );
                     continue;
                 }
