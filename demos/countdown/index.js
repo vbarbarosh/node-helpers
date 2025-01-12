@@ -3,10 +3,10 @@
 const Promise = require('bluebird');
 const cli = require('../../src/cli');
 const countdown = require('../../src/countdown');
+const format_ms = require('../../src/format_ms');
+const format_ms3 = require('../../src/format_ms3');
 const perf_end_human = require('../../src/perf_end_human');
 const perf_start = require('../../src/perf_start');
-const format_ms3 = require('../../src/format_ms2');
-const format_ms = require('../../src/format_ms');
 
 cli(main);
 
