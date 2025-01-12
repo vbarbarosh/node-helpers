@@ -1,5 +1,8 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.mkdir);
+function fs_mkdir(path, options)
+{
+    return fs.promises.mkdir(path, options);
+}
+
+module.exports = fs_mkdir;
