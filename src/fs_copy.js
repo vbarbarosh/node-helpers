@@ -1,5 +1,8 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.copyFile);
+function fs_copy(src, dest, mode)
+{
+    return fs.promises.copyFile(src, dest, mode);
+}
+
+module.exports = fs_copy;
