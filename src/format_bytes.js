@@ -1,3 +1,6 @@
+/**
+ * @link https://stackoverflow.com/a/18650828
+ */
 function format_bytes(bytes)
 {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
@@ -10,7 +13,7 @@ function format_bytes(bytes)
     if (bytes < 1024) {
         return '1KB';
     }
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / (1024 ** i)).toFixed(bytes > 1024*1024 ? 2 : 0)}${sizes[i]}`.replace(/\.00/, '.0');
 }
 
