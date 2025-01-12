@@ -1,3 +1,5 @@
+const Promise = require('bluebird');
+
 /**
  * Wait for a promise/value to be settled. Meanwhile, call `tick` function every `tick_ms` milliseconds.
  * After `timeout` seconds, reject with 'Timeout' error.
@@ -10,7 +12,7 @@ function countdown(ctx)
     let done = false;
     let timer = null;
     return new Promise(function (resolve, reject) {
-        ctx.value = Promise.resolve(ctx.value);
+        ctx.value = ctx.fn ? Promise.method(ctx.fn).call() : Promise.resolve(ctx.value);
         ctx.timeout = ctx.timeout || 0;
         ctx.time_now = new Date();
         ctx.time_begin = new Date();
