@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-async function fs_write_json(file, data)
+function fs_write_json(file, data)
 {
     return fs.promises.writeFile(file, JSON.stringify(data, null, 4));
 }
