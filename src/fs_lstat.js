@@ -1,5 +1,8 @@
 const fs = require('fs');
-const util = require('util');
 
-// https://nodejs.org/api/util.html#util_util_promisify_original
-module.exports = util.promisify(fs.lstat);
+function fs_lstat(path, options)
+{
+    return fs.promises.lstat(path, options);
+}
+
+module.exports = fs_lstat;
