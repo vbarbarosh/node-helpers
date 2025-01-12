@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const fs_fi = require('./fs_fi');
+const fs_lstat = require('./fs_lstat');
 const fs_path_resolve = require('./fs_path_resolve');
 const fs_readdir = require('./fs_readdir');
 const fs_rm = require('./fs_rm');
@@ -8,20 +8,20 @@ const fs_rmdir = require('./fs_rmdir');
 /**
  * Remove a file or directory, along with all nested files and directories, recursively.
  */
-async function fs_rmrf(pathname)
+async function fs_rmrf(path)
 {
-    const fi = await fs_fi(pathname).catch(() => null);
-    if (fi === null) {
+    const lstat = await fs_lstat(path).catch(() => null);
+    if (lstat === null) {
         return;
     }
 
-    if (fi.isDirectory()) {
-        const names = await fs_readdir(pathname);
-        await Promise.all(names.map(v => fs_rmrf(fs_path_resolve(pathname, v))));
-        await fs_rmdir(fi.pathname);
+    if (lstat.isDirectory()) {
+        const names = await fs_readdir(path);
+        await Promise.all(names.map(v => fs_rmrf(fs_path_resolve(path, v))));
+        await fs_rmdir(path);
     }
     else {
-        await fs_rm(fi.pathname);
+        await fs_rm(path);
     }
 }
 
