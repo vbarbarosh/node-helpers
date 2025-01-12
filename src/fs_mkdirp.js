@@ -6,7 +6,7 @@ async function fs_mkdirp(pathname)
 {
     const parents = [];
 
-    for (let p = pathname; p && p != '/'; p = fs_path_dirname(p)) {
+    for (let p = pathname; p && p !== '/'; p = fs_path_dirname(p)) {
         if (await fs_exists(p)) {
             break;
         }
