@@ -1,3 +1,8 @@
 const fs = require('fs');
 
-module.exports = fs.createReadStream;
+function fs_read_stream(path, options)
+{
+    return fs.createReadStream(path, options);
+}
+
+module.exports = fs_read_stream;
