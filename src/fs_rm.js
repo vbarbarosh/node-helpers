@@ -9,9 +9,7 @@ const fs = require('fs');
 async function fs_rm(filename)
 {
     await new Promise(function (resolve, reject) {
-        fs.unlink(filename, function (error) {
-            error ? reject(error) : resolve();
-        });
+        fs.unlink(filename, error => error ? reject(error) : resolve());
     });
 }
 
