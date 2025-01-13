@@ -12,10 +12,10 @@ const stream = require('stream');
  *
  * @similar https://www.npmjs.com/package/progress-stream
  */
-function stream_progress({objectMode = false, total, user_friendly_status = s => console.log(s)} = {})
+function stream_progress({objectMode = false, interval = 1000, total, user_friendly_status = s => console.log(s)} = {})
 {
     let done = 0;
-    const timer = setInterval(tick, 1000);
+    const timer = setInterval(tick, interval);
     const progress = make_progress(total);
     const format_progress = objectMode ? format_progress_kilo : format_progress_bytes;
     setTimeout(tick, 0);
