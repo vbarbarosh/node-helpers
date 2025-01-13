@@ -6,6 +6,10 @@ const stream = require('stream');
 /**
  * Monitor the progress of data through a pipe, similar to the UNIX `pv` command.
  *
+ * Requirements:
+ * - should emit first message as fast as possible
+ * - should always emit 100% message
+ *
  * @similar https://www.npmjs.com/package/progress-stream
  */
 function stream_progress({objectMode = false, total, user_friendly_status = s => console.log(s)} = {})
@@ -14,6 +18,7 @@ function stream_progress({objectMode = false, total, user_friendly_status = s =>
     const timer = setInterval(tick, 1000);
     const progress = make_progress(total);
     const format_progress = objectMode ? format_progress_kilo : format_progress_bytes;
+    setTimeout(tick, 0);
     return new stream.Transform({
         objectMode,
         destroy: function (error, callback) {
