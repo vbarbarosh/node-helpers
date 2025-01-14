@@ -1,5 +1,6 @@
 /**
- * Create fcmp from an array of props. For desc order a prop should be prefixed with minus sign (e.g. -price).
+ * Create fcmp from an array of props. For desc order a prop should be prefixed
+ * with minus sign (e.g. -price).
  */
 function fcmp_from_spec(props)
 {
