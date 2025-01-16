@@ -18,3 +18,11 @@ function format_bytes(bytes)
 }
 
 module.exports = format_bytes;
+
+// https://wiki.ubuntu.com/UnitsPolicy
+// > Applications must use SI standard for base-10 units:
+// >
+// > 1 kB = 1,000 bytes (Note: small k)
+// > 1 MB = 1,000 kB = 1,000,000 bytes
+// > 1 GB = 1,000 MB = 1,000,000 kB = 1,000,000,000 bytes
+// > 1 TB = 1,000 GB = 1,000,000 MB = 1,000,000,000 kB = 1,000,000,000,000 bytes
