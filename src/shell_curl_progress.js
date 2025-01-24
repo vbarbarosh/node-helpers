@@ -11,7 +11,7 @@ async function shell_curl_progress(args, {options, user_friendly_status})
     // > you need to redirect the response output to a file, using
     // > shell redirect (>), -o, --output or similar.
 
-    const tmp = ['--progress-meter'];
+    const tmp = ['--no-silent', '--progress-meter'];
     if (!args.includes('-o')) {
         tmp.push('-o', '/dev/null');
     }
