@@ -18,6 +18,13 @@ const items = [
     ['% de disponibilidad de tiendas', 'de_disponibilidad_de_tiendas'],
     ['%Tiendas con precio moda', 'tiendas_con_precio_moda'],
 
+    // https://stackoverflow.com/questions/30521224/javascript-convert-pascalcase-to-underscore-case-snake-case
+    ['TypeOfData.AlphaBeta', 'type_of_data_alpha_beta'],
+    ['thisISDifficult', 'this_is_difficult'],
+    ['thisISNT', 'this_isnt'],
+    ['thisISNT', 'this_isnt'],
+    ['somethingEasyLikeThis', 'something_easy_like_this'],
+
     // https://github.com/Advanon/sanitize-s3-objectkey
     // https://github.com/hamxabaig/s3-filename
     // ['some  漢字 ćööł %  #fíłéñàmé.jpg', 'some_cool_filename_jpg'],
