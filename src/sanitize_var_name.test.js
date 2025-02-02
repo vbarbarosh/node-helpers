@@ -11,6 +11,13 @@ const items = [
     ['Ópera Prima', 'opera_prima'],
     ['1000-stories', '_1000_stories'],
     ['A, C, D', 'a_c_d'],
+    ['@odata.etag', 'odata_etag'],
+    ['ItemInternalId', 'item_internal_id'],
+    ['UPC', 'upc'],
+    ['Sale_price', 'sale_price'],
+    ['% de disponibilidad de tiendas', 'de_disponibilidad_de_tiendas'],
+    ['%Tiendas con precio moda', 'tiendas_con_precio_moda'],
+
     // https://github.com/Advanon/sanitize-s3-objectkey
     // https://github.com/hamxabaig/s3-filename
     // ['some  漢字 ćööł %  #fíłéñàmé.jpg', 'some_cool_filename_jpg'],
