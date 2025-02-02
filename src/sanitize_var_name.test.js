@@ -11,6 +11,8 @@ const items = [
     ['Ópera Prima', 'opera_prima'],
     ['1000-stories', '_1000_stories'],
     ['A, C, D', 'a_c_d'],
+    // https://github.com/hamxabaig/s3-filename
+    // ['some  漢字 ćööł %  #fíłéñàmé.jpg', 'some_cool_filename_jpg'],
 ];
 
 describe('sanitize_var_name', function () {
