@@ -10,4 +10,4 @@ scriptname=`basename $script`
 
 cd $scriptdir/..
 
-node_modules/.bin/mocha `find src -name \*.test.js`
+npm run test
