@@ -1,16 +1,30 @@
 A set of helpers for JavaScript/Node.js
 
-![](img/node-helpers-by-chat-gpt.webp)
+
+<p align="center">
+<a href="https://github.com/vbarbarosh/node-helpers/actions"><img src="https://github.com/vbarbarosh/node-helpers/actions/workflows/node.js.yml/badge.svg" alt="@vbarbarosh/node-helpers CI status" /></a>
+<a href="https://opensource.org/licenses/MIT" rel="nofollow"><img src="https://img.shields.io/github/license/vbarbarosh/node-helpers" alt="License" /></a>
+<a href="https://www.npmjs.com/package/@vbarbarosh/node-helpers" rel="nofollow"><img src="https://img.shields.io/npm/dw/@vbarbarosh/node-helpers.svg" alt="npm" /></a>
+<a href="https://github.com/vbarbarosh/node-helpers" rel="nofollow"><img src="https://img.shields.io/github/stars/vbarbarosh/node-helpers" alt="stars" /></a>
+</p>
+
+<p align="center">
+<img src="img/node-helpers-by-chat-gpt.webp" style="max-height:400px;" />
+</p>
 
 ## Installation
 
-    npm install @vbarbarosh/node-helpers
+```sh
+npm install @vbarbarosh/node-helpers
+```
 
 ## Test
 
-    bin/test
+```sh
+bin/test
+```
 
-## Conventions
+## 📖 Conventions
 
 `concurrency` - limit for parallel processes.
 
