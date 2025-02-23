@@ -1,10 +1,47 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore).*(?<%21\\.test)\\.js$":
-/*!***********************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./src/ sync \b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore).*(?<%21\.test)\.js$ ***!
-  \***********************************************************************************************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/json-stringify-safe/stringify.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/json-stringify-safe/stringify.js ***!
+  \*******************************************************/
+/***/ ((module, exports) => {
+
+exports = module.exports = stringify
+exports.getSerialize = serializer
+
+function stringify(obj, replacer, spaces, cycleReplacer) {
+  return JSON.stringify(obj, serializer(replacer, cycleReplacer), spaces)
+}
+
+function serializer(replacer, cycleReplacer) {
+  var stack = [], keys = []
+
+  if (cycleReplacer == null) cycleReplacer = function(key, value) {
+    if (stack[0] === value) return "[Circular ~]"
+    return "[Circular ~." + keys.slice(0, stack.indexOf(value)).join(".") + "]"
+  }
+
+  return function(key, value) {
+    if (stack.length > 0) {
+      var thisPos = stack.indexOf(this)
+      ~thisPos ? stack.splice(thisPos + 1) : stack.push(this)
+      ~thisPos ? keys.splice(thisPos, Infinity, key) : keys.push(key)
+      if (~stack.indexOf(value)) value = cycleReplacer.call(this, key, value)
+    }
+    else stack.push(value)
+
+    return replacer == null ? value : replacer.call(this, key, value)
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\\.test)\\.js$":
+/*!***********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./src/ sync \b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\.test)\.js$ ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var map = {
@@ -24,6 +61,20 @@ var map = {
 	"./array_unique_last.js": "./src/array_unique_last.js",
 	"./date_add_months.js": "./src/date_add_months.js",
 	"./date_is_leap_year.js": "./src/date_is_leap_year.js",
+	"./format_bytes.js": "./src/format_bytes.js",
+	"./format_date.js": "./src/format_date.js",
+	"./format_date_ymd.js": "./src/format_date_ymd.js",
+	"./format_error_report.js": "./src/format_error_report.js",
+	"./format_hrtime.js": "./src/format_hrtime.js",
+	"./format_kilo.js": "./src/format_kilo.js",
+	"./format_ms.js": "./src/format_ms.js",
+	"./format_ms2.js": "./src/format_ms2.js",
+	"./format_ms3.js": "./src/format_ms3.js",
+	"./format_percents.js": "./src/format_percents.js",
+	"./format_progress_bytes.js": "./src/format_progress_bytes.js",
+	"./format_progress_kilo.js": "./src/format_progress_kilo.js",
+	"./format_seconds.js": "./src/format_seconds.js",
+	"./format_thousands.js": "./src/format_thousands.js",
 	"./http_delete.js": "./src/http_delete.js",
 	"./http_get_blob.js": "./src/http_get_blob.js",
 	"./http_get_buffer.js": "./src/http_get_buffer.js",
@@ -58,7 +109,7 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore).*(?<%21\\.test)\\.js$";
+webpackContext.id = "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\\.test)\\.js$";
 
 /***/ }),
 
@@ -557,6 +608,26 @@ module.exports = date_is_leap_year;
 
 /***/ }),
 
+/***/ "./src/factorize_ms.js":
+/*!*****************************!*\
+  !*** ./src/factorize_ms.js ***!
+  \*****************************/
+/***/ ((module) => {
+
+function factorize_ms(v)
+{
+    const h = Math.floor(v / 3600000);
+    const m = Math.floor(v % 3600000 / 60000);
+    const s = Math.floor(v % 60000 / 1000);
+    const ms = v % 1000;
+    return [h, m, s, ms];
+}
+
+module.exports = factorize_ms;
+
+
+/***/ }),
+
 /***/ "./src/fcmp_strings.js":
 /*!*****************************!*\
   !*** ./src/fcmp_strings.js ***!
@@ -569,6 +640,412 @@ function fcmp_strings(a, b)
 }
 
 module.exports = fcmp_strings;
+
+
+/***/ }),
+
+/***/ "./src/format_bytes.js":
+/*!*****************************!*\
+  !*** ./src/format_bytes.js ***!
+  \*****************************/
+/***/ ((module) => {
+
+/**
+ * @link https://stackoverflow.com/a/18650828
+ */
+function format_bytes(bytes)
+{
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    if (typeof bytes !== 'number' || Number.isNaN(bytes)) {
+        return 'n/a';
+    }
+    if (!bytes) {
+        return '0KB';
+    }
+    if (bytes < 1024) {
+        return '1KB';
+    }
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / (1024 ** i)).toFixed(bytes > 1024*1024 ? 2 : 0)}${sizes[i]}`.replace(/\.00/, '.0');
+}
+
+module.exports = format_bytes;
+
+// https://wiki.ubuntu.com/UnitsPolicy
+// > Applications must use SI standard for base-10 units:
+// >
+// > 1 kB = 1,000 bytes (Note: small k)
+// > 1 MB = 1,000 kB = 1,000,000 bytes
+// > 1 GB = 1,000 MB = 1,000,000 kB = 1,000,000,000 bytes
+// > 1 TB = 1,000 GB = 1,000,000 MB = 1,000,000,000 kB = 1,000,000,000,000 bytes
+
+
+/***/ }),
+
+/***/ "./src/format_date.js":
+/*!****************************!*\
+  !*** ./src/format_date.js ***!
+  \****************************/
+/***/ ((module) => {
+
+function format_date(d)
+{
+    return d.getFullYear() + `/0${d.getMonth()+1}/0${d.getDate()} 0${d.getHours()}:0${d.getMinutes()}:0${d.getSeconds()}`.replace(/0(\d\d)/g, '$1');
+}
+
+module.exports = format_date;
+
+
+/***/ }),
+
+/***/ "./src/format_date_ymd.js":
+/*!********************************!*\
+  !*** ./src/format_date_ymd.js ***!
+  \********************************/
+/***/ ((module) => {
+
+function format_date_ymd(d)
+{
+    return d.getFullYear() + `/0${d.getMonth()+1}/0${d.getDate()}`.replace(/0(\d\d)/g, '$1');
+}
+
+module.exports = format_date_ymd;
+
+
+/***/ }),
+
+/***/ "./src/format_error_report.js":
+/*!************************************!*\
+  !*** ./src/format_error_report.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const json_stringify_safe = __webpack_require__(/*! ./json_stringify_safe */ "./src/json_stringify_safe.js");
+
+function format_error_report(error)
+{
+    if (!error) {
+        return json_stringify_safe({error: error === undefined ? '---undefined---' : error});
+    }
+
+    if (error.response?.status && error.response?.statusText && error.response?.config) {
+        return fm_axios_response(error);
+    }
+
+    if (error.config) {
+        return fm_axios_config(error);
+    }
+
+    return json_stringify_safe({
+        code: error.code,
+        name: error.name,
+        message: error.message ?? 'n/a',
+        stack: error.stack && error.stack.split(/\n\s*/)
+    }, null, 4);
+}
+
+function fm_axios_response(error)
+{
+    return `
+${error.message ?? 'n/a'}
+
+--- REQUEST ---
+
+${(error.response.config.method||'').toUpperCase()} ${error.response.config.url}
+
+${JSON.stringify(error.response.config.headers||{}, null, 4).slice(1, -1).replace(/^\s+|,$/mg, '').trim()}
+
+--- RESPONSE ---
+
+${error.response.status} ${error.response.statusText}
+
+${(error.response.data.toString()||'').slice(0, 10240) || 'n/a'}
+
+--- STACK ---
+
+${error.stack ? error.stack.split(/\\n\\s*/) : 'n/a'}
+`.trimStart();
+}
+
+function fm_axios_config(error)
+{
+    return `
+${error.message ?? 'n/a'}
+
+--- REQUEST ---
+
+${(error.config.method||'').toUpperCase()} ${error.config.url}
+
+${JSON.stringify(error.config.headers||{}, null, 4).slice(1, -1).replace(/^\s+|,$/mg, '').trim()}
+
+--- STACK ---
+
+${error.stack ? error.stack.split(/\\n\\s*/) : 'n/a'}
+`.trimStart();
+}
+
+module.exports = format_error_report;
+
+
+/***/ }),
+
+/***/ "./src/format_hrtime.js":
+/*!******************************!*\
+  !*** ./src/format_hrtime.js ***!
+  \******************************/
+/***/ ((module) => {
+
+/**
+ * Return a human-readable representation of hrtime (the return value from `process.hrtime(hrtime0)`).
+ */
+function format_hrtime(hrtime, digits = 6)
+{
+    const [u, v] = hrtime; // process.hrtime(hrtime0)
+    return (u + v/1E9).toFixed(digits) + 's';
+}
+
+module.exports = format_hrtime;
+
+
+/***/ }),
+
+/***/ "./src/format_kilo.js":
+/*!****************************!*\
+  !*** ./src/format_kilo.js ***!
+  \****************************/
+/***/ ((module) => {
+
+function format_kilo(num)
+{
+    const sizes = ['', 'K', 'M', 'G', 'T', 'P'];
+    if (typeof num !== 'number' || Number.isNaN(num)) {
+        return 'n/a';
+    }
+    if (!num) {
+        return '0';
+    }
+    if (num < 1000) {
+        return num.toFixed(0);
+    }
+    const i = parseInt(Math.floor(Math.log(num) / Math.log(1000)), 10);
+    return `${(num / (1000 ** i)).toFixed(2)}${sizes[i]}`;
+}
+
+module.exports = format_kilo;
+
+
+/***/ }),
+
+/***/ "./src/format_ms.js":
+/*!**************************!*\
+  !*** ./src/format_ms.js ***!
+  \**************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const factorize_ms = __webpack_require__(/*! ./factorize_ms */ "./src/factorize_ms.js");
+
+/**
+ * Format milliseconds
+ */
+function format_ms(ms)
+{
+    if (!ms) {
+        ms = 0;
+    }
+
+    // 00:05
+    const [h, m, s] = factorize_ms(ms);
+    if (h) {
+        return `0${h}:0${m}:0${s}`.replace(/0+(?=\d\d)/g, '');
+    }
+    return `0${m}:0${s}`.replace(/0+(?=\d\d)/g, '');
+}
+
+module.exports = format_ms;
+
+
+/***/ }),
+
+/***/ "./src/format_ms2.js":
+/*!***************************!*\
+  !*** ./src/format_ms2.js ***!
+  \***************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const factorize_ms = __webpack_require__(/*! ./factorize_ms */ "./src/factorize_ms.js");
+
+/**
+ * Format milliseconds
+ */
+function format_ms2(ms)
+{
+    if (!ms) {
+        ms = 0;
+    }
+
+    // 00:05.45
+    const [h, m, s, xx] = factorize_ms(ms);
+    if (h) {
+        return `0${h}:0${m}:0${s}.0${Math.round(xx/10)}`.replace(/0+(?=\d\d)/g, '');
+    }
+    return `0${m}:0${s}.0${Math.round(xx/10)}`.replace(/0+(?=\d\d)/g, '');
+}
+
+module.exports = format_ms2;
+
+
+/***/ }),
+
+/***/ "./src/format_ms3.js":
+/*!***************************!*\
+  !*** ./src/format_ms3.js ***!
+  \***************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const factorize_ms = __webpack_require__(/*! ./factorize_ms */ "./src/factorize_ms.js");
+
+/**
+ * Format milliseconds
+ */
+function format_ms3(ms)
+{
+    if (!ms) {
+        ms = 0;
+    }
+
+    // 00:05.445
+    const [h, m, s, xx] = factorize_ms(ms);
+    if (h) {
+        return `0${h}:0${m}:0${s}.00${xx}`.replace(/0+(?=\d\d+[:.]|\d\d\d)/g, '');
+    }
+    return `0${m}:0${s}.00${xx}`.replace(/0+(?=\d\d+[:.]|\d\d\d)/g, '')
+}
+
+module.exports = format_ms3;
+
+
+/***/ }),
+
+/***/ "./src/format_percents.js":
+/*!********************************!*\
+  !*** ./src/format_percents.js ***!
+  \********************************/
+/***/ ((module) => {
+
+function format_percents(v)
+{
+    return (v*100).toFixed(2).replace(/^(0|100).00$/, '$1') + '%';
+}
+
+module.exports = format_percents;
+
+
+/***/ }),
+
+/***/ "./src/format_progress_bytes.js":
+/*!**************************************!*\
+  !*** ./src/format_progress_bytes.js ***!
+  \**************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const format_bytes = __webpack_require__(/*! ./format_bytes */ "./src/format_bytes.js");
+const format_percents = __webpack_require__(/*! ./format_percents */ "./src/format_percents.js");
+const format_seconds = __webpack_require__(/*! ./format_seconds */ "./src/format_seconds.js");
+const is_number_gt = __webpack_require__(/*! ./is_number_gt */ "./src/is_number_gt.js");
+
+function format_progress_bytes({percents, total, done, rate, eta, duration})
+{
+    const bps = is_number_gt(rate, 0) ? `${format_bytes(rate)}/s` : '~';
+    if (done > total) {
+        return `${format_bytes(done)} at ${bps} duration=${format_seconds(duration)}`;
+    }
+    if (is_number_gt(total, 0)) {
+        const eta_str = is_number_gt(eta, 0) ? format_seconds(eta) : '~';
+        return `${format_percents(percents)} | ${format_bytes(done)} of ${format_bytes(total)} at ${bps} ETA ${eta_str} duration=${format_seconds(duration)}`;
+    }
+    if (is_number_gt(done, 0)) {
+        return `${format_bytes(done)} of ~ at ${bps} duration=${format_seconds(duration)}`;
+    }
+    if (is_number_gt(duration, 0)) {
+        return `~ duration=${format_seconds(duration)}`;
+    }
+    return '~';
+}
+
+module.exports = format_progress_bytes;
+
+
+/***/ }),
+
+/***/ "./src/format_progress_kilo.js":
+/*!*************************************!*\
+  !*** ./src/format_progress_kilo.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const format_kilo = __webpack_require__(/*! ./format_kilo */ "./src/format_kilo.js");
+const format_percents = __webpack_require__(/*! ./format_percents */ "./src/format_percents.js");
+const format_seconds = __webpack_require__(/*! ./format_seconds */ "./src/format_seconds.js");
+const is_number_gt = __webpack_require__(/*! ./is_number_gt */ "./src/is_number_gt.js");
+
+function format_progress_kilo({percents, total, done, rate, eta, duration})
+{
+    const speed = is_number_gt(rate, 0) ? `${format_kilo(rate)}/s` : '~';
+    if (done > total) {
+        return `${format_kilo(done)} at ${speed} duration=${format_seconds(duration)}`;
+    }
+    if (is_number_gt(total, 0)) {
+        const eta_str = is_number_gt(eta, 0) ? format_seconds(eta) : '~';
+        return `${format_percents(percents)} | ${format_kilo(done)} of ${format_kilo(total)} at ${speed} ETA ${eta_str} duration=${format_seconds(duration)}`;
+    }
+    if (is_number_gt(done, 0)) {
+        return `${format_kilo(done)} of ~ at ${speed} duration=${format_seconds(duration)}`;
+    }
+    if (is_number_gt(duration, 0)) {
+        return `~ duration=${format_seconds(duration)}`;
+    }
+    return '~';
+}
+
+module.exports = format_progress_kilo;
+
+
+/***/ }),
+
+/***/ "./src/format_seconds.js":
+/*!*******************************!*\
+  !*** ./src/format_seconds.js ***!
+  \*******************************/
+/***/ ((module) => {
+
+function format_seconds(seconds)
+{
+    const v = Math.abs(Math.trunc(seconds));
+    const hh = Math.floor(v / 60 / 60);
+    const mm = Math.floor(v / 60) % 60;
+    const ss = v % 60;
+    const tmp = `0${hh}:0${mm}:0${ss}`.replace(/0(\d\d)/g, '$1');
+    return (seconds <= -1) ? ('-' + tmp) : tmp;
+}
+
+module.exports = format_seconds;
+
+
+/***/ }),
+
+/***/ "./src/format_thousands.js":
+/*!*********************************!*\
+  !*** ./src/format_thousands.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+// https://stackoverflow.com/a/2901298
+function format_thousands(x)
+{
+    return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+}
+
+module.exports = format_thousands;
 
 
 /***/ }),
@@ -875,6 +1352,53 @@ module.exports = ignore;
 
 /***/ }),
 
+/***/ "./src/is_number.js":
+/*!**************************!*\
+  !*** ./src/is_number.js ***!
+  \**************************/
+/***/ ((module) => {
+
+function is_number(value)
+{
+    return (typeof value === 'number') && isFinite(value);
+}
+
+module.exports = is_number;
+
+
+/***/ }),
+
+/***/ "./src/is_number_gt.js":
+/*!*****************************!*\
+  !*** ./src/is_number_gt.js ***!
+  \*****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const is_number = __webpack_require__(/*! ./is_number */ "./src/is_number.js");
+
+function is_number_gt(value, min)
+{
+    return is_number(value) && value > min;
+}
+
+module.exports = is_number_gt;
+
+
+/***/ }),
+
+/***/ "./src/json_stringify_safe.js":
+/*!************************************!*\
+  !*** ./src/json_stringify_safe.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const json_stringify_safe = __webpack_require__(/*! json-stringify-safe */ "./node_modules/json-stringify-safe/stringify.js");
+
+module.exports = json_stringify_safe;
+
+
+/***/ }),
+
 /***/ "axios":
 /*!************************!*\
   !*** external "axios" ***!
@@ -930,6 +1454,7 @@ module.exports = FormData;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
+var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 /*!******************************!*\
@@ -937,7 +1462,7 @@ module.exports = FormData;
   \******************************/
 // https://github.com/webpack/webpack/issues/625
 // https://webpack.js.org/guides/dependency-management/#require-context
-const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore).*(?<%21\\.test)\\.js$");
+const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\\.test)\\.js$");
 require_tmp.keys().forEach(function (key) {
     const [, basename] = key.match(/([^/]+)\.js$/);
     window[basename] = require_tmp(key);
