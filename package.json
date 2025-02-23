@@ -29,12 +29,14 @@
         "form-data": "^4.0.1",
         "htmlparser2": "^10.0.0",
         "json-stable-stringify": "^1.2.1",
+        "json-stringify-safe": "^5.0.1",
         "mime-types": "^2.1.35",
         "sanitize-filename": "^1.6.3",
         "split": "^1.0.1",
         "ssh2": "^1.16.0"
     },
     "devDependencies": {
+        "express": "^4.21.2",
         "mocha": "^11.0.1",
         "redis-v1": "npm:redis@1",
         "redis-v2": "npm:redis@2",
