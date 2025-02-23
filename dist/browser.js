@@ -38,10 +38,10 @@ function serializer(replacer, cycleReplacer) {
 
 /***/ }),
 
-/***/ "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\\.test)\\.js$":
-/*!***********************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./src/ sync \b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\.test)\.js$ ***!
-  \***********************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$":
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./src/ sync \b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\.test)\.js$ ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var map = {
@@ -88,7 +88,11 @@ var map = {
 	"./http_put_json.js": "./src/http_put_json.js",
 	"./http_put_utf8.js": "./src/http_put_utf8.js",
 	"./identity.js": "./src/identity.js",
-	"./ignore.js": "./src/ignore.js"
+	"./ignore.js": "./src/ignore.js",
+	"./plural.js": "./src/plural.js",
+	"./random_int.js": "./src/random_int.js",
+	"./urlmod.js": "./src/urlmod.js",
+	"./waitcb.js": "./src/waitcb.js"
 };
 
 
@@ -109,7 +113,7 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\\.test)\\.js$";
+webpackContext.id = "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$";
 
 /***/ }),
 
@@ -1399,6 +1403,111 @@ module.exports = json_stringify_safe;
 
 /***/ }),
 
+/***/ "./src/plural.js":
+/*!***********************!*\
+  !*** ./src/plural.js ***!
+  \***********************/
+/***/ ((module) => {
+
+function plural(n, apple, apples)
+{
+    return (n % 10 === 1 && n % 100 !== 11) ? apple.split('#').join(n) : apples.split('#').join(n);
+}
+
+module.exports = plural;
+
+
+/***/ }),
+
+/***/ "./src/random_int.js":
+/*!***************************!*\
+  !*** ./src/random_int.js ***!
+  \***************************/
+/***/ ((module) => {
+
+function random_int(min, max)
+{
+    return Math.floor(Math.random()*(max - min + 1) + min);
+}
+
+module.exports = random_int;
+
+
+/***/ }),
+
+/***/ "./src/urlmod.js":
+/*!***********************!*\
+  !*** ./src/urlmod.js ***!
+  \***********************/
+/***/ ((module) => {
+
+/**
+ * Set, change, or remove query string parameters.
+ *
+ * urlmod('', {a: 1})           '?a=1'  set
+ * urlmod('?a=1', {a: 2})       '?a=2'  change
+ * urlmod('?a=1', {a: null})    ''      remove
+ */
+function urlmod(url, params)
+{
+    const tmp_url = new URL(url||'', 'xxx://___base___/');
+    const tmp_search = tmp_url.searchParams;
+    Object.entries(params || {}).forEach(function ([key, value]) {
+        switch (value) {
+        case null:
+        case undefined:
+            tmp_search.delete(key);
+            break;
+        case true:
+            tmp_search.set(key, 1);
+            break;
+        case false:
+            tmp_search.set(key, 0);
+            break;
+        default:
+            tmp_search.set(key, value);
+            break;
+        }
+    });
+    if (url && url[0] === '/') {
+        return tmp_url.toString().replace(/^xxx:\/\/___base___/, '');
+    }
+    return tmp_url.toString().replace(/^xxx:\/\/___base___\//, '');
+}
+
+module.exports = urlmod;
+
+
+/***/ }),
+
+/***/ "./src/waitcb.js":
+/*!***********************!*\
+  !*** ./src/waitcb.js ***!
+  \***********************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Promise = __webpack_require__(/*! bluebird */ "bluebird");
+
+/**
+ * Wait for a Node-like function to finish (which will call `callback`
+ * with 2 arguments: `error` and `value`).
+ *
+ * await waitcb(cb => fs.writeFile('a', 'hello\n', cb));
+ */
+function waitcb(fn)
+{
+    return new Promise(function (resolve, reject) {
+        fn(function (error, out) {
+            error ? reject(error) : resolve(out);
+        });
+    });
+}
+
+module.exports = waitcb;
+
+
+/***/ }),
+
 /***/ "axios":
 /*!************************!*\
   !*** external "axios" ***!
@@ -1407,6 +1516,17 @@ module.exports = json_stringify_safe;
 
 "use strict";
 module.exports = axios;
+
+/***/ }),
+
+/***/ "bluebird":
+/*!**************************!*\
+  !*** external "Promise" ***!
+  \**************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = Promise;
 
 /***/ }),
 
@@ -1462,7 +1582,7 @@ var __webpack_exports__ = {};
   \******************************/
 // https://github.com/webpack/webpack/issues/625
 // https://webpack.js.org/guides/dependency-management/#require-context
-const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat)[^/]*(?<%21\\.test)\\.js$");
+const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$");
 require_tmp.keys().forEach(function (key) {
     const [, basename] = key.match(/([^/]+)\.js$/);
     window[basename] = require_tmp(key);
