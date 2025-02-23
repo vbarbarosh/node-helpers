@@ -18,6 +18,14 @@ A set of helpers for JavaScript/Node.js
 npm install @vbarbarosh/node-helpers
 ```
 
+A subset of `@vbarbarosh/node-helpers` is available for browser:
+
+```html
+<script src="https://unpkg.com/@vbarbarosh/node-helpers@latest/dist/browser.js"></script>
+```
+
+⚠️ All supported functions are exposed globally.
+
 ## Test
 
 ```sh

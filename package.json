@@ -4,7 +4,11 @@
     "name": "@vbarbarosh/node-helpers",
     "version": "3.62.0",
     "description": "A set of helpers for JavaScript/Node.js",
+    "unpkg": "dist/browser.js",
+    "jsdelivr": "dist/browser.js",
+    "homepage": "https://vbarbarosh.github.io/node-helpers/",
     "files": [
+        "dist",
         "src"
     ],
     "scripts": {
