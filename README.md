@@ -24,7 +24,7 @@ A subset of `@vbarbarosh/node-helpers` is available for browser:
 <script src="https://unpkg.com/@vbarbarosh/node-helpers@latest/dist/browser.js"></script>
 ```
 
-⚠️ All supported functions are exposed globally.
+⚠️ All browser functions are exposed globally.
 
 ## Test
 
