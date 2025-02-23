@@ -38,10 +38,10 @@ function serializer(replacer, cycleReplacer) {
 
 /***/ }),
 
-/***/ "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$":
-/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./src/ sync \b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\.test)\.js$ ***!
-  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cfcmp%7Cfilter%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$":
+/*!*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./src/ sync \b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cfcmp%7Cfilter%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\.test)\.js$ ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var map = {
@@ -61,6 +61,11 @@ var map = {
 	"./array_unique_last.js": "./src/array_unique_last.js",
 	"./date_add_months.js": "./src/date_add_months.js",
 	"./date_is_leap_year.js": "./src/date_is_leap_year.js",
+	"./fcmp_dates.js": "./src/fcmp_dates.js",
+	"./fcmp_from_spec.js": "./src/fcmp_from_spec.js",
+	"./fcmp_numbers.js": "./src/fcmp_numbers.js",
+	"./fcmp_strings.js": "./src/fcmp_strings.js",
+	"./filter1_from_spec.js": "./src/filter1_from_spec.js",
 	"./format_bytes.js": "./src/format_bytes.js",
 	"./format_date.js": "./src/format_date.js",
 	"./format_date_ymd.js": "./src/format_date_ymd.js",
@@ -113,7 +118,7 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$";
+webpackContext.id = "./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cfcmp%7Cfilter%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$";
 
 /***/ }),
 
@@ -632,6 +637,103 @@ module.exports = factorize_ms;
 
 /***/ }),
 
+/***/ "./src/fcmp_dates.js":
+/*!***************************!*\
+  !*** ./src/fcmp_dates.js ***!
+  \***************************/
+/***/ ((module) => {
+
+function fcmp_dates(a, b)
+{
+    return a.getTime() - b.getTime();
+}
+
+module.exports = fcmp_dates;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_from_spec.js":
+/*!*******************************!*\
+  !*** ./src/fcmp_from_spec.js ***!
+  \*******************************/
+/***/ ((module) => {
+
+/**
+ * Create fcmp from an array of props. For desc order a prop should be prefixed
+ * with minus sign (e.g. -price).
+ */
+function fcmp_from_spec(props)
+{
+    const fcmp = props.map(one);
+    switch (fcmp.length) {
+    case 0:
+        return () => 0;
+    case 1:
+        return fcmp[0];
+    case 2:
+        return function (a, b) {
+            return fcmp[0](a, b) || fcmp[1](a, b);
+        };
+    case 3:
+        return function (a, b) {
+            return fcmp[0](a, b) || fcmp[1](a, b) || fcmp[2](a, b);
+        };
+    default:
+        return function (a, b) {
+            for (let i = 0; i < fcmp.length; ++i) {
+                const tmp = fcmp[i](a, b);
+                if (tmp) {
+                    return tmp;
+                }
+            }
+            return 0;
+        };
+    }
+}
+
+function one(prop)
+{
+    if (prop[0] === '-') {
+        prop = prop.slice(1);
+        return function (b, a) {
+            return comp_types(a[prop], b[prop]);
+        };
+    }
+    return function (a, b) {
+        return comp_types(a[prop], b[prop]);
+    };
+}
+
+function comp_types(a, b)
+{
+    if (typeof a === 'string' && typeof b === 'string') {
+        return a.localeCompare(b);
+    }
+    return a - b;
+}
+
+module.exports = fcmp_from_spec;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_numbers.js":
+/*!*****************************!*\
+  !*** ./src/fcmp_numbers.js ***!
+  \*****************************/
+/***/ ((module) => {
+
+function fcmp_numbers(a, b)
+{
+    return Number(a) - b;
+}
+
+module.exports = fcmp_numbers;
+
+
+/***/ }),
+
 /***/ "./src/fcmp_strings.js":
 /*!*****************************!*\
   !*** ./src/fcmp_strings.js ***!
@@ -644,6 +746,91 @@ function fcmp_strings(a, b)
 }
 
 module.exports = fcmp_strings;
+
+
+/***/ }),
+
+/***/ "./src/filter1_from_spec.js":
+/*!**********************************!*\
+  !*** ./src/filter1_from_spec.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+/**
+ * Creates a filtering function based on the following spec:
+ * 1. Substrings are separated by `/`.
+ * 2. Each substring may have special characters:
+ *    - `^`: Substring must appear at the beginning.
+ *    - `$`: Substring must appear at the end.
+ *    - `!`: Negates the condition (substring must not appear).
+ */
+function filter1_from_spec(spec)
+{
+    let a, b, c, d;
+    const parts = parse_spec(spec);
+    switch (parts.length) {
+    case 0:
+        // No filters, always true
+        return () => true;
+    case 1:
+        return parts[0];
+    case 2:
+        [a, b] = parts;
+        return s => a(s) && b(s);
+    case 3:
+        [a, b, c] = parts;
+        return s => a(s) && b(s) && c(s);
+    case 4:
+        [a, b, c, d] = parts;
+        return s => a(s) && b(s) && c(s) && d(s);
+    default:
+        return s => parts.every(fn => fn(s));
+    }
+}
+
+function parse_spec(spec)
+{
+    return spec.split('/').filter(v => v).map(parse_expr);
+}
+
+// convert expr into an array of objects {substr, starts, ends}
+function parse_expr(expr)
+{
+    let substr;
+    let starts = false; // ^
+    let ends = false; // $
+    substr = expr.replaceAll('^', '');
+    starts = (substr.length !== expr.length);
+    expr = substr;
+    substr = expr.replaceAll('$', '');
+    ends = (substr.length !== expr.length);
+    expr = substr;
+    substr = expr.replaceAll('!', '');
+    if ((expr.length - substr.length) % 2) { // not
+        if (starts && ends) {
+            return s => !s.startsWith(substr) && !s.endsWith(substr);
+        }
+        if (starts) {
+            return s => !s.startsWith(substr);
+        }
+        if (ends) {
+            return s => !s.endsWith(substr);
+        }
+        return s => !s.includes(substr);
+    }
+    if (starts && ends) {
+        return s => s.startsWith(substr) && s.endsWith(substr);
+    }
+    if (starts) {
+        return s => s.startsWith(substr);
+    }
+    if (ends) {
+        return s => s.endsWith(substr);
+    }
+    return s => s.includes(substr);
+}
+
+module.exports = filter1_from_spec;
 
 
 /***/ }),
@@ -1582,7 +1769,7 @@ var __webpack_exports__ = {};
   \******************************/
 // https://github.com/webpack/webpack/issues/625
 // https://webpack.js.org/guides/dependency-management/#require-context
-const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$");
+const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cfcmp%7Cfilter%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$");
 require_tmp.keys().forEach(function (key) {
     const [, basename] = key.match(/([^/]+)\.js$/);
     window[basename] = require_tmp(key);
