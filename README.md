@@ -1,6 +1,5 @@
 A set of helpers for JavaScript/Node.js
 
-
 <p align="center">
 <a href="https://github.com/vbarbarosh/node-helpers/actions"><img src="https://github.com/vbarbarosh/node-helpers/actions/workflows/node.js.yml/badge.svg" alt="@vbarbarosh/node-helpers CI status" /></a>
 <a href="https://opensource.org/licenses/MIT" rel="nofollow"><img src="https://img.shields.io/github/license/vbarbarosh/node-helpers" alt="License" /></a>
