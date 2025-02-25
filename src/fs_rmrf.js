@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const fs_lstat = require('./fs_lstat');
-const fs_path_resolve = require('./fs_path_resolve');
+const fs_path_join = require('./fs_path_join');
 const fs_readdir = require('./fs_readdir');
 const fs_rm = require('./fs_rm');
 const fs_rmdir = require('./fs_rmdir');
@@ -18,7 +18,7 @@ async function fs_rmrf(path, progress = ignore)
 
     if (lstat.isDirectory()) {
         const names = await fs_readdir(path);
-        await Promise.all(names.map(v => fs_rmrf(fs_path_resolve(path, v), progress)));
+        await Promise.all(names.map(v => fs_rmrf(fs_path_join(path, v), progress)));
         progress('rmdir', path);
         await fs_rmdir(path);
     }
