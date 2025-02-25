@@ -1,5 +1,5 @@
 const axios = require('axios');
-const make_int = require('./make_int');
+const make_int = require('@vbarbarosh/type-helpers/src/make_int');
 
 async function http_get_stream(url, options)
 {

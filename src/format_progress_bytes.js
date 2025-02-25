@@ -1,7 +1,7 @@
 const format_bytes = require('./format_bytes');
 const format_percents = require('./format_percents');
 const format_seconds = require('./format_seconds');
-const is_number_gt = require('./is_number_gt');
+const is_number_gt = require('@vbarbarosh/type-helpers/src/is_number_gt');
 
 function format_progress_bytes({percents, total, done, rate, eta, duration})
 {

@@ -1,7 +1,7 @@
 const format_kilo = require('./format_kilo');
 const format_percents = require('./format_percents');
 const format_seconds = require('./format_seconds');
-const is_number_gt = require('./is_number_gt');
+const is_number_gt = require('@vbarbarosh/type-helpers/src/is_number_gt');
 
 function format_progress_kilo({percents, total, done, rate, eta, duration})
 {
