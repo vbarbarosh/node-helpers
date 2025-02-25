@@ -4,11 +4,12 @@ const fs_path_resolve = require('./fs_path_resolve');
 const fs_readdir = require('./fs_readdir');
 const fs_rm = require('./fs_rm');
 const fs_rmdir = require('./fs_rmdir');
+const ignore = require('./ignore');
 
 /**
  * Remove a file or directory, along with all nested files and directories, recursively.
  */
-async function fs_rmrf(path)
+async function fs_rmrf(path, progress = ignore)
 {
     const lstat = await fs_lstat(path).catch(() => null);
     if (lstat === null) {
@@ -17,10 +18,12 @@ async function fs_rmrf(path)
 
     if (lstat.isDirectory()) {
         const names = await fs_readdir(path);
-        await Promise.all(names.map(v => fs_rmrf(fs_path_resolve(path, v))));
+        await Promise.all(names.map(v => fs_rmrf(fs_path_resolve(path, v), progress)));
+        progress('rmdir', path);
         await fs_rmdir(path);
     }
     else {
+        progress('rm', path);
         await fs_rm(path);
     }
 }
