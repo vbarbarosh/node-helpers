@@ -1,11 +1,20 @@
 const NotImplemented = require('./errors/NotImplemented');
+const Promise = require('bluebird');
+const is_async_function = require('@vbarbarosh/type-helpers/src/is_async_function');
+const is_async_generator = require('@vbarbarosh/type-helpers/src/is_async_generator');
 
 /**
  * - Run until `spawn` return `null`.
  * - Keep no more than `concurrency` number of workers at a time.
+ *
+ * ⚠️ Warning: `spawn` should not be async function (async functions are always return `promise`).
+ *    Instead, it should be a simple function returning either `null` or a `promise`.
  */
 async function parallel({concurrency, spawn, progress})
 {
+    if (is_async_function(spawn) || is_async_generator(spawn)) {
+        throw new Error('[spawn] should not be async function. Instead, it should be a simple function returning either [null] or a [promise].');
+    }
     const running = [];
     return new Promise(function (resolve, reject) {
         let failed = false;
