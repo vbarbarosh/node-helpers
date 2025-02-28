@@ -4,6 +4,7 @@ const stream = require('stream');
 const stream_curl_progress = require('./stream_curl_progress');
 const stream_each = require('./stream_each');
 
+// 🦋 TODO ...options
 async function shell_curl_progress(args, {options, user_friendly_status})
 {
     // $ man curl
