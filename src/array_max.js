@@ -1,18 +1,15 @@
 /**
- * Return first among maximum values.
- *
- * @param array
- * @param fn
+ * Returns the first element in the array with the maximal weight
  */
 function array_max(array, fn = identity)
 {
     let out = null;
-    let out_value = null;
+    let max = Number.NEGATIVE_INFINITY;
     array.forEach(function (item) {
-        const item_value = fn(item);
-        if (item_value > out_value || out_value === null) {
+        const weight = fn(item);
+        if (max < weight) {
+            max = weight;
             out = item;
-            out_value = item_value;
         }
     });
     return out;

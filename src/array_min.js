@@ -1,18 +1,15 @@
 /**
- * Return first among minimum values.
- *
- * @param array
- * @param fn
+ * Returns the first element in the array with the minimal weight
  */
 function array_min(array, fn = identity)
 {
     let out = null;
-    let out_value = null;
+    let min = Number.POSITIVE_INFINITY;
     array.forEach(function (item) {
-        const item_value = fn(item);
-        if (item_value < out_value || out_value === null) {
+        const weight = fn(item);
+        if (min > weight) {
+            min = weight;
             out = item;
-            out_value = item_value;
         }
     });
     return out;
