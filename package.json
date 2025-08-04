@@ -28,7 +28,7 @@
         "url": "https://github.com/vbarbarosh/node-helpers/issues"
     },
     "peerDependencies": {
-        "@vbarbarosh/type-helpers": "^0.1.0",
+        "@vbarbarosh/type-helpers": "^0.2.0",
         "axios": "^1.7.9",
         "bluebird": "^3.7.2",
         "csv-parse": "^5.6.0",
