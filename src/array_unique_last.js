@@ -1,28 +1,21 @@
+const identity = require('./identity');
+
 /**
- * Return only unique values. If there are many values - prefer last one.
- *
- * @param array
- * @param fn
- * @returns {*[]}
+ * Return only unique values. If there are many values - use the last one.
  */
 function array_unique_last(array, fn = identity)
 {
     const out = [];
-    const taken = {};
+    const set = new Set();
     for (let i = array.length; --i >= 0; ) {
         const item = array[i];
-        const pk = fn(item);
-        if (!taken[pk]) {
-            taken[pk] = true;
+        const key = fn(item);
+        if (!set.has(key)) {
+            set.add(key);
             out.push(item);
         }
     }
     return out.reverse();
-}
-
-function identity(value)
-{
-    return value;
 }
 
 module.exports = array_unique_last;
