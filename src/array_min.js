@@ -1,3 +1,5 @@
+const identity = require('./identity');
+
 /**
  * Returns the first element in the array with the minimal weight
  */
@@ -13,11 +15,6 @@ function array_min(array, fn = identity)
         }
     });
     return out;
-}
-
-function identity(value)
-{
-    return value;
 }
 
 module.exports = array_min;
