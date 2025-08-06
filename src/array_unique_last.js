@@ -1,7 +1,7 @@
 const identity = require('./identity');
 
 /**
- * Return only unique values. If there are many values - use the last one.
+ * Return unique values; if a value occurs multiple times, keep the last one.
  */
 function array_unique_last(array, fn = identity)
 {

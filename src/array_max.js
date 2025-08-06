@@ -6,10 +6,10 @@ const identity = require('./identity');
 function array_max(array, fn = identity)
 {
     let out = null;
-    let max = Number.NEGATIVE_INFINITY;
+    let max = null;
     array.forEach(function (item) {
         const weight = fn(item);
-        if (max < weight) {
+        if (max === null || max < weight) {
             max = weight;
             out = item;
         }

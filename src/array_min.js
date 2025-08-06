@@ -6,10 +6,10 @@ const identity = require('./identity');
 function array_min(array, fn = identity)
 {
     let out = null;
-    let min = Number.POSITIVE_INFINITY;
+    let min = null;
     array.forEach(function (item) {
         const weight = fn(item);
-        if (min > weight) {
+        if (min === null || min > weight) {
             min = weight;
             out = item;
         }

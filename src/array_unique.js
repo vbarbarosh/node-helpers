@@ -1,5 +1,8 @@
 const identity = require('./identity');
 
+/**
+ * Return unique values; if a value occurs multiple times, keep the first one.
+ */
 function array_unique(values, fn = identity)
 {
     const set = new Set();
