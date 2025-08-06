@@ -1,4 +1,4 @@
-const fcmp_strings = require('./fcmp_strings');
+const fcmp_default = require('./fcmp_default');
 
 /**
  * Sort items in an `array` at the same order as in `other`. Values which
@@ -10,7 +10,7 @@ const fcmp_strings = require('./fcmp_strings');
  * @param fcmp
  * @returns {*}
  */
-function array_sort_other(array, fn, other, fcmp = fcmp_strings)
+function array_sort_other(array, fn, other, fcmp = fcmp_default)
 {
     const other_map = {};
     other.forEach((v,i) => other_map[v] = i + 1);
