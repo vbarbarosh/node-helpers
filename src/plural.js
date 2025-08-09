@@ -1,6 +1,12 @@
-function plural(n, apple, apples)
+function plural(n, singular, plural, zero)
 {
-    return (n % 10 === 1 && n % 100 !== 11) ? apple.split('#').join(n) : apples.split('#').join(n);
+    if (n === 0 && typeof zero === 'string') {
+        return zero;
+    }
+    if (n % 10 === 1 && n % 100 !== 11) {
+        return singular.split('#').join(n);
+    }
+    return plural.split('#').join(n);
 }
 
 module.exports = plural;
