@@ -1,6 +1,6 @@
 function fcmp_numbers(a, b)
 {
-    return Number(a) - b;
+    return a - b;
 }
 
 module.exports = fcmp_numbers;
