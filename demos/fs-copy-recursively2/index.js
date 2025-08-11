@@ -21,7 +21,7 @@ async function main()
     const source_dir = '/usr/share';
 
     console.log('Reading source dir...');
-    const items = await fs_lstat_down(source_dir);
+    const items = await fs_lstat_walk(source_dir);
 
     console.log('Copying...');
     await parallel2({
@@ -63,7 +63,7 @@ async function parallel2({items, concurrency, fn})
     });
 }
 
-async function fs_lstat_down(path = '.')
+async function fs_lstat_walk(path = '.')
 {
     const out = [];
     for (const queue = [path]; queue.length; ) {
