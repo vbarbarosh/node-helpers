@@ -9,7 +9,7 @@ cli(main);
 async function main()
 {
     const timer = setInterval(tick, 900);
-    const heartbeat_server = await new HeartbeatServer();
+    const heartbeat_server = new HeartbeatServer();
     try {
         console.log('socket_path', heartbeat_server.socket_path);
         heartbeat_server.on('heartbeat', () => console.log(`[${now_atom()}] heartbeat`))
