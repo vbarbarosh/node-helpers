@@ -5,7 +5,7 @@ const identity = require('./identity');
 const MISSING = Symbol('fcmpx.missing');
 
 /**
- * Creates comparators from compact expressions.
+ * Comparator builder using compact expressions.
  *
  * fcmp expression — Creates an `fcmp` function from an expression, suitable for use with `[].sort()`.
  *
