@@ -1,5 +1,5 @@
 const assert = require('assert');
-const camel_to_snake = require('./camel_to_snake');
+const str_camel_to_snake = require('./str_camel_to_snake');
 
 const items = [
     ['UPC', 'upc'],
@@ -8,10 +8,10 @@ const items = [
     ['XMLHTTPRequest', 'xmlhttp_request'],
 ];
 
-describe('camel_to_snake', function () {
+describe('str_camel_to_snake', function () {
     items.forEach(function ([input, expected],) {
         it(`${input === '' ? '☒' : input} → ${expected}`, function () {
-            assert.deepStrictEqual(camel_to_snake(input), expected);
+            assert.deepStrictEqual(str_camel_to_snake(input), expected);
         });
     });
 });
