@@ -22,6 +22,7 @@ async function main()
     console.log('🎉 Done');
 
     async function tick() {
-        console.log(await ping_socket(heartbeat_server.socket_path));
+        const response = await ping_socket(heartbeat_server.socket_path);
+        console.log(response.toString());
     }
 }

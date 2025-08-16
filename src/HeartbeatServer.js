@@ -17,7 +17,7 @@ class HeartbeatServer extends EventEmitter
     #timer;
     #server;
 
-    constructor(interval_ms) {
+    constructor(interval_ms = 5000) {
         super();
         this.#interval_ms = interval_ms;
         this.#init();
