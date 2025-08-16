@@ -1,6 +1,8 @@
+const format_date_fs = require('./format_date_fs');
+
 function now_fs()
 {
-    return new Date().toJSON().replace('T', '_').replaceAll('-', '').replaceAll(':', '').slice(0, 15);
+    return format_date_fs(new Date());
 }
 
 module.exports = now_fs;
