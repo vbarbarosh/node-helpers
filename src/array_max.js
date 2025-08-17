@@ -7,9 +7,9 @@ function array_max(array, fn = identity)
 {
     let out = null;
     let max = null;
-    array.forEach(function (item) {
+    array.forEach(function (item, i) {
         const weight = fn(item);
-        if (max === null || max < weight) {
+        if (i === 0 || max < weight) {
             max = weight;
             out = item;
         }
