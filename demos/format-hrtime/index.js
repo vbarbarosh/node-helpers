@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const format_hrtime = require('../../src/format_hrtime');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const format_hrtime = require('@vbarbarosh/node-helpers/src/format_hrtime');
 
 cli(main);
 

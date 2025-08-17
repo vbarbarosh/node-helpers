@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const shell_curl_progress = require('../../src/shell_curl_progress');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const shell_curl_progress = require('@vbarbarosh/node-helpers/src/shell_curl_progress');
 
 cli(main);
 

@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
-const cli = require('../../../src/cli');
-const ping_socket = require('../../../src/ping_socket');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const ping_socket = require('@vbarbarosh/node-helpers/src/ping_socket');
 
 cli(main);
 

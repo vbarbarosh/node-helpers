@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const http_get_buffer = require('../../src/http_get_buffer');
-const perf_end_human = require('../../src/perf_end_human');
-const perf_start = require('../../src/perf_start');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const http_get_buffer = require('@vbarbarosh/node-helpers/src/http_get_buffer');
+const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');
+const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');
 const stream = require('stream');
-const stream_parse_csv = require('../../src/stream-parse-csv');
+const stream_parse_csv = require('@vbarbarosh/node-helpers/src/stream_parse_csv');
 
 cli(main);
 

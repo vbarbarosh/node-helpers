@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
 const stream = require('stream');
-const stream_each = require('../../src/stream_each');
-const stream_map_flatten = require('../../src/stream_map_flatten');
+const stream_each = require('@vbarbarosh/node-helpers/src/stream_each');
+const stream_map_flatten = require('@vbarbarosh/node-helpers/src/stream_map_flatten');
 
 cli(main);
 

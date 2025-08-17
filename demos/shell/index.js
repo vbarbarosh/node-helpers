@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const shell = require('../../src/shell');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const shell = require('@vbarbarosh/node-helpers/src/shell');
 
 cli(main);
 

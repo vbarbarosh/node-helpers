@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const shell_thru = require('../../src/shell_thru');
-const shell_ytdlp_progress = require('../../src/shell_ytdlp_progress');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const shell_thru = require('@vbarbarosh/node-helpers/src/shell_thru');
+const shell_ytdlp_progress = require('@vbarbarosh/node-helpers/src/shell_ytdlp_progress');
 
 cli(main);
 

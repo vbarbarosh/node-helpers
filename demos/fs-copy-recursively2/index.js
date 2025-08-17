@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-const NotImplemented = require('../../src/errors/NotImplemented');
-const cli = require('../../src/cli');
+const NotImplemented = require('@vbarbarosh/node-helpers/src/errors/NotImplemented');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
 const fs = require('fs');
-const fs_copy_excl = require('../../src/fs_copy_excl');
-const fs_lstat = require('../../src/fs_lstat');
-const fs_mkdir = require('../../src/fs_mkdir');
-const fs_path_join = require('../../src/fs_path_join');
-const fs_path_relative = require('../../src/fs_path_relative');
-const fs_readdir = require('../../src/fs_readdir');
-const fs_rmrf = require('../../src/fs_rmrf');
-const parallel = require('../../src/parallel');
+const fs_copy_excl = require('@vbarbarosh/node-helpers/src/fs_copy_excl');
+const fs_lstat = require('@vbarbarosh/node-helpers/src/fs_lstat');
+const fs_mkdir = require('@vbarbarosh/node-helpers/src/fs_mkdir');
+const fs_path_join = require('@vbarbarosh/node-helpers/src/fs_path_join');
+const fs_path_relative = require('@vbarbarosh/node-helpers/src/fs_path_relative');
+const fs_readdir = require('@vbarbarosh/node-helpers/src/fs_readdir');
+const fs_rmrf = require('@vbarbarosh/node-helpers/src/fs_rmrf');
+const parallel = require('@vbarbarosh/node-helpers/src/parallel');
 
 cli(main);
 

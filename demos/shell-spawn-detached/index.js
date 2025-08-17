@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const perf_end_human = require('../../src/perf_end_human');
-const perf_start = require('../../src/perf_start');
-const shell_spawn = require('../../src/shell_spawn');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');
+const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');
+const shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');
 
 cli(main);
 

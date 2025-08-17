@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const http_get_stream = require('../../src/http_get_stream');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const http_get_stream = require('@vbarbarosh/node-helpers/src/http_get_stream');
 const stream = require('stream');
-const stream_discard = require('../../src/stream_discard');
-const stream_progress = require('../../src/stream_progress');
+const stream_discard = require('@vbarbarosh/node-helpers/src/stream_discard');
+const stream_progress = require('@vbarbarosh/node-helpers/src/stream_progress');
 
 cli(main);
 

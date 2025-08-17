@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const format_bytes = require('../../src/format_bytes');
-const http_get_stream = require('../../src/http_get_stream');
-const perf_end_human = require('../../src/perf_end_human');
-const perf_start = require('../../src/perf_start');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const format_bytes = require('@vbarbarosh/node-helpers/src/format_bytes');
+const http_get_stream = require('@vbarbarosh/node-helpers/src/http_get_stream');
+const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');
+const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');
 const stream = require('stream');
-const stream_gunzip = require('../../src/stream_gunzip');
-const stream_progress = require('../../src/stream_progress');
-const stream_xml_analyze = require('../../src/stream_xml_analyze');
+const stream_gunzip = require('@vbarbarosh/node-helpers/src/stream_gunzip');
+const stream_progress = require('@vbarbarosh/node-helpers/src/stream_progress');
+const stream_xml_analyze = require('@vbarbarosh/node-helpers/src/stream_xml_analyze');
 
 cli(main);
 

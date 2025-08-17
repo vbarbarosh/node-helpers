@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const countdown = require('../../src/countdown');
-const format_bytes = require('../../src/format_bytes');
-const format_progress_bytes = require('../../src/format_progress_bytes');
-const format_progress_kilo = require('../../src/format_progress_kilo');
-const format_thousands = require('../../src/format_thousands');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const countdown = require('@vbarbarosh/node-helpers/src/countdown');
+const format_bytes = require('@vbarbarosh/node-helpers/src/format_bytes');
+const format_progress_bytes = require('@vbarbarosh/node-helpers/src/format_progress_bytes');
+const format_progress_kilo = require('@vbarbarosh/node-helpers/src/format_progress_kilo');
+const format_thousands = require('@vbarbarosh/node-helpers/src/format_thousands');
 const fs = require('node:fs');
-const fs_lstat = require('../../src/fs_lstat');
-const fs_mkdir = require('../../src/fs_mkdir');
-const fs_path_join = require('../../src/fs_path_join');
-const fs_read_stream = require('../../src/fs_read_stream');
-const fs_readdir = require('../../src/fs_readdir');
-const fs_rmrf = require('../../src/fs_rmrf');
-const fs_write_stream = require('../../src/fs_write_stream');
-const make_progress = require('../../src/make_progress');
-const msval = require('../../src/msval');
-const perf_end_human = require('../../src/perf_end_human');
-const perf_start = require('../../src/perf_start');
+const fs_lstat = require('@vbarbarosh/node-helpers/src/fs_lstat');
+const fs_mkdir = require('@vbarbarosh/node-helpers/src/fs_mkdir');
+const fs_path_join = require('@vbarbarosh/node-helpers/src/fs_path_join');
+const fs_read_stream = require('@vbarbarosh/node-helpers/src/fs_read_stream');
+const fs_readdir = require('@vbarbarosh/node-helpers/src/fs_readdir');
+const fs_rmrf = require('@vbarbarosh/node-helpers/src/fs_rmrf');
+const fs_write_stream = require('@vbarbarosh/node-helpers/src/fs_write_stream');
+const make_progress = require('@vbarbarosh/node-helpers/src/make_progress');
+const msval = require('@vbarbarosh/node-helpers/src/msval');
+const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');
+const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');
 const stream = require('stream');
 
 cli(main);

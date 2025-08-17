@@ -1,8 +1,8 @@
-const cli = require('../../src/cli');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
 const stream = require('stream');
-const stream_chunk = require('../../src/stream_chunk');
-const stream_each = require('../../src/stream_each');
-const stream_progress = require('../../src/stream_progress');
+const stream_chunk = require('@vbarbarosh/node-helpers/src/stream_chunk');
+const stream_each = require('@vbarbarosh/node-helpers/src/stream_each');
+const stream_progress = require('@vbarbarosh/node-helpers/src/stream_progress');
 
 cli(main);
 

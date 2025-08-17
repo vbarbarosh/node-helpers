@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const fs_read_utf8 = require('../../src/fs_read_utf8');
-const str_parse_kv = require('../../src/str_parse_kv');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const fs_read_utf8 = require('@vbarbarosh/node-helpers/src/fs_read_utf8');
+const str_parse_kv = require('@vbarbarosh/node-helpers/src/str_parse_kv');
 
 cli(main);
 

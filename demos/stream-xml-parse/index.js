@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const format_bytes = require('../../src/format_bytes');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const format_bytes = require('@vbarbarosh/node-helpers/src/format_bytes');
 const fs = require('fs');
-const fs_size = require('../../src/fs_size');
+const fs_size = require('@vbarbarosh/node-helpers/src/fs_size');
 const stream = require('stream');
-const stream_map = require('../../src/stream_map');
-const stream_progress = require('../../src/stream_progress');
-const stream_xml_parse = require('../../src/stream_xml_parse');
+const stream_map = require('@vbarbarosh/node-helpers/src/stream_map');
+const stream_progress = require('@vbarbarosh/node-helpers/src/stream_progress');
+const stream_xml_parse = require('@vbarbarosh/node-helpers/src/stream_xml_parse');
 
 cli(main);
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const shell_spawn = require('../../src/shell_spawn');
-const stream_strpbrk = require('../../src/stream_strpbrk');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');
+const stream_strpbrk = require('@vbarbarosh/node-helpers/src/stream_strpbrk');
 
 cli(main);
 

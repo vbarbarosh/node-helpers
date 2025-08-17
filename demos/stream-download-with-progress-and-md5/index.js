@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
 const fs = require('fs');
-const http_get_stream = require('../../src/http_get_stream');
+const http_get_stream = require('@vbarbarosh/node-helpers/src/http_get_stream');
 const stream = require('stream');
-const stream_hash = require('../../src/stream_hash');
-const stream_md5 = require('../../src/stream_md5');
-const stream_multiplex = require('../../src/stream_multiplex');
-const stream_progress = require('../../src/stream_progress');
+const stream_hash = require('@vbarbarosh/node-helpers/src/stream_hash');
+const stream_md5 = require('@vbarbarosh/node-helpers/src/stream_md5');
+const stream_multiplex = require('@vbarbarosh/node-helpers/src/stream_multiplex');
+const stream_progress = require('@vbarbarosh/node-helpers/src/stream_progress');
 
 cli(main);
 

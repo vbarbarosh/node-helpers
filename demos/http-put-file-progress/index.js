@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const crypto_hash_md5 = require('../../src/crypto_hash_md5');
-const crypto_hash_sha256 = require('../../src/crypto_hash_sha256');
-const format_thousands = require('../../src/format_thousands');
-const http_put_file = require('../../src/http_put_file');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const crypto_hash_md5 = require('@vbarbarosh/node-helpers/src/crypto_hash_md5');
+const crypto_hash_sha256 = require('@vbarbarosh/node-helpers/src/crypto_hash_sha256');
+const format_thousands = require('@vbarbarosh/node-helpers/src/format_thousands');
+const http_put_file = require('@vbarbarosh/node-helpers/src/http_put_file');
 
 cli(main);
 

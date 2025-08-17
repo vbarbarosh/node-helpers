@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
 const stream = require('stream');
-const stream_discard = require('../../src/stream_discard');
-const stream_progress = require('../../src/stream_progress');
+const stream_discard = require('@vbarbarosh/node-helpers/src/stream_discard');
+const stream_progress = require('@vbarbarosh/node-helpers/src/stream_progress');
 
 cli(main);
 

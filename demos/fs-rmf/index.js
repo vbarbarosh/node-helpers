@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const fs_rmf = require('../../src/fs_rmf');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const fs_rmf = require('@vbarbarosh/node-helpers/src/fs_rmf');
 
 cli(main);
 

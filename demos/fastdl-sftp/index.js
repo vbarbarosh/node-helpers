@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const fastdl = require('../../src/fastdl');
-const fs_path_basename = require('../../src/fs_path_basename');
-const sftp_get_stream_range = require('../../src/sftp_get_stream_range');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const fastdl = require('@vbarbarosh/node-helpers/src/fastdl');
+const fs_path_basename = require('@vbarbarosh/node-helpers/src/fs_path_basename');
+const sftp_get_stream_range = require('@vbarbarosh/node-helpers/src/sftp_get_stream_range');
 
 cli(main);
 

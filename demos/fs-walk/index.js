@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const cli = require('../../src/cli');
-const format_progress_kilo = require('../../src/format_progress_kilo');
-const fs_lstat = require('../../src/fs_lstat');
-const fs_path_join = require('../../src/fs_path_join');
-const fs_readdir = require('../../src/fs_readdir');
-const make_progress = require('../../src/make_progress');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const format_progress_kilo = require('@vbarbarosh/node-helpers/src/format_progress_kilo');
+const fs_lstat = require('@vbarbarosh/node-helpers/src/fs_lstat');
+const fs_path_join = require('@vbarbarosh/node-helpers/src/fs_path_join');
+const fs_readdir = require('@vbarbarosh/node-helpers/src/fs_readdir');
+const make_progress = require('@vbarbarosh/node-helpers/src/make_progress');
 
 cli(main);
 

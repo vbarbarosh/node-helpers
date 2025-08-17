@@ -1,10 +1,10 @@
-const HeartbeatServer = require('../../src/HeartbeatServer');
+const HeartbeatServer = require('@vbarbarosh/node-helpers/src/HeartbeatServer');
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const now_human = require('../../src/now_human');
-const pid_exists = require('../../src/pid_exists');
-const pid_kill_grace = require('../../src/pid_kill_grace');
-const shell_spawn = require('../../src/shell_spawn');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const now_human = require('@vbarbarosh/node-helpers/src/now_human');
+const pid_exists = require('@vbarbarosh/node-helpers/src/pid_exists');
+const pid_kill_grace = require('@vbarbarosh/node-helpers/src/pid_kill_grace');
+const shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');
 
 // Ctrl-C should gracefully terminate a child process and close heartbeat server
 // Test

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const format_percents = require('../../src/format_percents');
-const make_progress = require('../../src/make_progress');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const format_percents = require('@vbarbarosh/node-helpers/src/format_percents');
+const make_progress = require('@vbarbarosh/node-helpers/src/make_progress');
 
 cli(main);
 

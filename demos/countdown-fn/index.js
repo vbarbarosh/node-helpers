@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const countdown = require('../../src/countdown');
-const format_ms = require('../../src/format_ms');
-const format_ms3 = require('../../src/format_ms3');
-const perf_end_human = require('../../src/perf_end_human');
-const perf_start = require('../../src/perf_start');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const countdown = require('@vbarbarosh/node-helpers/src/countdown');
+const format_ms = require('@vbarbarosh/node-helpers/src/format_ms');
+const format_ms3 = require('@vbarbarosh/node-helpers/src/format_ms3');
+const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');
+const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');
 
 cli(main);
 

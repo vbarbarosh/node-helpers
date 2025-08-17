@@ -1,8 +1,8 @@
-const HeartbeatServer = require('../../src/HeartbeatServer');
+const HeartbeatServer = require('@vbarbarosh/node-helpers/src/HeartbeatServer');
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const now_atom = require('../../src/now_atom');
-const ping_socket = require('../../src/ping_socket');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const now_atom = require('@vbarbarosh/node-helpers/src/now_atom');
+const ping_socket = require('@vbarbarosh/node-helpers/src/ping_socket');
 
 cli(main);
 

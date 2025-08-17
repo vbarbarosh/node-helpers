@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const fs_read_utf8 = require('../../src/fs_read_utf8');
-const fs_readdir = require('../../src/fs_readdir');
-const str_parse_kv = require('../../src/str_parse_kv');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const fs_read_utf8 = require('@vbarbarosh/node-helpers/src/fs_read_utf8');
+const fs_readdir = require('@vbarbarosh/node-helpers/src/fs_readdir');
+const str_parse_kv = require('@vbarbarosh/node-helpers/src/str_parse_kv');
 const tree_from_array = require('@vbarbarosh/tree/src/tree_from_array');
 const tree_print = require('@vbarbarosh/tree/src/tree_print');
 

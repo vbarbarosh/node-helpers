@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('../../src/cli');
-const format_date = require('../../src/format_date');
-const fs_append = require('../../src/fs_append');
-const perf_end_human = require('../../src/perf_end_human');
-const perf_start = require('../../src/perf_start');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const format_date = require('@vbarbarosh/node-helpers/src/format_date');
+const fs_append = require('@vbarbarosh/node-helpers/src/fs_append');
+const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');
+const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');
 
 cli(main);
 
