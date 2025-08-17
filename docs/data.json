@@ -299,14 +299,14 @@
             "name": "array_max",
             "file": "src/array_max.js",
             "require": "const array_max = require('@vbarbarosh/node-helpers/src/array_max');",
-            "source_code": "const identity = require('./identity');\n\n/**\n * Returns the first element in the array with the maximal weight\n */\nfunction array_max(array, fn = identity)\n{\n    let out = null;\n    let max = null;\n    array.forEach(function (item) {\n        const weight = fn(item);\n        if (max === null || max < weight) {\n            max = weight;\n            out = item;\n        }\n    });\n    return out;\n}\n\nmodule.exports = array_max;\n"
+            "source_code": "const identity = require('./identity');\n\n/**\n * Returns the first element in the array with the maximal weight\n */\nfunction array_max(array, fn = identity)\n{\n    let out = null;\n    let max = null;\n    array.forEach(function (item, i) {\n        const weight = fn(item);\n        if (i === 0 || max < weight) {\n            max = weight;\n            out = item;\n        }\n    });\n    return out;\n}\n\nmodule.exports = array_max;\n"
         },
         {
             "id": "array_min",
             "name": "array_min",
             "file": "src/array_min.js",
             "require": "const array_min = require('@vbarbarosh/node-helpers/src/array_min');",
-            "source_code": "const identity = require('./identity');\n\n/**\n * Returns the first element in the array with the minimal weight\n */\nfunction array_min(array, fn = identity)\n{\n    let out = null;\n    let min = null;\n    array.forEach(function (item) {\n        const weight = fn(item);\n        if (min === null || min > weight) {\n            min = weight;\n            out = item;\n        }\n    });\n    return out;\n}\n\nmodule.exports = array_min;\n"
+            "source_code": "const identity = require('./identity');\n\n/**\n * Returns the first element in the array with the minimal weight\n */\nfunction array_min(array, fn = identity)\n{\n    let out = null;\n    let min = null;\n    array.forEach(function (item, i) {\n        const weight = fn(item);\n        if (i === 0 || min > weight) {\n            min = weight;\n            out = item;\n        }\n    });\n    return out;\n}\n\nmodule.exports = array_min;\n"
         },
         {
             "id": "array_permutations",
