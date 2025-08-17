@@ -13,7 +13,7 @@ function countdown(ctx)
     let timer = null;
     return new Promise(function (resolve, reject) {
         ctx.value = ctx.fn ? Promise.method(ctx.fn).call() : Promise.resolve(ctx.value);
-        ctx.timeout = ctx.timeout || 0;
+        ctx.timeout = ctx.timeout || 0; // ⚠️ Rename to timeout_ms
         ctx.time_now = new Date();
         ctx.time_begin = new Date();
         ctx.time_end = Date.now() + ctx.timeout;
