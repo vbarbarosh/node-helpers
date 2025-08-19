@@ -8,6 +8,21 @@ const users = [
     {id: 'betty|32|-', user: {name: 'betty', tag: {short: 'bar', long: 'barbar'}, age: 32}},
 ];
 
+const projects = [
+    {id: 3, title: 'Project 10', priority: 'high', progress: 75, tags: ['development', 'backend'], version: '1.2.9', owner: 'Alice'},
+    {id: 1, title: 'Project 2', priority: 'low', progress: 20, tags: ['design'], version: '1.10.0'},
+    {id: 5, title: 'Project 1', priority: 'medium', progress: 45, tags: ['frontend', 'design'], version: '2.1.0'},
+    {id: 2, title: 'Project 100', priority: 'high', progress: 90, tags: ['development', 'frontend'], version: '1.2.10'},
+    {id: 4, title: 'project 5', priority: 'critical', progress: 10, tags: ['bugfix'], version: '1.0.0', owner: 'Charlie'},
+    {id: 6, title: 'Alpha Task', priority: 'medium', progress: 60, tags: ['documentation'], version: '1.20.1'},
+    {id: 7, title: 'beta Task', priority: 'low', progress: 30, tags: ['testing'], version: '0.9.5'},
+    {id: 8, title: 'Project 20', priority: 'high', progress: 100, tags: ['deployment'], version: '2.0.0'},
+    {id: 9, title: 'Project 02', priority: 'low', progress: 55, tags: ['archive'], version: '1.2.0'},
+    {id: 10, title: 'Project 001', priority: 'medium', progress: 5, tags: ['legacy'], version: '1.2.0-beta'},
+    {id: 11, title: 'project 0005', priority: 'high', progress: 85, tags: ['migration'], version: '1.2.0-rc.1', owner: 'Dana'},
+    {id: 12, title: 'Project X', priority: 'critical', progress: 0, tags: ['secret'], version: '3.0.0-alpha', owner: 'Eve'},
+];
+
 const tests = [
     {
         description: 'missing: should move undefined values to the bottom',
@@ -149,7 +164,7 @@ const tests = [
 describe('fcmpx', function () {
     tests.forEach(function (test) {
         test.expressions.forEach(function (expr, i) {
-            it(`${test.description}: #${i+1} | ${test.description}`, function () {
+            it(`${test.description}: #${i + 1} | ${test.description}`, function () {
                 const actual = test.items.slice().sort(fcmpx(expr)).map(test.extract);
                 assert.deepStrictEqual(actual, test.expected);
             });
