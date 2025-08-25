@@ -12,3 +12,6 @@ fcmpx(['-user.age', 'user.email'])
 
 Sorting rule: Missing values are considered greater than any defined value
 and are therefore placed after all defined values.
+
+- YouTube: [Сортировка объектов в JavaScript](https://www.youtube.com/watch?v=rHEH_JfQjL4)
+- https://github.com/vbarbarosh/speaking/tree/master/20250822-js-sort-fcmpx
