@@ -9,9 +9,11 @@ vue_component('main-helpers', {
                     <prism-js :value="item.require" />
                     <markdown v-if="item.markdown" :value="item.markdown" />
                 </tabs-item>
+<!--
                 <tabs-item label="Demos">
                     <lipsum />
                 </tabs-item>
+-->
                 <tabs-item label="Source">
                     <div class="rel"><copy-to-clipboard :value="item.source_code" /></div>
                     <prism-js :value="item.source_code" />
