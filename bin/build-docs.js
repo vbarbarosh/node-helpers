@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const cli = require('@vbarbarosh/node-helpers/src/cli');
+const fs_exists = require('../src/fs_exists');
 const fs_list = require('@vbarbarosh/node-helpers/src/fs_list');
 const fs_list_deep = require('../src/fs_list_deep');
 const fs_path_relative = require('@vbarbarosh/node-helpers/src/fs_path_relative');
@@ -27,12 +28,14 @@ async function main()
         if (file.basename.endsWith('.test.js') || !file.basename.endsWith('.js')) {
             continue;
         }
+        const md_file = file.pathname.endsWith('.js') ? file.pathname.replace(/\.js$/, '.md') : null;
         out.src.push({
             id: file.basename.replace(/\..*/, ''),
             name: file.basename.replace(/\..*/, ''),
             file: fs_path_relative(`${__dirname}/..`, file.pathname),
             require: imp(file),
             source_code: await fs_read_utf8(file.pathname),
+            markdown: md_file && await fs_exists(md_file) ? await fs_read_utf8(md_file) : null,
         });
     }
     for (const file of await fs_list_deep(`${__dirname}/../demos`)) {

@@ -7,6 +7,7 @@ vue_component('main-helpers', {
                 <tabs-item label="Description">
                     <div class="rel"><copy-to-clipboard :value="item.require" /></div>
                     <prism-js :value="item.require" />
+                    <markdown v-if="item.markdown" :value="item.markdown" />
                 </tabs-item>
                 <tabs-item label="Demos">
                     <lipsum />
