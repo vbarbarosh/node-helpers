@@ -1,0 +1,3 @@
+- Always closes the socket.
+- Throws on any error or timeout.
+- Doesn’t hang if the server sends nothing.
