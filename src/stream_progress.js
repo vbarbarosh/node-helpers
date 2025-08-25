@@ -7,7 +7,7 @@ const stream = require('stream');
  * Monitor the progress of data through a pipe, similar to the UNIX `pv` command.
  *
  * Requirements:
- * - should emit first message as fast as possible
+ * - should emit the first message as fast as possible
  * - should always emit 100% message
  *
  * @similar https://www.npmjs.com/package/progress-stream
