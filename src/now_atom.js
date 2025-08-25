@@ -1,5 +1,5 @@
 /**
- * Return current date in ATOM format (e.g. "2021-07-17T23:27:01.030Z")
+ * Return the current date in ATOM format (e.g. "2021-07-17T23:27:01.030Z")
  *
  * @returns {string}
  * @link https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom
