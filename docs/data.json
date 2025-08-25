@@ -2018,7 +2018,7 @@
             "file": "src/waitcb.js",
             "require": "const waitcb = require('@vbarbarosh/node-helpers/src/waitcb');",
             "source_code": "const Promise = require('bluebird');\n\n/**\n * Wait for a Node-like function to finish (which will call `callback`\n * with 2 arguments: `error` and `value`).\n *\n * await waitcb(cb => fs.writeFile('a', 'hello\\n', cb));\n */\nfunction waitcb(fn)\n{\n    return new Promise(function (resolve, reject) {\n        fn(function (error, out) {\n            error ? reject(error) : resolve(out);\n        });\n    });\n}\n\nmodule.exports = waitcb;\n",
-            "markdown": "Wait for a Node-like function to finish (which will call `callback`\nwith 2 arguments: `error` and `value`).\n\n```js\nconst [resolve, reject] = new Promise((...a) => a);\nawait waitcb(cb => fs.writeFile('a', 'hello\\n', cb));\n```\n\nThe same as:\n\n```js\nconst [promise, resolve, reject] = (a => [new Promise((...v) => a = v), ...a])();\n```\n"
+            "markdown": "Wait for a Node-like function to finish (which will call `callback`\nwith 2 arguments: `error` and `value`).\n\n```js\nawait waitcb(cb => fs.writeFile('a', 'hello\\n', cb));\n```\n\nThe same as:\n\n```js\nconst [promise, resolve, reject] = (a => [new Promise((...v) => a = v), ...a])();\n```\n"
         }
     ]
 }

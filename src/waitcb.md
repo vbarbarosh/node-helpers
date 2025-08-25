@@ -2,7 +2,6 @@ Wait for a Node-like function to finish (which will call `callback`
 with 2 arguments: `error` and `value`).
 
 ```js
-const [resolve, reject] = new Promise((...a) => a);
 await waitcb(cb => fs.writeFile('a', 'hello\n', cb));
 ```
 
