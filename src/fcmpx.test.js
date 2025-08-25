@@ -8,19 +8,19 @@ const users = [
     {id: 'betty|32|-', user: {name: 'betty', tag: {short: 'bar', long: 'barbar'}, age: 32}},
 ];
 
-const projects = [
-    {id: 3, title: 'Project 10', priority: 'high', progress: 75, tags: ['development', 'backend'], version: '1.2.9', owner: 'Alice'},
-    {id: 1, title: 'Project 2', priority: 'low', progress: 20, tags: ['design'], version: '1.10.0'},
-    {id: 5, title: 'Project 1', priority: 'medium', progress: 45, tags: ['frontend', 'design'], version: '2.1.0'},
-    {id: 2, title: 'Project 100', priority: 'high', progress: 90, tags: ['development', 'frontend'], version: '1.2.10'},
-    {id: 4, title: 'project 5', priority: 'critical', progress: 10, tags: ['bugfix'], version: '1.0.0', owner: 'Charlie'},
-    {id: 6, title: 'Alpha Task', priority: 'medium', progress: 60, tags: ['documentation'], version: '1.20.1'},
-    {id: 7, title: 'beta Task', priority: 'low', progress: 30, tags: ['testing'], version: '0.9.5'},
-    {id: 8, title: 'Project 20', priority: 'high', progress: 100, tags: ['deployment'], version: '2.0.0'},
-    {id: 9, title: 'Project 02', priority: 'low', progress: 55, tags: ['archive'], version: '1.2.0'},
-    {id: 10, title: 'Project 001', priority: 'medium', progress: 5, tags: ['legacy'], version: '1.2.0-beta'},
-    {id: 11, title: 'project 0005', priority: 'high', progress: 85, tags: ['migration'], version: '1.2.0-rc.1', owner: 'Dana'},
-    {id: 12, title: 'Project X', priority: 'critical', progress: 0, tags: ['secret'], version: '3.0.0-alpha', owner: 'Eve'},
+// https://dummyjson.com/docs/products
+
+const products = [
+    {id: 1, name: 'Yoga Mat', category: 'Yoga', price: 25.99, brand: 'BalanceFrom', rating: 4.6, discount: 0.1, availability: 'in_stock'},
+    {id: 2, name: 'Adjustable Dumbbells', category: 'Strength', price: 199.99, brand: 'Bowflex', rating: 4.8, availability: 'preorder'},
+    {id: 3, name: 'Resistance Bands Set', category: 'Strength', price: 32.5, brand: 'Fit Simplify', rating: 4.5, discount: 0.15, availability: 'in_stock'},
+    {id: 4, name: 'Treadmill', category: 'Cardio', price: 899, brand: 'NordicTrack', rating: 4.7, availability: 'out_of_stock'},
+    {id: 5, name: 'Kettlebell 20lb', category: 'Strength', price: 45, brand: 'CAP Barbell', rating: 4.4, discount: 0.05, availability: 'in_stock'},
+    {id: 6, name: 'Foam Roller', category: 'Recovery', price: 19.99, brand: 'TriggerPoint', rating: 4.6, availability: 'limited'},
+    {id: 7, name: 'Exercise Bike', category: 'Cardio', price: 599, brand: 'Peloton', rating: 4.9, discount: 0.2, availability: 'in_stock'},
+    {id: 8, name: 'Pull-Up Bar', category: 'Strength', price: 29.95, brand: 'Iron Gym', rating: 4.3, availability: 'in_stock'},
+    {id: 9, name: 'Jump Rope', category: 'Cardio', price: 12.99, brand: 'WOD Nation', rating: 4.2, discount: 0.25, availability: 'limited'},
+    {id: 10, name: 'Ab Roller', category: 'Core', price: 21.49, brand: 'Perfect Fitness', rating: 4.5, availability: 'in_stock'},
 ];
 
 const tests = [
