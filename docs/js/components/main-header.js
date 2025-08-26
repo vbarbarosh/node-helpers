@@ -22,7 +22,7 @@ vue_component('main-header', {
             <p>A subset of <b>@vbarbarosh/node-helpers</b> is also available for browser:</p>
             <div>
                 <div class="rel"><copy-to-clipboard value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@latest/dist/browser.js">&lt;/script>"' /></div>
-                <prism-html value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@latest/dist/browser.js">&lt;/script>"' />
+                <prism-html value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@latest/dist/browser.js">&lt;/script>' />
             </div>
             <p>⚠️ All browser functions are exposed globally.</p>
         </div>
