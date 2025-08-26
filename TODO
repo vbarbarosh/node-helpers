@@ -7,4 +7,5 @@ The following node apis use start/end names:
 fs.createReadStream('a.bin', {start: 100, end: 200})
 fs.createWriteStream('a.bin', {start: 100});
 
-- add tests to the docs
+- запускать тесты в браузере | add tests to the docs
+- создавать "sandboxes" по нажатию кнокпи
