@@ -261,6 +261,30 @@
             "markdown": null
         },
         {
+            "id": "_finally",
+            "name": "_finally",
+            "file": "src/_finally.js",
+            "require": "const _finally = require('@vbarbarosh/node-helpers/src/_finally');",
+            "source_code": "function _finally(callback)\n{\n    return {\n        [Symbol.dispose]: callback,\n    };\n}\n\nmodule.exports = _finally;\n",
+            "markdown": "`_finally` lets you register cleanup code that always runs when the scope ends.\n\n```js\nthis.foo = 12345;\nusing _ = _finally(() => this.foo = null);\n// ...\n```\n\nThis is essentially the same as:\n\n```js\nthis.foo = 12345;\ntry {\n    // ..\n}\nfinally {\n    this.foo = null;\n}\n```\n"
+        },
+        {
+            "id": "_restore",
+            "name": "_restore",
+            "file": "src/_restore.js",
+            "require": "const _restore = require('@vbarbarosh/node-helpers/src/_restore');",
+            "source_code": "// 1) Capture original value\n// 2) Assign a temporary one\n// 3) Automatically restore on scope exit\n//\n// Basically: set variable, and automatically restore the original value at the end of scope.\nfunction _restore(value, callback)\n{\n    const [original] = callback(value);\n    return {\n        [Symbol.dispose]: function () {\n            callback(original);\n        },\n    };\n}\n\nmodule.exports = _restore;\n",
+            "markdown": "The pattern \"set a new value now, restore the old one when scope ends\".\n\n```js\nusing _ = _restore(false, v => [this.controls.play, this.controls.play = v]);\n// ...\n```\n\nThis is essentially the same as:\n\n```js\n{\n    const _old = this.controls.play;\n    this.controls.play = false;\n    try {\n        // ...\n    }\n    finally {\n        this.controls.play = _old;\n    }\n}\n```\n"
+        },
+        {
+            "id": "_try",
+            "name": "_try",
+            "file": "src/_try.js",
+            "require": "const _try = require('@vbarbarosh/node-helpers/src/_try');",
+            "source_code": "function _try(callback, default_value)\n{\n    try {\n        return callback();\n    }\n    catch {\n        return default_value;\n    }\n}\n\nmodule.exports = _try;\n",
+            "markdown": "Safely evaluates code and falls back to a default value if something goes wrong.\n\n```js\nconst time = _try(() => this.$refs.iframe.contentWindow.document.timeline.time(), 0);\n```\n"
+        },
+        {
             "id": "array_chunk",
             "name": "array_chunk",
             "file": "src/array_chunk.js",
