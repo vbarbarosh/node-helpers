@@ -9,9 +9,13 @@
 </head>
 <body>
 
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.js"></script>
+<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.js"></script>
 <script src="https://unpkg.com/axios@1.11.0/dist/axios.min.js"></script>
 <script src="https://unpkg.com/@vbarbarosh/ui-helpers@0.3.2/src/static/js/bundle.js"></script>
 <script src="https://unpkg.com/@vbarbarosh/node-helpers@3.66.1/dist/browser.js"></script>
+<script src="js/components/files-browser.js"></script>
+<script src="js/components/download-zip.js"></script>
 <script src="js/components/main-demos.js"></script>
 <script src="js/components/main-header.js"></script>
 <script src="js/components/main-helpers.js"></script>
@@ -43,9 +47,11 @@ vue_component('app', {
         };
     },
     computed: {
+        // All available items
         items_all: function () {
             return [...this.items.src, ...this.items.demos];
         },
+        // Items hit by filter
         items_hit: function () {
             const filter = filter1_from_spec(this.search);
             return new Set(this.items_all.filter(v => filter(v.file)));
