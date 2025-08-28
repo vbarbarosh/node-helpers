@@ -35,7 +35,7 @@ vue_component('main-demos', {
                 tmp[dir_name].files_browse.push(file);
                 tmp[dir_name].files_download.push(file);
             });
-            return Vue.reactive(Object.values(tmp).sort((a,b) => a.name.localeCompare(b.name)));
+            return Vue.reactive(Object.values(tmp).sort((a,b) => a.label.localeCompare(b.label)));
         },
     },
     methods: {
