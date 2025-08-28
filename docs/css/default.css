@@ -84,3 +84,9 @@ aside a:hover {
 pre {
     margin: 0;
 }
+
+
+
+.file-browser-row { padding: 2px 4px; border-radius: 6px; cursor: pointer; }
+.file-browser-row:hover { background: #eef6ff; }
+.file-browser-row.active { background: #dbeafe; outline: 1px solid #bfdbfe; }

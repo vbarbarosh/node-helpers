@@ -1,17 +1,46 @@
 vue_component('main-demos', {
     props: ['items', 'items_hit'],
     template: `
-        <section v-for="item in items" v-bind:key="item.file" v-show="items_hit.has(item)">
-            <h2 :id="item.id">{{ item.file }}</h2>
-            <div>
-                <div class="rel"><copy-to-clipboard :value="item.contents" /></div>
-                <markdown v-if="item.file.endsWith('.md')" :value="item.contents" />
-                <prism-js v-else-if="item.file.endsWith('.js')" :value="item.contents" />
-                <prism-php v-else-if="item.file.endsWith('.php')" :value="item.contents" />
-                <prism-bash v-else-if="item.file.endsWith('.sh')" :value="item.contents" />
-                <prism-js v-else-if="item.contents.startsWith('#!/usr/bin/env node')" :value="item.contents"></prism-js>
-                <pre v-else>{{ item.contents }}</pre>
-            </div>
+        <section v-for="demo in demos" v-bind:key="demo.key" v-show="show(demo)">
+            <h2 :id="demo.anchor" class="flex-row-center white sticky-t" style="top:-40px;">
+                {{ demo.label }}
+                <span class="ma" />
+                <download-zip :files="demo.files_download" />
+            </h2>
+            <files-browser :files="demo.files_browse" />
         </section>
     `,
+    computed: {
+        demos: function () {
+            const package_json = `{
+  "dependencies": {
+    "@vbarbarosh/node-helpers": "^3.67.0"
+  }
+}`;
+            const tmp = {};
+            this.items.forEach(function (item) {
+                const [, dir_name, ...etc] = item.file.split('/');
+                const file = {name: etc.join('/'), body: item.contents};
+                tmp[dir_name] ??= {
+                    key: dir_name,
+                    anchor: dir_name,
+                    label: `demos • ${dir_name}`,
+                    items: [],
+                    files_browse: [],
+                    files_download: [
+                        {name: 'package.json', body: package_json},
+                    ],
+                };
+                tmp[dir_name].items.push(item);
+                tmp[dir_name].files_browse.push(file);
+                tmp[dir_name].files_download.push(file);
+            });
+            return Vue.reactive(Object.values(tmp).sort(fcmpx('name')));
+        },
+    },
+    methods: {
+        show: function (demo) {
+            return demo.items.some(v => this.items_hit.has(v));
+        },
+    },
 });
