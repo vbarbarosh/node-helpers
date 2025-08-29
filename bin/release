@@ -25,6 +25,9 @@ if test -n "`git status -s`"; then
 fi
 
 bin/test
+bin/build
+bin/build-docs.js
+bin/update-version.js
 
 # Increase a version without committing it and making a tag
 npm version $1 --no-git-tag-version
