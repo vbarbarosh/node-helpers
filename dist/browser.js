@@ -1,6 +1,40 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./node_modules/@vbarbarosh/type-helpers/src/is_num.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/@vbarbarosh/type-helpers/src/is_num.js ***!
+  \*************************************************************/
+/***/ ((module) => {
+
+function is_num(input)
+{
+    return (typeof input === 'number') && isFinite(input);
+}
+
+module.exports = is_num;
+
+
+/***/ }),
+
+/***/ "./node_modules/@vbarbarosh/type-helpers/src/is_num_gt.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/@vbarbarosh/type-helpers/src/is_num_gt.js ***!
+  \****************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const is_num = __webpack_require__(/*! ./is_num */ "./node_modules/@vbarbarosh/type-helpers/src/is_num.js");
+
+function is_num_gt(input, min)
+{
+    return is_num(input) && input > min;
+}
+
+module.exports = is_num_gt;
+
+
+/***/ }),
+
 /***/ "./node_modules/json-stringify-safe/stringify.js":
 /*!*******************************************************!*\
   !*** ./node_modules/json-stringify-safe/stringify.js ***!
@@ -59,15 +93,30 @@ var map = {
 	"./array_sum.js": "./src/array_sum.js",
 	"./array_unique.js": "./src/array_unique.js",
 	"./array_unique_last.js": "./src/array_unique_last.js",
+	"./date_add_hours.js": "./src/date_add_hours.js",
+	"./date_add_milliseconds.js": "./src/date_add_milliseconds.js",
+	"./date_add_minutes.js": "./src/date_add_minutes.js",
 	"./date_add_months.js": "./src/date_add_months.js",
+	"./date_add_seconds.js": "./src/date_add_seconds.js",
+	"./date_diff_seconds.js": "./src/date_diff_seconds.js",
 	"./date_is_leap_year.js": "./src/date_is_leap_year.js",
 	"./fcmp_dates.js": "./src/fcmp_dates.js",
+	"./fcmp_default.js": "./src/fcmp_default.js",
+	"./fcmp_default_desc.js": "./src/fcmp_default_desc.js",
 	"./fcmp_from_spec.js": "./src/fcmp_from_spec.js",
 	"./fcmp_numbers.js": "./src/fcmp_numbers.js",
-	"./fcmp_strings.js": "./src/fcmp_strings.js",
+	"./fcmp_tuples.js": "./src/fcmp_tuples.js",
+	"./fcmp_utf8_bin.js": "./src/fcmp_utf8_bin.js",
+	"./fcmp_utf8_ci.js": "./src/fcmp_utf8_ci.js",
+	"./fcmp_utf8_cs.js": "./src/fcmp_utf8_cs.js",
+	"./fcmp_utf8_natural_ci.js": "./src/fcmp_utf8_natural_ci.js",
+	"./fcmp_utf8_natural_cs.js": "./src/fcmp_utf8_natural_cs.js",
+	"./fcmpx.js": "./src/fcmpx.js",
 	"./filter1_from_spec.js": "./src/filter1_from_spec.js",
 	"./format_bytes.js": "./src/format_bytes.js",
 	"./format_date.js": "./src/format_date.js",
+	"./format_date_fs.js": "./src/format_date_fs.js",
+	"./format_date_human.js": "./src/format_date_human.js",
 	"./format_date_ymd.js": "./src/format_date_ymd.js",
 	"./format_error_report.js": "./src/format_error_report.js",
 	"./format_hrtime.js": "./src/format_hrtime.js",
@@ -183,20 +232,24 @@ module.exports = array_gcd;
 /*!****************************!*\
   !*** ./src/array_group.js ***!
   \****************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const array_group_map = __webpack_require__(/*! ./array_group_map */ "./src/array_group_map.js");
+/***/ ((module) => {
 
 /**
- * Group items by common key and return an array of groups.
+ * Group items by a common key and return an array of groups.
  *
- * @param array
- * @param fn
- * @returns {unknown[]}
+ * @alternative Map.groupBy(items, fn)
  */
 function array_group(array, fn)
 {
-    return Object.values(array_group_map(array, fn));
+    const map = new Map();
+    array.forEach(function (item) {
+        const key = fn(item);
+        if (!map.has(key)) {
+            map.set(key, {key, items: []});
+        }
+        map.get(key).items.push(item);
+    });
+    return map.values().toArray();
 }
 
 module.exports = array_group;
@@ -237,7 +290,9 @@ module.exports = array_group_map;
 /*!****************************!*\
   !*** ./src/array_index.js ***!
   \****************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const identity = __webpack_require__(/*! ./identity */ "./src/identity.js");
 
 /**
  * Usage:
@@ -246,7 +301,7 @@ module.exports = array_group_map;
  * Seems, there is a native way to do it:
  *     Object.fromEntries(items.map(v => [v.name, v]));
  */
-function array_index(array, fn)
+function array_index(array, fn = identity)
 {
     const out = {};
     array.forEach(v => out[fn(v)] = v);
@@ -262,31 +317,25 @@ module.exports = array_index;
 /*!**************************!*\
   !*** ./src/array_max.js ***!
   \**************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const identity = __webpack_require__(/*! ./identity */ "./src/identity.js");
 
 /**
- * Return first among maximum values.
- *
- * @param array
- * @param fn
+ * Returns the first element in the array with the maximal weight
  */
 function array_max(array, fn = identity)
 {
     let out = null;
-    let out_value = null;
-    array.forEach(function (item) {
-        const item_value = fn(item);
-        if (item_value > out_value || out_value === null) {
+    let max = null;
+    array.forEach(function (item, i) {
+        const weight = fn(item);
+        if (i === 0 || max < weight) {
+            max = weight;
             out = item;
-            out_value = item_value;
         }
     });
     return out;
-}
-
-function identity(value)
-{
-    return value;
 }
 
 module.exports = array_max;
@@ -298,31 +347,25 @@ module.exports = array_max;
 /*!**************************!*\
   !*** ./src/array_min.js ***!
   \**************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const identity = __webpack_require__(/*! ./identity */ "./src/identity.js");
 
 /**
- * Return first among minimum values.
- *
- * @param array
- * @param fn
+ * Returns the first element in the array with the minimal weight
  */
 function array_min(array, fn = identity)
 {
     let out = null;
-    let out_value = null;
-    array.forEach(function (item) {
-        const item_value = fn(item);
-        if (item_value < out_value || out_value === null) {
+    let min = null;
+    array.forEach(function (item, i) {
+        const weight = fn(item);
+        if (i === 0 || min > weight) {
+            min = weight;
             out = item;
-            out_value = item_value;
         }
     });
     return out;
-}
-
-function identity(value)
-{
-    return value;
 }
 
 module.exports = array_min;
@@ -337,19 +380,23 @@ module.exports = array_min;
 /***/ ((module) => {
 
 // https://stackoverflow.com/a/37580979/23502239
-function array_permutations(array)
+function array_permutations(array, k = array.length)
 {
-    var length = array.length,
-        out = [array.slice()],
-        c = new Array(length).fill(0),
-        i = 1, k, p;
+    if (k !== array.length) {
+        return array_permutations_k(array, k);
+    }
+
+    let length = array.length;
+    let out = [array.slice()];
+    let c = new Array(length).fill(0);
+    let i = 1, kk, p;
 
     while (i < length) {
         if (c[i] < i) {
-            k = i % 2 && c[i];
+            kk = i % 2 && c[i];
             p = array[i];
-            array[i] = array[k];
-            array[k] = p;
+            array[i] = array[kk];
+            array[kk] = p;
             ++c[i];
             i = 1;
             out.push(array.slice());
@@ -357,6 +404,27 @@ function array_permutations(array)
         else {
             c[i] = 0;
             ++i;
+        }
+    }
+    return out;
+}
+
+function array_permutations_k(array, k)
+{
+    if (k === 0) {
+        return [
+            []
+        ];
+    }
+    if (array.length < k) {
+        return [];
+    }
+
+    const out = [];
+    for (let i = 0; i < array.length; i++) {
+        const rest = array.slice(0, i).concat(array.slice(i + 1));
+        for (const perm of array_permutations(rest, k - 1)) {
+            out.push([array[i], ...perm]);
         }
     }
     return out;
@@ -407,27 +475,36 @@ module.exports = array_shuffle;
   \***************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const fcmp_strings = __webpack_require__(/*! ./fcmp_strings */ "./src/fcmp_strings.js");
+const fcmp_default = __webpack_require__(/*! ./fcmp_default */ "./src/fcmp_default.js");
+const fcmp_tuples = __webpack_require__(/*! ./fcmp_tuples */ "./src/fcmp_tuples.js");
 
 /**
- * Sort items in an `array`.
+ * Sorts an array in place by the result of applying `fn` to each item,
+ * using `fcmp` to compare the results.
  *
- * @param array
- * @param fn
- * @param fcmp
- * @returns {*}
+ * array_sort(items, v => [v.name])
+ * array_sort(items, v => [v.age, v.name])
  */
-function array_sort(array, fn = identity, fcmp = fcmp_strings)
+function array_sort(array, mapper, fcmp = fcmp_default)
 {
+    const keys = new Map();
     return array.sort(function (a, b) {
-        return fcmp(fn(a), fn(b));
+        if (!keys.has(a)) {
+            keys.set(a, mapper(a));
+        }
+        if (!keys.has(b)) {
+            keys.set(b, mapper(b));
+        }
+        return fcmp_tuples(keys.get(a), keys.get(b), fcmp);
     });
 }
 
-function identity(v)
-{
-    return v;
-}
+// function array_sort(array, fn = identity, fcmp = fcmp_default)
+// {
+//     return array.sort(function (a, b) {
+//         return fcmp(fn(a), fn(b));
+//     });
+// }
 
 module.exports = array_sort;
 
@@ -440,7 +517,7 @@ module.exports = array_sort;
   \*********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const fcmp_strings = __webpack_require__(/*! ./fcmp_strings */ "./src/fcmp_strings.js");
+const fcmp_default = __webpack_require__(/*! ./fcmp_default */ "./src/fcmp_default.js");
 
 /**
  * Sort items in an `array` at the same order as in `other`. Values which
@@ -452,7 +529,7 @@ const fcmp_strings = __webpack_require__(/*! ./fcmp_strings */ "./src/fcmp_strin
  * @param fcmp
  * @returns {*}
  */
-function array_sort_other(array, fn, other, fcmp = fcmp_strings)
+function array_sort_other(array, fn, other, fcmp = fcmp_default)
 {
     const other_map = {};
     other.forEach((v,i) => other_map[v] = i + 1);
@@ -501,16 +578,22 @@ module.exports = array_sum;
 /*!*****************************!*\
   !*** ./src/array_unique.js ***!
   \*****************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-function array_unique(values)
+const identity = __webpack_require__(/*! ./identity */ "./src/identity.js");
+
+/**
+ * Return unique values; if a value occurs multiple times, keep the first one.
+ */
+function array_unique(values, fn = identity)
 {
     const set = new Set();
     return values.filter(function (item) {
-        if (set.has(item)) {
+        const key = fn(item);
+        if (set.has(key)) {
             return false;
         }
-        set.add(item);
+        set.add(key);
         return true;
     });
 }
@@ -524,36 +607,80 @@ module.exports = array_unique;
 /*!**********************************!*\
   !*** ./src/array_unique_last.js ***!
   \**********************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const identity = __webpack_require__(/*! ./identity */ "./src/identity.js");
 
 /**
- * Return only unique values. If there are many values - prefer last one.
- *
- * @param array
- * @param fn
- * @returns {*[]}
+ * Return unique values; if a value occurs multiple times, keep the last one.
  */
 function array_unique_last(array, fn = identity)
 {
     const out = [];
-    const taken = {};
+    const set = new Set();
     for (let i = array.length; --i >= 0; ) {
         const item = array[i];
-        const pk = fn(item);
-        if (!taken[pk]) {
-            taken[pk] = true;
+        const key = fn(item);
+        if (!set.has(key)) {
+            set.add(key);
             out.push(item);
         }
     }
     return out.reverse();
 }
 
-function identity(value)
+module.exports = array_unique_last;
+
+
+/***/ }),
+
+/***/ "./src/date_add_hours.js":
+/*!*******************************!*\
+  !*** ./src/date_add_hours.js ***!
+  \*******************************/
+/***/ ((module) => {
+
+function date_add_hours(date, hours)
 {
-    return value;
+    date.setHours(date.getHours() + hours);
+    return date;
 }
 
-module.exports = array_unique_last;
+module.exports = date_add_hours;
+
+
+/***/ }),
+
+/***/ "./src/date_add_milliseconds.js":
+/*!**************************************!*\
+  !*** ./src/date_add_milliseconds.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+function date_add_milliseconds(date, milliseconds)
+{
+    date.setMilliseconds(date.getMilliseconds() + milliseconds);
+    return date;
+}
+
+module.exports = date_add_milliseconds;
+
+
+/***/ }),
+
+/***/ "./src/date_add_minutes.js":
+/*!*********************************!*\
+  !*** ./src/date_add_minutes.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+function date_add_minutes(date, minutes)
+{
+    date.setMinutes(date.getMinutes() + minutes);
+    return date;
+}
+
+module.exports = date_add_minutes;
 
 
 /***/ }),
@@ -588,6 +715,39 @@ function date_add_months(d, months)
 }
 
 module.exports = date_add_months;
+
+
+/***/ }),
+
+/***/ "./src/date_add_seconds.js":
+/*!*********************************!*\
+  !*** ./src/date_add_seconds.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+function date_add_seconds(date, seconds)
+{
+    date.setSeconds(date.getSeconds() + seconds);
+    return date;
+}
+
+module.exports = date_add_seconds;
+
+
+/***/ }),
+
+/***/ "./src/date_diff_seconds.js":
+/*!**********************************!*\
+  !*** ./src/date_diff_seconds.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+function date_diff_seconds(a, b)
+{
+    return Math.floor((a.getTime() - b.getTime())/1000);
+}
+
+module.exports = date_diff_seconds;
 
 
 /***/ }),
@@ -653,6 +813,50 @@ module.exports = fcmp_dates;
 
 /***/ }),
 
+/***/ "./src/fcmp_default.js":
+/*!*****************************!*\
+  !*** ./src/fcmp_default.js ***!
+  \*****************************/
+/***/ ((module) => {
+
+function fcmp_default(a, b)
+{
+    if (a < b) {
+        return -1;
+    }
+    if (a > b) {
+        return 1;
+    }
+    return 0;
+}
+
+module.exports = fcmp_default;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_default_desc.js":
+/*!**********************************!*\
+  !*** ./src/fcmp_default_desc.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+function fcmp_default_desc(b, a)
+{
+    if (a < b) {
+        return -1;
+    }
+    if (a > b) {
+        return 1;
+    }
+    return 0;
+}
+
+module.exports = fcmp_default_desc;
+
+
+/***/ }),
+
 /***/ "./src/fcmp_from_spec.js":
 /*!*******************************!*\
   !*** ./src/fcmp_from_spec.js ***!
@@ -662,6 +866,8 @@ module.exports = fcmp_dates;
 /**
  * Create fcmp from an array of props. For desc order a prop should be prefixed
  * with minus sign (e.g. -price).
+ *
+ * @deprecated Deprecated in favor of fcmpx
  */
 function fcmp_from_spec(props)
 {
@@ -726,7 +932,7 @@ module.exports = fcmp_from_spec;
 
 function fcmp_numbers(a, b)
 {
-    return Number(a) - b;
+    return a - b;
 }
 
 module.exports = fcmp_numbers;
@@ -734,18 +940,248 @@ module.exports = fcmp_numbers;
 
 /***/ }),
 
-/***/ "./src/fcmp_strings.js":
+/***/ "./src/fcmp_tuples.js":
+/*!****************************!*\
+  !*** ./src/fcmp_tuples.js ***!
+  \****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const fcmp_default = __webpack_require__(/*! ./fcmp_default */ "./src/fcmp_default.js");
+
+function fcmp_tuples(a, b, fcmp = fcmp_default)
+{
+    const end = Math.min(a.length, b.length);
+    for (let i = 0; i < end; ++i) {
+        const tmp = fcmp(a[i], b[i]);
+        if (tmp) {
+            return tmp;
+        }
+    }
+    return 0;
+}
+
+module.exports = fcmp_tuples;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_utf8_bin.js":
+/*!******************************!*\
+  !*** ./src/fcmp_utf8_bin.js ***!
+  \******************************/
+/***/ ((module) => {
+
+// Strict binary (codepoint) comparison, like MySQL's utf8_bin collation
+function fcmp_utf8_bin(a, b)
+{
+    if (a < b) {
+        return -1;
+    }
+    if (a > b) {
+        return 1;
+    }
+    return 0;
+}
+
+module.exports = fcmp_utf8_bin;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_utf8_ci.js":
 /*!*****************************!*\
-  !*** ./src/fcmp_strings.js ***!
+  !*** ./src/fcmp_utf8_ci.js ***!
   \*****************************/
 /***/ ((module) => {
 
-function fcmp_strings(a, b)
+// Locale-aware, case-insensitive, like utf8_ci or utf8mb4_ci
+function fcmp_utf8_ci(a, b)
 {
-    return String(a).localeCompare(b);
+    return a.localeCompare(b, undefined, {sensitivity: 'base'});
 }
 
-module.exports = fcmp_strings;
+module.exports = fcmp_utf8_ci;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_utf8_cs.js":
+/*!*****************************!*\
+  !*** ./src/fcmp_utf8_cs.js ***!
+  \*****************************/
+/***/ ((module) => {
+
+// Locale-aware, case-sensitive, like utf8_cs or utf8mb4_cs (but using system locale)
+function fcmp_utf8_cs(a, b)
+{
+    return a.localeCompare(b, undefined, {sensitivity: 'variant'});
+}
+
+module.exports = fcmp_utf8_cs;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_utf8_natural_ci.js":
+/*!*************************************!*\
+  !*** ./src/fcmp_utf8_natural_ci.js ***!
+  \*************************************/
+/***/ ((module) => {
+
+// Natural sort (numeric), case-insensitive
+function fcmp_utf8_natural_ci(a, b)
+{
+    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+}
+
+module.exports = fcmp_utf8_natural_ci;
+
+
+/***/ }),
+
+/***/ "./src/fcmp_utf8_natural_cs.js":
+/*!*************************************!*\
+  !*** ./src/fcmp_utf8_natural_cs.js ***!
+  \*************************************/
+/***/ ((module) => {
+
+// Natural sort (numeric), case-sensitive
+function fcmp_utf8_natural_cs(a, b)
+{
+    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'variant'});
+}
+
+module.exports = fcmp_utf8_natural_cs;
+
+
+/***/ }),
+
+/***/ "./src/fcmpx.js":
+/*!**********************!*\
+  !*** ./src/fcmpx.js ***!
+  \**********************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const fcmp_default = __webpack_require__(/*! ./fcmp_default */ "./src/fcmp_default.js");
+const fcmp_default_desc = __webpack_require__(/*! ./fcmp_default_desc */ "./src/fcmp_default_desc.js");
+const identity = __webpack_require__(/*! ./identity */ "./src/identity.js");
+
+const MISSING = Symbol('fcmpx.missing');
+
+/**
+ * Comparator builder using compact expressions.
+ *
+ * fcmp expression — Creates an `fcmp` function from an expression, suitable for use with `[].sort()`.
+ *
+ * fcmpx('user.email')
+ * fcmpx('-user.age,user.email')
+ * fcmpx(v => v.user.email)
+ * fcmpx(['user.age', 'user.email'])
+ * fcmpx(['-user.age', 'user.email'])
+ */
+function fcmpx(expr)
+{
+    if (typeof expr === 'string') {
+        if (expr.includes(',')) {
+            return fcmpx(expr.split(','));
+        }
+        return fcmpx_compile(expr);
+    }
+    if (!Array.isArray(expr)) {
+        return fcmpx_compile(expr);
+    }
+    const fcmp_items = expr.map(fcmpx_parse);
+    return function (a, b) {
+        const tuple1 = fcmp_items.map(v => v.read(a));
+        const tuple2 = fcmp_items.map(v => v.read(b));
+        for (let i = 0; i < fcmp_items.length; ++i) {
+            const tmp = fcmp_items[i].fcmp(tuple1[i], tuple2[i]);
+            if (tmp) {
+                return tmp;
+            }
+        }
+        return 0;
+    };
+}
+
+function fcmpx_compile(expr)
+{
+    const {read, fcmp} = fcmpx_parse(expr);
+    return function (a, b) {
+        return fcmp(read(a), read(b));
+    };
+}
+
+function fcmpx_parse(expr)
+{
+    if (typeof expr === 'function') {
+        return {read: fcmpx_compile_read(expr), fcmp: fcmp_wrapper(fcmp_default)};
+    }
+    if (typeof expr === 'string') {
+        const desc = expr.startsWith('-');
+        const read = desc ? fcmpx_compile_read(expr.slice(1)) : fcmpx_compile_read(expr);
+        const fcmp = fcmp_wrapper(desc ? fcmp_default_desc : fcmp_default);
+        return {read, fcmp};
+    }
+    const fcmp_user = expr.fcmp;
+    const read = fcmpx_compile_read(expr.read);
+    const desc = expr.desc ?? false;
+    const fcmp = fcmp_wrapper(desc ? (fcmp_user ? (b, a) => fcmp_user(a, b) : fcmp_default_desc) : (fcmp_user ?? fcmp_default));
+    if (Array.isArray(expr.top)) {
+        const priority = new Map(expr.top.map((v, i) => [v, i]));
+        return {read: v => priority.get(read(v)) ?? priority.size, fcmp};
+    }
+    if (Array.isArray(expr.bottom)) {
+        const priority = new Map(expr.bottom.map((v, i) => [v, i]));
+        return {read: v => priority.get(read(v)) ?? -1, fcmp};
+    }
+    return {read, fcmp};
+}
+
+function fcmpx_compile_read(read)
+{
+    if (read === undefined || read === '' || read === '.') {
+        return identity;
+    }
+    if (typeof read === 'function') {
+        return function (value) {
+            return read(value) ?? MISSING;
+        };
+    }
+    if (typeof read === 'string') {
+        const props = read.split('.');
+        const [a, b, c, d, e] = props;
+        switch (props.length) {
+        case 1: return v => v?.[a] ?? MISSING;
+        case 2: return v => v?.[a]?.[b] ?? MISSING;
+        case 3: return v => v?.[a]?.[b]?.[c] ?? MISSING;
+        case 4: return v => v?.[a]?.[b]?.[c]?.[d] ?? MISSING;
+        case 5: return v => v?.[a]?.[b]?.[c]?.[d]?.[e] ?? MISSING;
+        default: return v => props.reduce((a,p) => a?.[p], v) ?? MISSING;
+        }
+    }
+    return v => v?.[read] ?? MISSING;
+}
+
+// Sorting rule: Missing values are considered greater than any defined value
+// and are therefore placed after all defined values.
+function fcmp_wrapper(fcmp)
+{
+    return function (a, b) {
+        if (a === MISSING) {
+            if (b === MISSING) {
+                return 0;
+            }
+            return 1;
+        }
+        if (b === MISSING) {
+            return -1;
+        }
+        return fcmp(a, b);
+    };
+}
+
+module.exports = fcmpx;
 
 
 /***/ }),
@@ -885,6 +1321,52 @@ function format_date(d)
 }
 
 module.exports = format_date;
+
+
+/***/ }),
+
+/***/ "./src/format_date_fs.js":
+/*!*******************************!*\
+  !*** ./src/format_date_fs.js ***!
+  \*******************************/
+/***/ ((module) => {
+
+function format_date_fs(d)
+{
+    const ymd = d.getFullYear() + dd(d.getMonth() + 1) + dd(d.getDate());
+    const hms = dd(d.getHours()) + dd(d.getMinutes()) + dd(d.getSeconds());
+    return ymd + '_' + hms;
+}
+
+function dd(v)
+{
+    return v > 9 ? `${v}` : `0${v}`;
+}
+
+module.exports = format_date_fs;
+
+
+/***/ }),
+
+/***/ "./src/format_date_human.js":
+/*!**********************************!*\
+  !*** ./src/format_date_human.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+function format_date_human(d)
+{
+    const ymd = d.getFullYear() + '/' + dd(d.getMonth() + 1) + '/' + dd(d.getDate());
+    const hms = dd(d.getHours()) + ':' + dd(d.getMinutes()) + ':' + dd(d.getSeconds());
+    return ymd + ' ' + hms;
+}
+
+function dd(v)
+{
+    return v > 9 ? `${v}` : `0${v}`;
+}
+
+module.exports = format_date_human;
 
 
 /***/ }),
@@ -1142,22 +1624,22 @@ module.exports = format_percents;
 const format_bytes = __webpack_require__(/*! ./format_bytes */ "./src/format_bytes.js");
 const format_percents = __webpack_require__(/*! ./format_percents */ "./src/format_percents.js");
 const format_seconds = __webpack_require__(/*! ./format_seconds */ "./src/format_seconds.js");
-const is_number_gt = __webpack_require__(/*! ./is_number_gt */ "./src/is_number_gt.js");
+const is_num_gt = __webpack_require__(/*! @vbarbarosh/type-helpers/src/is_num_gt */ "./node_modules/@vbarbarosh/type-helpers/src/is_num_gt.js");
 
 function format_progress_bytes({percents, total, done, rate, eta, duration})
 {
-    const bps = is_number_gt(rate, 0) ? `${format_bytes(rate)}/s` : '~';
+    const bps = is_num_gt(rate, 0) ? `${format_bytes(rate)}/s` : '~';
     if (done > total) {
         return `${format_bytes(done)} at ${bps} duration=${format_seconds(duration)}`;
     }
-    if (is_number_gt(total, 0)) {
-        const eta_str = is_number_gt(eta, 0) ? format_seconds(eta) : '~';
+    if (is_num_gt(total, 0)) {
+        const eta_str = is_num_gt(eta, 0) ? format_seconds(eta) : '~';
         return `${format_percents(percents)} | ${format_bytes(done)} of ${format_bytes(total)} at ${bps} ETA ${eta_str} duration=${format_seconds(duration)}`;
     }
-    if (is_number_gt(done, 0)) {
+    if (is_num_gt(done, 0)) {
         return `${format_bytes(done)} of ~ at ${bps} duration=${format_seconds(duration)}`;
     }
-    if (is_number_gt(duration, 0)) {
+    if (is_num_gt(duration, 0)) {
         return `~ duration=${format_seconds(duration)}`;
     }
     return '~';
@@ -1177,22 +1659,22 @@ module.exports = format_progress_bytes;
 const format_kilo = __webpack_require__(/*! ./format_kilo */ "./src/format_kilo.js");
 const format_percents = __webpack_require__(/*! ./format_percents */ "./src/format_percents.js");
 const format_seconds = __webpack_require__(/*! ./format_seconds */ "./src/format_seconds.js");
-const is_number_gt = __webpack_require__(/*! ./is_number_gt */ "./src/is_number_gt.js");
+const is_num_gt = __webpack_require__(/*! @vbarbarosh/type-helpers/src/is_num_gt */ "./node_modules/@vbarbarosh/type-helpers/src/is_num_gt.js");
 
 function format_progress_kilo({percents, total, done, rate, eta, duration})
 {
-    const speed = is_number_gt(rate, 0) ? `${format_kilo(rate)}/s` : '~';
+    const speed = is_num_gt(rate, 0) ? `${format_kilo(rate)}/s` : '~';
     if (done > total) {
         return `${format_kilo(done)} at ${speed} duration=${format_seconds(duration)}`;
     }
-    if (is_number_gt(total, 0)) {
-        const eta_str = is_number_gt(eta, 0) ? format_seconds(eta) : '~';
+    if (is_num_gt(total, 0)) {
+        const eta_str = is_num_gt(eta, 0) ? format_seconds(eta) : '~';
         return `${format_percents(percents)} | ${format_kilo(done)} of ${format_kilo(total)} at ${speed} ETA ${eta_str} duration=${format_seconds(duration)}`;
     }
-    if (is_number_gt(done, 0)) {
+    if (is_num_gt(done, 0)) {
         return `${format_kilo(done)} of ~ at ${speed} duration=${format_seconds(duration)}`;
     }
-    if (is_number_gt(duration, 0)) {
+    if (is_num_gt(duration, 0)) {
         return `~ duration=${format_seconds(duration)}`;
     }
     return '~';
@@ -1543,40 +2025,6 @@ module.exports = ignore;
 
 /***/ }),
 
-/***/ "./src/is_number.js":
-/*!**************************!*\
-  !*** ./src/is_number.js ***!
-  \**************************/
-/***/ ((module) => {
-
-function is_number(value)
-{
-    return (typeof value === 'number') && isFinite(value);
-}
-
-module.exports = is_number;
-
-
-/***/ }),
-
-/***/ "./src/is_number_gt.js":
-/*!*****************************!*\
-  !*** ./src/is_number_gt.js ***!
-  \*****************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const is_number = __webpack_require__(/*! ./is_number */ "./src/is_number.js");
-
-function is_number_gt(value, min)
-{
-    return is_number(value) && value > min;
-}
-
-module.exports = is_number_gt;
-
-
-/***/ }),
-
 /***/ "./src/json_stringify_safe.js":
 /*!************************************!*\
   !*** ./src/json_stringify_safe.js ***!
@@ -1596,9 +2044,15 @@ module.exports = json_stringify_safe;
   \***********************/
 /***/ ((module) => {
 
-function plural(n, apple, apples)
+function plural(n, singular, plural, zero)
 {
-    return (n % 10 === 1 && n % 100 !== 11) ? apple.split('#').join(n) : apples.split('#').join(n);
+    if (n === 0 && typeof zero === 'string') {
+        return zero;
+    }
+    if (n % 10 === 1 && n % 100 !== 11) {
+        return singular.split('#').join(n);
+    }
+    return plural.split('#').join(n);
 }
 
 module.exports = plural;
@@ -1767,13 +2221,21 @@ var __webpack_exports__ = {};
 /*!******************************!*\
   !*** ./src/browser/index.js ***!
   \******************************/
-// https://github.com/webpack/webpack/issues/625
-// https://webpack.js.org/guides/dependency-management/#require-context
-const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cfcmp%7Cfilter%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$");
-require_tmp.keys().forEach(function (key) {
-    const [, basename] = key.match(/([^/]+)\.js$/);
-    window[basename] = require_tmp(key);
-});
+const ns = new URL(document.currentScript.src).searchParams.get('var') ?? 'h';
+if (typeof window[ns] !== 'undefined') {
+    console.log(`❌ @vbarbarosh/node-helpers@${"3.68.0"} was not injected — window.${ns} is already in use`);
+}
+else {
+    console.log(`🎉 @vbarbarosh/node-helpers@${"3.68.0"} successfully exposed as window.${ns}`);
+    window[ns] = {};
+    // https://github.com/webpack/webpack/issues/625
+    // https://webpack.js.org/guides/dependency-management/#require-context
+    const require_tmp = __webpack_require__("./src sync recursive \\b(array%7Cdate%7Chttp_delete%7Chttp_get_blob%7Chttp_get_buffer%7Chttp_get_json%7Chttp_get_utf8%7Chttp_head%7Chttp_patch_json%7Chttp_post_json%7Chttp_post_multipart%7Chttp_put_buffer%7Chttp_put_json%7Chttp_put_utf8%7Cidentity%7Cignore%7Cfcmp%7Cfilter%7Cformat%7Cplural%7Crandom_int%7Curlmod%7Cwaitcb)[^/]*(?<%21\\.test)\\.js$");
+    require_tmp.keys().forEach(function (key) {
+        const [, basename] = key.match(/([^/]+)\.js$/);
+        window[ns][basename] = require_tmp(key);
+    });
+}
 
 })();
 
