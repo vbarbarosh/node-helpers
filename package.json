@@ -2,7 +2,7 @@
     "author": "Vladimir Barbarosh <vladimir.barbarosh@gmail.com>",
     "license": "MIT",
     "name": "@vbarbarosh/node-helpers",
-    "version": "3.69.0",
+    "version": "3.70.0",
     "description": "A set of helpers for JavaScript/Node.js",
     "unpkg": "dist/browser.js",
     "jsdelivr": "dist/browser.js",

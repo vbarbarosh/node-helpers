@@ -20,7 +20,7 @@ npm install @vbarbarosh/node-helpers
 A subset of `@vbarbarosh/node-helpers` is available for browser:
 
 ```html
-<script src="https://unpkg.com/@vbarbarosh/node-helpers@3.68.0/dist/browser.js"></script>
+<script src="https://unpkg.com/@vbarbarosh/node-helpers@3.70.0/dist/browser.js"></script>
 ```
 
 ⚠️ All browser functions are exposed globally.
