@@ -1297,7 +1297,7 @@
             "name": "http_get_stream",
             "file": "src/http_get_stream.js",
             "require": "const http_get_stream = require('@vbarbarosh/node-helpers/src/http_get_stream');",
-            "source_code": "const axios = require('axios');\nconst make_int = require('@vbarbarosh/type-helpers/src/make_int');\n\nasync function http_get_stream(url, options)\n{\n    const res = await axios.get(url, {responseType: 'stream', ...options});\n    const out = res.data;\n    out.headers = res.headers;\n    out.total = make_int(res.headers['content-length'], null, 0);\n    return out;\n}\n\nmodule.exports = http_get_stream;\n",
+            "source_code": "const axios = require('axios');\nconst safe_int = require('@vbarbarosh/type-helpers/src/safe_int');\n\nasync function http_get_stream(url, options)\n{\n    const res = await axios.get(url, {responseType: 'stream', ...options});\n    const out = res.data;\n    out.headers = res.headers;\n    out.total = safe_int(res.headers['content-length'], null, 0);\n    return out;\n}\n\nmodule.exports = http_get_stream;\n",
             "markdown": null
         },
         {
