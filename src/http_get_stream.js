@@ -1,12 +1,12 @@
 const axios = require('axios');
-const make_int = require('@vbarbarosh/type-helpers/src/make_int');
+const safe_int = require('@vbarbarosh/type-helpers/src/safe_int');
 
 async function http_get_stream(url, options)
 {
     const res = await axios.get(url, {responseType: 'stream', ...options});
     const out = res.data;
     out.headers = res.headers;
-    out.total = make_int(res.headers['content-length'], null, 0);
+    out.total = safe_int(res.headers['content-length'], null, 0);
     return out;
 }
 
