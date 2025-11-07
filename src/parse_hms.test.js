@@ -2,9 +2,9 @@ const assert = require('assert');
 const parse_hms = require('./parse_hms');
 
 const items = [
-    ['', NaN],
-    [null, NaN],
-    [undefined, NaN],
+    ['', 0],
+    [null, 0],
+    [undefined, 0],
     ['0', 0],
     ['0:5', 5],
     ['00:05', 5],
@@ -20,7 +20,7 @@ const items = [
     ['1:x:3', NaN, 'Non-numeric'],
 ];
 
-describe.only('parse_hms', function () {
+describe('parse_hms', function () {
     items.forEach(function ([input, expected, description]) {
         const title = description
             ? `${input} → ${expected} | ${description}`

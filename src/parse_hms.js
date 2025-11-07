@@ -1,11 +1,13 @@
 function parse_hms(expr)
 {
     if (!expr && expr !== 0) {
-        return Number.NaN;
+        return 0;
     }
 
     expr = String(expr).trim();
-    if (!expr) return Number.NaN;
+    if (!expr) {
+        return 0;
+    }
 
     const parts = expr.split(':');
 
