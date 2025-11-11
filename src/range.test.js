@@ -1,5 +1,5 @@
-import assert from 'assert';
-import range from './range';
+const assert = require('assert');
+const range = require('./range');
 
 const cases = [
     // 1-argument: (stop)

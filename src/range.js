@@ -41,4 +41,4 @@ function range_backward(begin, end, step, limit)
     return out;
 }
 
-export default range;
+module.exports = range;
