@@ -10,7 +10,7 @@ const wait_while = require('./wait_while');
 describe('pid_kill_grace', function() {
 
     it('happy path', async function () {
-        const proc = shell_spawn(['sleep', '1m']);
+        const proc = await shell_spawn(['sleep', '1m']).init();
         assert(pid_exists(proc.pid));
         await pid_kill_grace(proc.pid);
         assert(!pid_exists(proc.pid));
@@ -30,7 +30,7 @@ describe('pid_kill_grace', function() {
     it('should KILL process after grace period', async function () {
         const logs = [];
         const stdout = [];
-        const proc = await shell_spawn([`${__dirname}/pid_kill_grace.d/ignore-sigterm.js`]).init();
+        const proc = shell_spawn([`${__dirname}/pid_kill_grace.d/ignore-sigterm.js`]);
         const r = stream.promises.pipeline(proc.stdout, stream_lines(), stream_each(v => stdout.push(v)));
         await wait_while(() => !stdout.length);
         await Promise.all([
