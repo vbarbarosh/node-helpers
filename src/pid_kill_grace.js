@@ -15,14 +15,31 @@ async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
         if (!pid_exists(pid)) {
             return;
         }
-        log(`Process is still there, waiting for 100ms, ${format_thousands(end - Date.now())}ms left`);
-        await Promise.delay(100);
+        log(`Process is still alive, waiting (${format_thousands(end - Date.now())}ms left)`);
+        await Promise.delay(Math.max(0, Math.min(100, end - Date.now())));
     }
 
-    log('Sending SIGKILL');
-    if (!process.kill(pid, 'SIGKILL')) {
-        throw new Error('SIGKILL Failed');
+    try {
+        log('Sending SIGKILL');
+        process.kill(pid, 'SIGKILL');
     }
+    catch (error) {
+        if (error.code === 'ESRCH' && error.syscall === 'kill') {
+            return; // Process is not there anymore...
+        }
+        throw error;
+    }
+
+    // Process might still exist
+    const final_deadline = Date.now() + 200;
+    while (Date.now() < final_deadline) {
+        if (!pid_exists(pid)) {
+            return;
+        }
+        await Promise.delay(10);
+    }
+
+    throw new Error('Process survived SIGKILL');
 }
 
 module.exports = pid_kill_grace;
