@@ -7,7 +7,7 @@ const random_hex = require('./random_hex');
 
 const socket = '/tmp/ping_socket_test.sock';
 
-describe.only('ping_socket', function () {
+describe('ping_socket', function () {
 
     afterEach(async function () {
         await fs_rmf(socket);
