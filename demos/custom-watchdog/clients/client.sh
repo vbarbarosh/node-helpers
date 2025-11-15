@@ -11,7 +11,7 @@ scriptname=`basename $script`
 BLACK="\e[30m" RED="\e[31m" GREEN="\e[32m" YELLOW="\e[33m" BLUE="\e[34m"
 PURPLE="\e[35m" CYAN="\e[36m" WHITE="\e[37m" RESET="\e[0m"
 
-EXIT_MESSAGE="${RED}bin/templ failed${RESET}"
+EXIT_MESSAGE="${RED}client.sh failed${RESET}"
 
 # http://redsymbol.net/articles/bash-exit-traps/
 # http://redsymbol.net/articles/unofficial-bash-strict-mode/#essential-cleanup
@@ -32,4 +32,4 @@ while true; do
     sleep 1
 done
 
-EXIT_MESSAGE="${GREEN}child.sh succeeded${RESET}"
+EXIT_MESSAGE="${GREEN}client.sh succeeded${RESET}"
