@@ -15,6 +15,7 @@ const shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');
 // - child receives no valid WATCHDOG_SOCKET
 // - child does not send heartbeat
 // - child spawns several children
+// - watchdog has global timeout, child terminated earlier: watchdog should return immediately
 
 cli(main);
 
@@ -29,7 +30,9 @@ async function main()
         const proc = await shell_spawn(args, {stdio: 'inherit', env}).init();
         try {
             heartbeat_server.on('heartbeat', () => console.log(`[${now_human()}] ❤️`))
-            await Promise.race([Promise.delay(10000), heartbeat_server.promise(), proc.promise()]);
+            // ⚠️ An app will wail the entire `Promise.delay` before exiting!
+            // await Promise.race([Promise.delay(10000), heartbeat_server.promise(), proc.promise()]);
+            await Promise.race([heartbeat_server.promise(), proc.promise()]).timeout(10000);
         }
         finally {
             if (pid_exists(proc.pid)) {
