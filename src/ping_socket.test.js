@@ -15,16 +15,26 @@ describe('ping_socket', function () {
 
     it('should receive exact string from server', async function () {
         const uid = random_hex();
-        await using server = net.createServer(client => client.resume().end(uid));
-        await new Promise(resolve => server.listen(socket, resolve));
-        const buf = await ping_socket(socket);
-        assert.strictEqual(buf.toString(), uid);
+        const server = net.createServer(client => client.resume().end(uid));
+        try {
+            await new Promise(resolve => server.listen(socket, resolve));
+            const buf = await ping_socket(socket);
+            assert.strictEqual(buf.toString(), uid);
+        }
+        finally {
+            await server_close(server);
+        }
     });
 
     it('should throw Socket Timeout', async function () {
-        await using server = net.createServer(client => client.resume());
-        await new Promise(resolve => server.listen(socket, resolve));
-        await assert.rejects(ping_socket(socket, 'PING', 100), {message: 'Socket Timeout'});
+        const server = net.createServer(client => client.resume());
+        try {
+            await new Promise(resolve => server.listen(socket, resolve));
+            await assert.rejects(ping_socket(socket, 'PING', 100), {message: 'Socket Timeout'});
+        }
+        finally {
+            await server_close(server);
+        }
     });
 
     it('should throw ENOENT', async function () {
@@ -35,3 +45,12 @@ describe('ping_socket', function () {
         });
     });
 });
+
+async function server_close(server)
+{
+    return new Promise(function (resolve, reject) {
+        server.close(function (error) {
+            error ? reject(error) : resolve();
+        });
+    });
+}
