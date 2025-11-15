@@ -42,4 +42,21 @@ describe('pid_kill_grace', function() {
         assert(logs.includes('Sending SIGTERM'));
         assert(logs.includes('Sending SIGKILL'));
     });
+
+    it('Child ignores SIGTERM for 10ms, but dies naturally before the grace loop ends', async function () {
+        const logs = [];
+        const stdout = [];
+        const proc = shell_spawn([`${__dirname}/pid_kill_grace.d/ignore-sigterm-for-10ms.js`]);
+        const r = stream.promises.pipeline(proc.stdout, stream_lines(), stream_each(v => stdout.push(v)));
+        await wait_while(() => !stdout.length);
+        await Promise.all([
+            r,
+            pid_kill_grace(proc.pid, {grace_timeout_ms: 50, log: s => logs.push(s)})
+        ]);
+        assert(!pid_exists(proc.pid));
+        assert(stdout.some(v => v.includes('SIGTERM_ignoring')));
+        assert(stdout.some(v => v.includes('TERMINATE_AFTER_10MS')));
+        assert(logs.includes('Sending SIGTERM'));
+        assert(!logs.includes('Sending SIGKILL'));
+    });
 });

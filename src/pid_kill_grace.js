@@ -11,9 +11,12 @@ async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
     }
 
     const end = Date.now() + grace_timeout_ms;
-    while (Date.now() < end) {
+    while (true) {
         if (!pid_exists(pid)) {
             return;
+        }
+        if (Date.now() >= end) {
+            break;
         }
         log(`Process is still alive, waiting (${format_thousands(end - Date.now())}ms left)`);
         await Promise.delay(Math.max(0, Math.min(100, end - Date.now())));
