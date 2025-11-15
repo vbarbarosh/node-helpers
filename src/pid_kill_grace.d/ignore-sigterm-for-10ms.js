@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 const Promise = require('bluebird');
-const cli = require('@vbarbarosh/node-helpers/src/cli');
-const now_human = require('@vbarbarosh/node-helpers/src/now_human');
+const cli = require('../cli');
+const now_human = require('../now_human');
 
 // Child ignores SIGTERM for 10 ms, but dies naturally before the grace loop ends
 
