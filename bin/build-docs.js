@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const cli = require('@vbarbarosh/node-helpers/src/cli');
-const fs_exists = require('../src/fs_exists');
+const fs_exists = require('@vbarbarosh/node-helpers/src/fs_exists');
 const fs_list = require('@vbarbarosh/node-helpers/src/fs_list');
-const fs_list_deep = require('../src/fs_list_deep');
+const fs_list_deep = require('@vbarbarosh/node-helpers/src/fs_list_deep');
 const fs_path_relative = require('@vbarbarosh/node-helpers/src/fs_path_relative');
 const fs_read_utf8 = require('@vbarbarosh/node-helpers/src/fs_read_utf8');
 const fs_write_json = require('@vbarbarosh/node-helpers/src/fs_write_json');
