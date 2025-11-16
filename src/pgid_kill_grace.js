@@ -24,7 +24,7 @@ async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {
             break;
         }
         const remain = end - Date.now();
-        log(`Process group ${pgid} still alive; waiting ${format_thousands(remain)}ms`);
+        log(`Process group ${pgid} still alive; grace time remaining: ${format_thousands(remain)}ms`);
         await Promise.delay(Math.max(0, Math.min(100, remain)));
     }
 
