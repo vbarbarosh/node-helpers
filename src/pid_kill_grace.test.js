@@ -18,13 +18,14 @@ describe('pid_kill_grace', function() {
 
     // handling errors and edge cases
 
-    it('should throw if process does not exists', async function () {
+    it('should throw "Failed to send SIGTERM to process 123"', async function () {
         const pid = 999999; // 🎲 unlikely to exist
         assert(!pid_exists(pid));
-        await assert.rejects(pid_kill_grace(pid), {
-            code: 'ESRCH',
-            syscall: 'kill'
-        });
+        await assert.rejects(pid_kill_grace(pid), /Failed to send SIGTERM to process \d+:/);
+    });
+
+    it.skip('should throw "Process 123 survived SIGKILL"', async function () {
+        // How to implement this behavior?
     });
 
     it('should KILL process after grace period', async function () {
