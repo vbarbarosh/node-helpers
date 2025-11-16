@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const child_process = require('child_process');
 
+// ⚠️ Both .init and .promise are targets for race conditions!
 function shell_spawn(args, options)
 {
     let init, promise;
