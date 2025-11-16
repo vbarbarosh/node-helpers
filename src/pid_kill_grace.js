@@ -6,9 +6,9 @@ const pid_exists = require('./pid_exists');
 // keep in sync with pgid_kill_grace
 async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
 {
-    log('Sending SIGTERM');
+    log(`Terminating process ${pid}: sending SIGTERM`);
     if (!process.kill(pid, 'SIGTERM')) {
-        throw new Error('SIGTERM Failed');
+        throw new Error(`Failed to send SIGTERM to process ${pid}`);
     }
 
     const end = Date.now() + grace_timeout_ms;
@@ -19,22 +19,24 @@ async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
         if (Date.now() >= end) {
             break;
         }
-        log(`Process is still alive, waiting (${format_thousands(end - Date.now())}ms left)`);
-        await Promise.delay(Math.max(0, Math.min(100, end - Date.now())));
+        const remain = end - Date.now();
+        log(`Process ${pid} still alive; waiting ${format_thousands(remain)}ms`);
+        await Promise.delay(Math.max(0, Math.min(100, remain)));
     }
 
     try {
-        log('Sending SIGKILL');
+        log(`SIGTERM grace period expired for process ${pid}; sending SIGKILL`);
         process.kill(pid, 'SIGKILL');
     }
     catch (error) {
         if (error.code === 'ESRCH' && error.syscall === 'kill') {
-            return; // Process is not there anymore...
+            log(`Process ${pid} already terminated`);
+            return;
         }
         throw error;
     }
 
-    // Process might still exist
+    // Give kernel a moment to deliver SIGKILL
     const final_deadline = Date.now() + 200;
     while (Date.now() < final_deadline) {
         if (!pid_exists(pid)) {
@@ -43,7 +45,7 @@ async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
         await Promise.delay(10);
     }
 
-    throw new Error('Process survived SIGKILL');
+    throw new Error(`Process ${pid} survived SIGKILL`);
 }
 
 module.exports = pid_kill_grace;

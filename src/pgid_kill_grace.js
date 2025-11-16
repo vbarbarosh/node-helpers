@@ -9,7 +9,7 @@ async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {
 {
     log(`Terminating process group ${pgid}: sending SIGTERM`);
     if (!process.kill(-pgid, 'SIGTERM')) {
-        throw new Error('SIGTERM Failed');
+        throw new Error(`Failed to send SIGTERM to process group ${pgid}`);
     }
 
     const end = Date.now() + grace_timeout_ms;
@@ -20,8 +20,9 @@ async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {
         if (Date.now() >= end) {
             break;
         }
-        log(`Process group ${pgid} still alive; waiting ${format_thousands(end - Date.now())}ms`);
-        await Promise.delay(Math.max(0, Math.min(100, end - Date.now())));
+        const remain = end - Date.now();
+        log(`Process group ${pgid} still alive; waiting ${format_thousands(remain)}ms`);
+        await Promise.delay(Math.max(0, Math.min(100, remain)));
     }
 
     try {
@@ -30,12 +31,13 @@ async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {
     }
     catch (error) {
         if (error.code === 'ESRCH' && error.syscall === 'kill') {
-            return; // Process is not there anymore...
+            log(`Process group ${pgid} already terminated`);
+            return;
         }
         throw error;
     }
 
-    // Process might still exist
+    // Wait for kernel to deliver SIGKILL
     const final_deadline = Date.now() + 200;
     while (Date.now() < final_deadline) {
         if (!pgid_exists(pgid)) {
