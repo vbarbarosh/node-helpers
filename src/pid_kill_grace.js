@@ -7,8 +7,11 @@ const pid_exists = require('./pid_exists');
 async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
 {
     log(`Terminating process ${pid}: sending SIGTERM`);
-    if (!process.kill(pid, 'SIGTERM')) {
-        throw new Error(`Failed to send SIGTERM to process ${pid}`);
+    try {
+        process.kill(pid, 'SIGTERM');
+    }
+    catch (error) {
+        throw new Error(`Failed to send SIGTERM to process ${pid}: ${error.message}`);
     }
 
     const end = Date.now() + grace_timeout_ms;

@@ -8,8 +8,11 @@ const pgid_exists = require('./pgid_exists');
 async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {})
 {
     log(`Terminating process group ${pgid}: sending SIGTERM`);
-    if (!process.kill(-pgid, 'SIGTERM')) {
-        throw new Error(`Failed to send SIGTERM to process group ${pgid}`);
+    try {
+        process.kill(-pgid, 'SIGTERM');
+    }
+    catch (error) {
+        throw new Error(`Failed to send SIGTERM to process group ${pgid}: ${error.message}`);
     }
 
     const end = Date.now() + grace_timeout_ms;
