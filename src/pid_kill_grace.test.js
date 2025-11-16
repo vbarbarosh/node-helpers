@@ -39,8 +39,8 @@ describe('pid_kill_grace', function() {
         ]);
         assert(!pid_exists(proc.pid));
         assert(stdout.some(v => v.includes('SIGTERM_ignoring')));
-        assert(logs.includes('Sending SIGTERM'));
-        assert(logs.includes('Sending SIGKILL'));
+        assert(logs.some(v => v.match(/Terminating process \d+: sending SIGTERM/)));
+        assert(logs.some(v => v.match(/SIGTERM grace period expired for process \d+; sending SIGKILL/)));
     });
 
     it('Child ignores SIGTERM for 10ms, but dies naturally before the grace loop ends', async function () {
@@ -56,7 +56,7 @@ describe('pid_kill_grace', function() {
         assert(!pid_exists(proc.pid));
         assert(stdout.some(v => v.includes('SIGTERM_ignoring')));
         assert(stdout.some(v => v.includes('TERMINATE_AFTER_10MS')));
-        assert(logs.includes('Sending SIGTERM'));
-        assert(!logs.includes('Sending SIGKILL'));
+        assert(logs.some(v => v.match(/Terminating process \d+: sending SIGTERM/)));
+        assert(!logs.some(v => v.match(/SIGTERM grace period expired for process \d+; sending SIGKILL/)));
     });
 });
