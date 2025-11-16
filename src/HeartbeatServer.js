@@ -7,6 +7,7 @@ const net = require('net');
 const now_fs = require('./now_fs');
 const os = require('os');
 
+// 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 class HeartbeatServer extends EventEmitter
 {
     #socket_path;
@@ -38,16 +39,31 @@ class HeartbeatServer extends EventEmitter
         });
 
         this.#server = net.createServer(function (client) {
+            let bytes_received = 0;
             client.setEncoding('utf8');
             client.on('error', function (error) {
-                _this.#reject(new Error(`Client Socket Failed: ${error.message}`));
+                if (!_this.#server) {
+                    return;
+                }
+                _this.emit('warning', error);
             });
             client.on('end', function () {
+                if (!_this.#server) {
+                    return;
+                }
                 _this.#last_ping = Date.now();
                 _this.emit('heartbeat');
             });
-            client.on('data', function () {
+            client.on('data', function (buf) {
+                if (!_this.#server) {
+                    return;
+                }
                 // Not really interested in any data
+                bytes_received += buf.length;
+                if (bytes_received > 1024*1024) {
+                    _this.emit('warning', new Error(`Client floods. Bytes recieved: ${bytes_received}`));
+                    client.destroy();
+                }
             });
             client.end('OK');
         });
@@ -62,11 +78,12 @@ class HeartbeatServer extends EventEmitter
         });
     }
 
-    #tick() {
+    async #tick() {
         if (this.#last_ping + this.#interval_ms < Date.now()) {
             clearInterval(this.#timer);
             this.#timer = null;
             this.#reject(new Error(`No heartbeat for the last ${this.#interval_ms}ms`));
+            await this.dispose();
         }
     }
 

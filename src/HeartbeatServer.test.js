@@ -3,7 +3,9 @@ const assert = require('assert');
 const fs_assert_file_socket = require('./fs_assert_file_socket');
 const ping_socket = require('./ping_socket');
 
-describe.only('HeartbeatServer', function () {
+// 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
+
+describe('HeartbeatServer', function () {
     it('Happy Path', async function () {
         const server = new HeartbeatServer();
         try {
@@ -19,6 +21,7 @@ describe.only('HeartbeatServer', function () {
         }
     });
 
-    // - timeout when no heartbeat received in expected interval
-    // - throw "Server Closed" when calling server.dispose()
+    // should emit a "warning" event on any client errors
+    // should not send any heartbeat signals after rejection (decision to kill a child process)
+    // should reject when no heartbeat received in an expected interval
 });
