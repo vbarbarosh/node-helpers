@@ -1,3 +1,4 @@
+// keep in sync with pgid_exists
 function pid_exists(pid)
 {
     try {
