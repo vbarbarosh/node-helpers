@@ -37,19 +37,19 @@ class HeartbeatServer extends EventEmitter
             this.#reject = reject;
         });
 
-        this.#server = net.createServer(function (socket) {
-            socket.setEncoding('utf8');
-            socket.on('error', function (error) {
+        this.#server = net.createServer(function (client) {
+            client.setEncoding('utf8');
+            client.on('error', function (error) {
                 _this.#reject(new Error(`Client Socket Failed: ${error.message}`));
             });
-            socket.on('end', function () {
+            client.on('end', function () {
                 _this.#last_ping = Date.now();
                 _this.emit('heartbeat');
             });
-            socket.on('data', function () {
+            client.on('data', function () {
                 // Not really interested in any data
             });
-            socket.end('OK');
+            client.end('OK');
         });
         this.#server.on('error', function (error) {
             _this.#reject(new Error(`Server Failed: ${error.message}`));
@@ -78,20 +78,30 @@ class HeartbeatServer extends EventEmitter
         return this.#promise;
     }
 
+    // - Stops the watchdog
+    // - Closes socket
+    // - Removes socket file
+    // - Rejects the internal promise with a "Server Closed" error
+    // - Safe to call multiple times (idempotent)
     async dispose() {
         if (this.#timer) {
             clearInterval(this.#timer);
             this.#timer = null;
+        }
+        if (!this.#server) {
+            return;
         }
         try {
             const _this = this;
             await new Promise(function (resolve, reject) {
                 _this.#server.removeAllListeners();
                 _this.#server.close(error => error ? reject(error) : resolve());
+                _this.#server = null;
             });
         }
         finally {
             await fs_rmf(this.#socket_path);
+            this.#socket_path = null;
         }
     }
 }
