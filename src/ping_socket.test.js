@@ -27,12 +27,14 @@ describe('ping_socket', function () {
     });
 
     it('should throw Socket Timeout', async function () {
-        const server = net.createServer(client => client.resume());
+        const clients = [];
+        const server = net.createServer(client => clients.push(client));
         try {
             await new Promise(resolve => server.listen(socket, resolve));
             await assert.rejects(ping_socket(socket, 'PING', 100), {message: 'Socket Timeout'});
         }
         finally {
+            clients.forEach(v => v.resume().end());
             await server_close(server);
         }
     });
