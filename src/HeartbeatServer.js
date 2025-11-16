@@ -55,7 +55,7 @@ class HeartbeatServer extends EventEmitter
             _this.#reject(new Error(`Server Failed: ${error.message}`));
         });
         this.#server.on('close', function () {
-            _this.#reject(new Error(`Server Closed`));
+            _this.#reject(new Error('Server Closed'));
         });
         this.#server.listen(this.#socket_path, function () {
             // started = true;
