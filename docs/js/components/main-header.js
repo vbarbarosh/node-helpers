@@ -21,8 +21,8 @@ vue_component('main-header', {
 
             <p>A subset of <b>@vbarbarosh/node-helpers</b> is also available for browser:</p>
             <div>
-                <div class="rel"><copy-to-clipboard value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@3.72.1/dist/browser.js?var=h">&lt;/script>"' /></div>
-                <prism-html value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@3.72.1/dist/browser.js?var=h">&lt;/script>' />
+                <div class="rel"><copy-to-clipboard value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@3.72.2/dist/browser.js?var=h">&lt;/script>"' /></div>
+                <prism-html value='<script src="https://unpkg.com/@vbarbarosh/node-helpers@3.72.2/dist/browser.js?var=h">&lt;/script>' />
             </div>
             <p>⚠️ All browser functions are exposed as <strong>window.h</strong>. This could be changed by <strong>?var=new_name</strong> query parameter.</p>
         </div>
