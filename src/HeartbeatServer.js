@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const ExitCodeError = require('./errors/ExitCodeError');
 const Promise = require('bluebird');
 const fs = require('fs');
 const fs_path_join = require('./fs_path_join');
@@ -82,7 +83,7 @@ class HeartbeatServer extends EventEmitter
         if (this.#last_ping + this.#interval_ms < Date.now()) {
             clearInterval(this.#timer);
             this.#timer = null;
-            this.#reject(new Error(`No heartbeat for the last ${this.#interval_ms}ms`));
+            this.#reject(new ExitCodeError(124, `No heartbeat for the last ${this.#interval_ms}ms`));
             await this.dispose();
         }
     }
