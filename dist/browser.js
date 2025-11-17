@@ -84,6 +84,7 @@ var map = {
 	"./array_group.js": "./src/array_group.js",
 	"./array_group_map.js": "./src/array_group_map.js",
 	"./array_index.js": "./src/array_index.js",
+	"./array_lcm.js": "./src/array_lcm.js",
 	"./array_max.js": "./src/array_max.js",
 	"./array_min.js": "./src/array_min.js",
 	"./array_permutations.js": "./src/array_permutations.js",
@@ -93,6 +94,8 @@ var map = {
 	"./array_sum.js": "./src/array_sum.js",
 	"./array_unique.js": "./src/array_unique.js",
 	"./array_unique_last.js": "./src/array_unique_last.js",
+	"./cli-apps/watchdog.d/ignore_sigterm.js": "./src/cli-apps/watchdog.d/ignore_sigterm.js",
+	"./cli-apps/watchdog.d/my-ignore-sigterm.js": "./src/cli-apps/watchdog.d/my-ignore-sigterm.js",
 	"./date_add_hours.js": "./src/date_add_hours.js",
 	"./date_add_milliseconds.js": "./src/date_add_milliseconds.js",
 	"./date_add_minutes.js": "./src/date_add_minutes.js",
@@ -143,6 +146,8 @@ var map = {
 	"./http_put_utf8.js": "./src/http_put_utf8.js",
 	"./identity.js": "./src/identity.js",
 	"./ignore.js": "./src/ignore.js",
+	"./pid_kill_grace.d/ignore-sigterm-for-10ms.js": "./src/pid_kill_grace.d/ignore-sigterm-for-10ms.js",
+	"./pid_kill_grace.d/ignore-sigterm.js": "./src/pid_kill_grace.d/ignore-sigterm.js",
 	"./plural.js": "./src/plural.js",
 	"./random_int.js": "./src/random_int.js",
 	"./urlmod.js": "./src/urlmod.js",
@@ -206,21 +211,14 @@ module.exports = array_chunk;
 /*!**************************!*\
   !*** ./src/array_gcd.js ***!
   \**************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const math_gcd = __webpack_require__(/*! ./math_gcd */ "./src/math_gcd.js");
 
 // https://stackoverflow.com/a/39764792/1478566
 function array_gcd(array, fn = Number)
 {
-    return array.reduce((a,b) => gcd(fn(a), fn(b)));
-}
-
-// https://stackoverflow.com/a/39764792/1478566
-function gcd(a, b)
-{
-    if (b) {
-        return gcd(b, a % b);
-    }
-    return a;
+    return array.reduce((a,b) => math_gcd(fn(a), fn(b)));
 }
 
 module.exports = array_gcd;
@@ -309,6 +307,24 @@ function array_index(array, fn = identity)
 }
 
 module.exports = array_index;
+
+
+/***/ }),
+
+/***/ "./src/array_lcm.js":
+/*!**************************!*\
+  !*** ./src/array_lcm.js ***!
+  \**************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const math_lcm = __webpack_require__(/*! ./math_lcm */ "./src/math_lcm.js");
+
+function array_lcm(array, fn = Number)
+{
+    return array.reduce((a,b) => math_lcm(fn(a), fn(b)));
+}
+
+module.exports = array_lcm;
 
 
 /***/ }),
@@ -634,6 +650,116 @@ module.exports = array_unique_last;
 
 /***/ }),
 
+/***/ "./src/cli-apps/watchdog.d/ignore_sigterm.js":
+/*!***************************************************!*\
+  !*** ./src/cli-apps/watchdog.d/ignore_sigterm.js ***!
+  \***************************************************/
+/***/ (() => {
+
+//#!/usr/bin/env node
+
+// 1️⃣ Client that ignores SIGTERM
+// Goal: process stays alive after SIGTERM and only dies on SIGKILL (exactly what pid_kill_grace should handle).
+//
+// What this tests for watchdog:
+//   - watchdog sends SIGTERM → process prints “ignored” and keeps running.
+//   - pid_kill_grace waits grace_timeout_ms, sees PID still alive, sends SIGKILL.
+//   - Process must die after SIGKILL.
+//   - Watchdog should log the whole sequence correctly.
+// This is a realistic scenario.
+
+console.log('PID:', process.pid);
+
+// Ignore SIGTERM
+process.on('SIGTERM', function () {
+    console.log('SIGTERM received, but intentionally ignored');
+});
+
+// Still react to SIGINT (Ctrl+C) so you can stop it manually if needed
+process.on('SIGINT', function () {
+    console.log('SIGINT received, exiting');
+    process.exit(130);
+});
+
+// Keep process alive
+setInterval(() => {
+    // simulate work
+}, 1000);
+
+
+/***/ }),
+
+/***/ "./src/cli-apps/watchdog.d/my-ignore-sigterm.js":
+/*!******************************************************!*\
+  !*** ./src/cli-apps/watchdog.d/my-ignore-sigterm.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+//#!/usr/bin/env node
+
+const Promise = __webpack_require__(/*! bluebird */ "bluebird");
+const cli = __webpack_require__(/*! @vbarbarosh/node-helpers/src/cli */ "./src/cli.js");
+const now_human = __webpack_require__(/*! @vbarbarosh/node-helpers/src/now_human */ "./src/now_human.js");
+
+cli(main);
+
+async function main()
+{
+    process.on('SIGTERM', function () {
+        console.log(`[${now_human()}][ignore-sigterm] SIGTERM, ignoring...`);
+    });
+    process.on('SIGINT', function () {
+        console.log(`[${now_human()}][ignore-sigterm] SIGINT, ignoring...`);
+    });
+
+    for (let iter = 1, last = 100; iter <= last; ++iter) {
+        console.log(`[${now_human()}][ignore-sigterm] ${iter} of ${last}`);
+        await Promise.delay(100);
+    }
+}
+
+
+/***/ }),
+
+/***/ "./src/cli.js":
+/*!********************!*\
+  !*** ./src/cli.js ***!
+  \********************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const ExitCodeError = __webpack_require__(/*! ./errors/ExitCodeError */ "./src/errors/ExitCodeError.js");
+const Promise = __webpack_require__(/*! bluebird */ "bluebird");
+
+/**
+ * Entry point for Node CLI apps
+ */
+function cli(main, report = error => console.error(error))
+{
+    // https://stackoverflow.com/a/46916601/1478566
+    const timer = setInterval(v => v, 1E9);
+
+    Promise.resolve(main()).then(resolve, reject);
+
+    function resolve() {
+        clearInterval(timer);
+    }
+    function reject(error) {
+        clearInterval(timer);
+        report(error);
+        if (error instanceof ExitCodeError) {
+            process.exit(error.exit_code);
+        }
+        else {
+            process.exit(1);
+        }
+    }
+}
+
+module.exports = cli;
+
+
+/***/ }),
+
 /***/ "./src/date_add_hours.js":
 /*!*******************************!*\
   !*** ./src/date_add_hours.js ***!
@@ -773,6 +899,25 @@ function date_is_leap_year(d)
 }
 
 module.exports = date_is_leap_year;
+
+
+/***/ }),
+
+/***/ "./src/errors/ExitCodeError.js":
+/*!*************************************!*\
+  !*** ./src/errors/ExitCodeError.js ***!
+  \*************************************/
+/***/ ((module) => {
+
+class ExitCodeError extends Error
+{
+    constructor(exit_code, message = '') {
+        super(message);
+        this.exit_code = exit_code;
+    }
+}
+
+module.exports = ExitCodeError;
 
 
 /***/ }),
@@ -2038,6 +2183,137 @@ module.exports = json_stringify_safe;
 
 /***/ }),
 
+/***/ "./src/math_gcd.js":
+/*!*************************!*\
+  !*** ./src/math_gcd.js ***!
+  \*************************/
+/***/ ((module) => {
+
+// https://stackoverflow.com/a/39764792/1478566
+function math_gcd(a, b)
+{
+    if (b) {
+        return math_gcd(b, a % b);
+    }
+    return a;
+}
+
+module.exports = math_gcd;
+
+
+/***/ }),
+
+/***/ "./src/math_lcm.js":
+/*!*************************!*\
+  !*** ./src/math_lcm.js ***!
+  \*************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const math_gcd = __webpack_require__(/*! ./math_gcd */ "./src/math_gcd.js");
+
+function math_lcm(a, b)
+{
+    return Math.abs(a*b) / math_gcd(a, b);
+}
+
+module.exports = math_lcm;
+
+
+/***/ }),
+
+/***/ "./src/now_human.js":
+/*!**************************!*\
+  !*** ./src/now_human.js ***!
+  \**************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const format_date_human = __webpack_require__(/*! ./format_date_human */ "./src/format_date_human.js");
+
+function now_human()
+{
+    return format_date_human(new Date());
+}
+
+module.exports = now_human;
+
+
+/***/ }),
+
+/***/ "./src/pid_kill_grace.d/ignore-sigterm-for-10ms.js":
+/*!*********************************************************!*\
+  !*** ./src/pid_kill_grace.d/ignore-sigterm-for-10ms.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+//#!/usr/bin/env node
+
+const Promise = __webpack_require__(/*! bluebird */ "bluebird");
+const cli = __webpack_require__(/*! ../cli */ "./src/cli.js");
+const now_human = __webpack_require__(/*! ../now_human */ "./src/now_human.js");
+
+// Child ignores SIGTERM for 10 ms, but dies naturally before the grace loop ends
+
+cli(main);
+
+async function main()
+{
+    let timer;
+
+    process.on('SIGTERM', function () {
+        console.log(`[${now_human()}][ignore-sigterm-for-10ms] SIGTERM_ignoring...`);
+        timer ??= setTimeout(terminate, 10);
+    });
+    process.on('SIGINT', function () {
+        console.log(`[${now_human()}][ignore-sigterm-for-10ms] SIGINT_ignoring...`);
+    });
+
+    for (let iter = 1, last = 100; iter <= last; ++iter) {
+        console.log(`[${now_human()}][ignore-sigterm-for-10ms] ${iter} of ${last}`);
+        await Promise.delay(10);
+    }
+}
+
+function terminate()
+{
+    console.log(`[${now_human()}][ignore-sigterm-for-10ms] TERMINATE_AFTER_10MS`);
+    process.exit(0);
+}
+
+
+/***/ }),
+
+/***/ "./src/pid_kill_grace.d/ignore-sigterm.js":
+/*!************************************************!*\
+  !*** ./src/pid_kill_grace.d/ignore-sigterm.js ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+//#!/usr/bin/env node
+
+const Promise = __webpack_require__(/*! bluebird */ "bluebird");
+const cli = __webpack_require__(/*! ../cli */ "./src/cli.js");
+const now_human = __webpack_require__(/*! ../now_human */ "./src/now_human.js");
+
+cli(main);
+
+async function main()
+{
+    process.on('SIGTERM', function () {
+        console.log(`[${now_human()}][ignore-sigterm] SIGTERM_ignoring...`);
+    });
+    process.on('SIGINT', function () {
+        console.log(`[${now_human()}][ignore-sigterm] SIGINT_ignoring...`);
+    });
+
+    for (let iter = 1, last = 100; iter <= last; ++iter) {
+        console.log(`[${now_human()}][ignore-sigterm] ${iter} of ${last}`);
+        await Promise.delay(10);
+    }
+}
+
+
+/***/ }),
+
 /***/ "./src/plural.js":
 /*!***********************!*\
   !*** ./src/plural.js ***!
@@ -2223,10 +2499,10 @@ var __webpack_exports__ = {};
   \******************************/
 const ns = new URL(document.currentScript.src).searchParams.get('var') ?? 'h';
 if (typeof window[ns] !== 'undefined') {
-    console.log(`❌ @vbarbarosh/node-helpers@${"3.71.0"} was not injected — window.${ns} is already in use`);
+    console.log(`❌ @vbarbarosh/node-helpers@${"3.72.0"} was not injected — window.${ns} is already in use`);
 }
 else {
-    console.log(`🎉 @vbarbarosh/node-helpers@${"3.71.0"} successfully exposed as window.${ns}`);
+    console.log(`🎉 @vbarbarosh/node-helpers@${"3.72.0"} successfully exposed as window.${ns}`);
     window[ns] = {};
     // https://github.com/webpack/webpack/issues/625
     // https://webpack.js.org/guides/dependency-management/#require-context
