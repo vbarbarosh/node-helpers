@@ -4,14 +4,14 @@ const ExitCodeError = require('../errors/ExitCodeError');
 const HeartbeatServer = require('../HeartbeatServer');
 const Promise = require('bluebird');
 const cli = require('../cli');
-const cuid = require('cuid');
+const cuid = require('@paralleldrive/cuid2');
 const make = require('@vbarbarosh/type-helpers/src/make');
 const now_human = require('../now_human');
 const pgid_exists = require('../pgid_exists');
 const pgid_kill_grace = require('../pgid_kill_grace');
 const shell_spawn = require('../shell_spawn');
 
-const LOGS_ROOT_UID = cuid();
+const LOGS_ROOT_UID = cuid.createId();
 
 // 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 

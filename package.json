@@ -8,7 +8,7 @@
     "jsdelivr": "dist/browser.js",
     "homepage": "https://vbarbarosh.github.io/node-helpers/",
     "bin": {
-      "watchdog": "src/cli-apps/watchdog.js"
+        "watchdog": "src/cli-apps/watchdog.js"
     },
     "files": [
         "dist",
@@ -31,11 +31,11 @@
         "url": "https://github.com/vbarbarosh/node-helpers/issues"
     },
     "peerDependencies": {
+        "@paralleldrive/cuid2": "^3.0.4",
         "@vbarbarosh/type-helpers": "^0.2.0",
         "axios": "^1.7.9",
         "bluebird": "^3.7.2",
         "csv-parse": "^5.6.0",
-        "cuid": "^3.0.0",
         "form-data": "^4.0.1",
         "htmlparser2": "^10.0.0",
         "json-stable-stringify": "^1.2.1",
