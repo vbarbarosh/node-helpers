@@ -80,7 +80,7 @@ async function main()
     }
     finally {
         log('[heartbeat_dispose] Closing heartbeat server...');
-        await heartbeat_server.dispose().timeout(1000);
+        await Promise.resolve(heartbeat_server.dispose()).timeout(1000);
     }
 
     log('[heartbeat_end_ok]');
