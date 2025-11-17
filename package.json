@@ -16,7 +16,7 @@
     ],
     "scripts": {
         "build": "rm -rf dist; webpack",
-        "test": "mocha src/**/*.test.js"
+        "test": "mocha 'src/**/*.test.js'"
     },
     "keywords": [
         "js",
