@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# http://www.gnu.org/software/bash/manual/bash.html#The-Set-Builtin
+# http://redsymbol.net/articles/unofficial-bash-strict-mode
+set -o nounset -o errexit -o pipefail
+
+script=`realpath $0`
+scriptdir=`dirname $script`
+scriptname=`basename $script`
+
+cd $scriptdir/..
+
+# expose watchdog binary
+# $ which watchdog
+npm link
+
+# symlink @vbarbarosh/node-helpers
+# $ ls -alh node_modules/@vbarbarosh/node-helpers
+npm link @vbarbarosh/node-helpers
