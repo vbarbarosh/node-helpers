@@ -31,7 +31,7 @@ cli(main, report);
 
 function report(error)
 {
-    log(`[heartbeat_end_error] ${error.message}`);
+    log(`[watchdog_end_error] ${error.message}`);
 }
 
 async function main()
@@ -50,28 +50,28 @@ async function main()
         break;
     }
 
-    log(`[heartbeat_begin] v${pkg.version}`);
+    log(`[watchdog_begin] v${pkg.version}`);
 
     const WATCHDOG_INTERVAL = make(process.env.WATCHDOG_INTERVAL, {type: 'int', min: 1000, default: 5000});
     const heartbeat_server = new HeartbeatServer(WATCHDOG_INTERVAL);
     const WATCHDOG_SOCKET = heartbeat_server.socket_path;
-    heartbeat_server.on('heartbeat', () => log('[heartbeat_ping] ❤️'))
-    heartbeat_server.on('warning', error => log(`[heartbeat_warn] ⚠️ ${error}`))
+    heartbeat_server.on('heartbeat', () => log('[watchdog_ping] ❤️'))
+    heartbeat_server.on('warning', error => log(`[watchdog_warn] ⚠️ ${error}`))
 
     try {
-        log(`[heartbeat_interval] ${WATCHDOG_INTERVAL}`);
-        log(`[heartbeat_socket_path] ${heartbeat_server.socket_path}`);
+        log(`[watchdog_interval] ${WATCHDOG_INTERVAL}`);
+        log(`[watchdog_socket_path] ${heartbeat_server.socket_path}`);
         const env = {...process.env, WATCHDOG_INTERVAL, WATCHDOG_SOCKET};
         const proc = await shell_spawn(args, {stdio: 'inherit', env, detached: true}).init();
         const pgid = proc.pid; // group id == leader pid
 
         const signal = new Promise(function (resolve, reject) {
             process.on('SIGTERM', function () {
-                log('[heartbeat_sigterm]');
+                log('[watchdog_sigterm]');
                 reject(new ExitCodeError(143, 'SIGTERM'));
             });
             process.on('SIGINT', function () {
-                log('[heartbeat_sigint]');
+                log('[watchdog_sigint]');
                 reject(new ExitCodeError(130, 'SIGINT'));
             });
         });
@@ -83,17 +83,17 @@ async function main()
         finally {
             if (pgid_exists(pgid)) {
                 await pgid_kill_grace(pgid, {
-                    log: s => log(`[heartbeat_pgid_kill_grace] ${s}`),
+                    log: s => log(`[watchdog_pgid_kill_grace] ${s}`),
                 });
             }
         }
     }
     finally {
-        log('[heartbeat_dispose] Closing heartbeat server...');
+        log('[watchdog_dispose] Closing heartbeat server...');
         await Promise.resolve(heartbeat_server.dispose()).timeout(1000);
     }
 
-    log('[heartbeat_end_ok]');
+    log('[watchdog_end_ok]');
     process.exit(0);
 }
 
