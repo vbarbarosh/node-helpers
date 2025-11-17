@@ -59,6 +59,7 @@ async function main()
     heartbeat_server.on('warning', error => log(`[watchdog_warn] ⚠️ ${error}`))
 
     try {
+        log(`[watchdog_args] ${args.join(' ')}`);
         log(`[watchdog_interval] ${WATCHDOG_INTERVAL}`);
         log(`[watchdog_socket_path] ${heartbeat_server.socket_path}`);
         const env = {...process.env, WATCHDOG_INTERVAL, WATCHDOG_SOCKET};
