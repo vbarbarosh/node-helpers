@@ -5,6 +5,10 @@ const ping_socket = require('./ping_socket');
 
 // 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 
+// 📕 Notes by ChatGPT
+// If listen() fails (EADDRINUSE, perms, etc.), constructor will throw,
+// and heartbeat_server will be undefined in finally { await heartbeat_server.dispose() }.
+
 describe('HeartbeatServer', function () {
     it('Happy Path', async function () {
         const server = new HeartbeatServer();
