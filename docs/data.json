@@ -96,6 +96,26 @@
             "contents": "#!/usr/bin/env node\n\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\n\ncli(main);\n\nasync function main()\n{\n    try {\n        await shell_spawn(['xfail']).promise();\n        console.log('done');\n    }\n    catch (error) {\n        console.log('failed', error);\n    }\n}\n"
         },
         {
+            "id": "demos-shell-spawn-race-index-js",
+            "file": "demos/shell-spawn-race/index.js",
+            "contents": "#!/usr/bin/env node\n\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\nconst stream = require('stream');\n\ncli(main);\n\nasync function main()\n{\n    const proc = shell_spawn([`${__dirname}/hello.js`]);\n    console.log('Started');\n    await Promise.delay(0);\n    await proc.init(); // << Stuck!\n    console.log('Ready');\n    await Promise.delay(0);\n    await proc.promise();\n    console.log(await stream.Readable.from(proc.stdout).toArray());\n    console.log('🎉 Done');\n}\n"
+        },
+        {
+            "id": "demos-shell-spawn-race-hello-js",
+            "file": "demos/shell-spawn-race/hello.js",
+            "contents": "#!/usr/bin/env node\n\nconsole.log('hello');\n"
+        },
+        {
+            "id": "demos-shell-spawn-group-index-js",
+            "file": "demos/shell-spawn-group/index.js",
+            "contents": "#!/usr/bin/env node\n\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst pgid_exists = require('../../src/pgid_exists');\nconst pgid_kill_grace = require('../../src/pgid_kill_grace');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\n\ncli(main);\n\nasync function main()\n{\n    const proc = shell_spawn(['./child.js'], {detached: true});\n    const pgid = proc.pid; // group id == leader pid\n\n    console.log('pgid_exists', pgid_exists(pgid));\n\n    await pgid_kill_grace(pgid, {log: s => console.log(s)});\n\n    console.log('pgid_exists', pgid_exists(pgid));\n    console.log('🎉 Done');\n}\n"
+        },
+        {
+            "id": "demos-shell-spawn-group-child-js",
+            "file": "demos/shell-spawn-group/child.js",
+            "contents": "#!/usr/bin/env node\n\nconst {spawn} = require('child_process');\n\nspawn('sleep', ['9999'], {detached: false});\nspawn('sleep', ['9999'], {detached: false});\n\nconsole.log('spawned 2 children');\n\nsetInterval(() => {}, 1000);\n"
+        },
+        {
             "id": "demos-shell-spawn-detached-proc2-js",
             "file": "demos/shell-spawn-detached/proc2.js",
             "contents": "#!/usr/bin/env node\n\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst format_date = require('@vbarbarosh/node-helpers/src/format_date');\nconst fs_append = require('@vbarbarosh/node-helpers/src/fs_append');\nconst perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');\nconst perf_start = require('@vbarbarosh/node-helpers/src/perf_start');\n\ncli(main);\n\nasync function main()\n{\n    const time0 = perf_start();\n\n    for (let i = 0; i < 10; ++i) {\n        await fs_append('logs.txt', `[${format_date(new Date())}] ${i}\\n`);\n        await Promise.delay(1000);\n    }\n\n    await fs_append('logs.txt', `[${format_date(new Date())}] 🎉 Done in ${perf_end_human(time0)}\\n`);\n    console.log(`🎉 Done in ${perf_end_human(time0)}`);\n}\n"
@@ -113,7 +133,7 @@
         {
             "id": "demos-shell-spawn-index-js",
             "file": "demos/shell-spawn/index.js",
-            "contents": "#!/usr/bin/env node\n\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\n\ncli(main);\n\nasync function main()\n{\n    // https://test-videos.co.uk/sintel/mp4-h264\n    await shell_spawn(['wget', '-O', 'a.mp4', 'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_10MB.mp4'], {stdio: 'inherit'}).promise();\n    await shell_spawn(['ffmpeg', '-i', 'a.mp4', '-filter:v', 'setpts=0.2*PTS', '-y', 'b.mp4'], {stdio: 'inherit'}).promise();\n    console.log('done');\n}\n"
+            "contents": "#!/usr/bin/env node\n\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\n\ncli(main);\n\nasync function main()\n{\n    // https://test-videos.co.uk/sintel/mp4-h264\n    await shell_spawn(['wget', '-O', 'a.mp4', 'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_10MB.mp4'], {stdio: 'inherit'}).promise();\n    await shell_spawn(['ffmpeg', '-i', 'a.mp4', '-filter:v', 'setpts=0.2*PTS', '-y', 'b.mp4'], {stdio: 'inherit'}).promise();\n    console.log('🎉 Done');\n}\n"
         },
         {
             "id": "demos-shell-curl-progress-put-js",
@@ -129,6 +149,11 @@
             "id": "demos-shell-index-js",
             "file": "demos/shell/index.js",
             "contents": "#!/usr/bin/env node\n\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst shell = require('@vbarbarosh/node-helpers/src/shell');\n\ncli(main);\n\nasync function main()\n{\n    console.log('node version:', await shell(['node', '--version']));\n    console.log('curl', await shell(['curl', '-sf', '-I', 'https://example.com']));\n    console.log('tree', await shell(['tree']));\n    console.log('false', await shell(['false']));\n}\n"
+        },
+        {
+            "id": "demos-promise-timeout-index-js",
+            "file": "demos/promise-timeout/index.js",
+            "contents": "#!/usr/bin/env node\n\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\n\ncli(main);\n\nasync function main()\n{\n    try {\n        await Promise.delay(1000).timeout(100);\n    }\n    catch (error) {\n        console.log(error);\n    }\n}\n"
         },
         {
             "id": "demos-perf-measure-human-index-js",
@@ -208,22 +233,22 @@
         {
             "id": "demos-custom-watchdog-index-js",
             "file": "demos/custom-watchdog/index.js",
-            "contents": "const HeartbeatServer = require('@vbarbarosh/node-helpers/src/HeartbeatServer');\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst now_human = require('@vbarbarosh/node-helpers/src/now_human');\nconst pid_exists = require('@vbarbarosh/node-helpers/src/pid_exists');\nconst pid_kill_grace = require('@vbarbarosh/node-helpers/src/pid_kill_grace');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\n\n// Ctrl-C should gracefully terminate a child process and close heartbeat server\n// Test\n// - heartbeat server starts failed\n// - heartbeat server does not close connection\n// - heartbeat server sends 1G of data\n// - child spawn failed\n// - child receives no valid WATCHDOG_SOCKET\n// - child does not send heartbeat\n// - child spawns several children\n\ncli(main);\n\nasync function main()\n{\n    const args = process.argv.slice(2);\n\n    const heartbeat_server = new HeartbeatServer();\n    try {\n        console.log('socket_path', heartbeat_server.socket_path);\n        const env = {...process.env, WATCHDOG_SOCKET: heartbeat_server.socket_path};\n        const proc = await shell_spawn(args, {stdio: 'inherit', env}).init();\n        try {\n            heartbeat_server.on('heartbeat', () => console.log(`[${now_human()}] ❤️`))\n            await Promise.race([Promise.delay(10000), heartbeat_server.promise(), proc.promise()]);\n        }\n        finally {\n            if (pid_exists(proc.pid)) {\n                console.log('Terminating child process...');\n                await pid_kill_grace(proc.pid, {\n                    log: s => console.log(`[${now_human()}][pid_kill_grace] ${s}`),\n                });\n            }\n        }\n    }\n    finally {\n        console.log('Closing heartbeat server...');\n        await heartbeat_server.dispose();\n    }\n\n    console.log('🎉 Done');\n}\n"
+            "contents": "const HeartbeatServer = require('@vbarbarosh/node-helpers/src/HeartbeatServer');\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst now_human = require('@vbarbarosh/node-helpers/src/now_human');\nconst pid_exists = require('@vbarbarosh/node-helpers/src/pid_exists');\nconst pid_kill_grace = require('@vbarbarosh/node-helpers/src/pid_kill_grace');\nconst shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');\n\n// Ctrl-C should gracefully terminate a child process and close heartbeat server\n// Test\n// - heartbeat server starts failed\n// - heartbeat server does not close connection\n// - heartbeat server sends 1G of data\n// - child spawn failed\n// - child receives no valid WATCHDOG_SOCKET\n// - child does not send heartbeat\n// - child spawns several children\n// - watchdog has global timeout, child terminated earlier: watchdog should return immediately\n\ncli(main);\n\nasync function main()\n{\n    const args = process.argv.slice(2);\n\n    const heartbeat_server = new HeartbeatServer();\n    try {\n        console.log('socket_path', heartbeat_server.socket_path);\n        const env = {...process.env, WATCHDOG_SOCKET: heartbeat_server.socket_path};\n        const proc = await shell_spawn(args, {stdio: 'inherit', env}).init();\n        try {\n            heartbeat_server.on('heartbeat', () => console.log(`[${now_human()}] ❤️`))\n            // ⚠️ An app will wail the entire `Promise.delay` before exiting!\n            // await Promise.race([Promise.delay(10000), heartbeat_server.promise(), proc.promise()]);\n            await Promise.race([heartbeat_server.promise(), proc.promise()]).timeout(10000);\n        }\n        finally {\n            if (pid_exists(proc.pid)) {\n                console.log('Terminating child process...');\n                await pid_kill_grace(proc.pid, {\n                    log: s => console.log(`[${now_human()}][pid_kill_grace] ${s}`),\n                });\n            }\n        }\n    }\n    finally {\n        console.log('Closing heartbeat server...');\n        await heartbeat_server.dispose();\n    }\n\n    console.log('🎉 Done');\n}\n"
         },
         {
-            "id": "demos-custom-watchdog-errors-never-ping",
-            "file": "demos/custom-watchdog/errors/never-ping",
+            "id": "demos-custom-watchdog-errors-never-ping-js",
+            "file": "demos/custom-watchdog/errors/never-ping.js",
             "contents": "#!/usr/bin/env node\n\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst now_human = require('@vbarbarosh/node-helpers/src/now_human');\n\ncli(main);\n\nasync function main()\n{\n    for (let iter = 1, last = 100; iter <= last; ++iter) {\n        console.log(`[${now_human()}][never-ping] ${iter} of ${last}`);\n        await Promise.delay(1000);\n    }\n}\n"
         },
         {
-            "id": "demos-custom-watchdog-errors-ignore-sigterm",
-            "file": "demos/custom-watchdog/errors/ignore-sigterm",
+            "id": "demos-custom-watchdog-errors-ignore-sigterm-js",
+            "file": "demos/custom-watchdog/errors/ignore-sigterm.js",
             "contents": "#!/usr/bin/env node\n\nconst Promise = require('bluebird');\nconst cli = require('@vbarbarosh/node-helpers/src/cli');\nconst now_human = require('@vbarbarosh/node-helpers/src/now_human');\n\ncli(main);\n\nasync function main()\n{\n    process.on('SIGTERM', function () {\n        console.log(`[${now_human()}][ignore-sigterm] SIGTERM, ignoring...`);\n    });\n    process.on('SIGINT', function () {\n        console.log(`[${now_human()}][ignore-sigterm] SIGINT, ignoring...`);\n    });\n\n    for (let iter = 1, last = 100; iter <= last; ++iter) {\n        console.log(`[${now_human()}][ignore-sigterm] ${iter} of ${last}`);\n        await Promise.delay(1000);\n    }\n}\n"
         },
         {
             "id": "demos-custom-watchdog-clients-client-sh",
             "file": "demos/custom-watchdog/clients/client.sh",
-            "contents": "#!/bin/bash\n\n# http://www.gnu.org/software/bash/manual/bash.html#The-Set-Builtin\n# http://redsymbol.net/articles/unofficial-bash-strict-mode\nset -o nounset -o errexit -o pipefail\n\nscript=`realpath $0`\nscriptdir=`dirname $script`\nscriptname=`basename $script`\n\nBLACK=\"\\e[30m\" RED=\"\\e[31m\" GREEN=\"\\e[32m\" YELLOW=\"\\e[33m\" BLUE=\"\\e[34m\"\nPURPLE=\"\\e[35m\" CYAN=\"\\e[36m\" WHITE=\"\\e[37m\" RESET=\"\\e[0m\"\n\nEXIT_MESSAGE=\"${RED}bin/templ failed${RESET}\"\n\n# http://redsymbol.net/articles/bash-exit-traps/\n# http://redsymbol.net/articles/unofficial-bash-strict-mode/#essential-cleanup\ntrap 'echo -e \"$EXIT_MESSAGE\"' EXIT\n\nwhile true; do\n    if test -S \"$WATCHDOG_SOCKET\"; then\n        # Send empty string and read response\n        RESPONSE=$(echo -ne 'ping' | nc -U \"$WATCHDOG_SOCKET\" 2> /dev/null)\n        if [[ \"$RESPONSE\" == \"OK\" ]]; then\n            echo \"[client.sh] $(date '+%F %T') - OK\"\n        else\n            echo \"[client.sh] $(date '+%F %T') - FAIL (no OK)\"\n        fi\n    else\n        echo \"[client.sh] $(date '+%F %T') - FAIL (socket missing)\"\n    fi\n    sleep 1\ndone\n\nEXIT_MESSAGE=\"${GREEN}child.sh succeeded${RESET}\"\n"
+            "contents": "#!/bin/bash\n\n# http://www.gnu.org/software/bash/manual/bash.html#The-Set-Builtin\n# http://redsymbol.net/articles/unofficial-bash-strict-mode\nset -o nounset -o errexit -o pipefail\n\nscript=`realpath $0`\nscriptdir=`dirname $script`\nscriptname=`basename $script`\n\nBLACK=\"\\e[30m\" RED=\"\\e[31m\" GREEN=\"\\e[32m\" YELLOW=\"\\e[33m\" BLUE=\"\\e[34m\"\nPURPLE=\"\\e[35m\" CYAN=\"\\e[36m\" WHITE=\"\\e[37m\" RESET=\"\\e[0m\"\n\nEXIT_MESSAGE=\"${RED}client.sh failed${RESET}\"\n\n# http://redsymbol.net/articles/bash-exit-traps/\n# http://redsymbol.net/articles/unofficial-bash-strict-mode/#essential-cleanup\ntrap 'echo -e \"$EXIT_MESSAGE\"' EXIT\n\nwhile true; do\n    if test -S \"$WATCHDOG_SOCKET\"; then\n        # Send empty string and read response\n        RESPONSE=$(echo -ne 'ping' | nc -U \"$WATCHDOG_SOCKET\" 2> /dev/null)\n        if [[ \"$RESPONSE\" == \"OK\" ]]; then\n            echo \"[client.sh] $(date '+%F %T') - OK\"\n        else\n            echo \"[client.sh] $(date '+%F %T') - FAIL (no OK)\"\n        fi\n    else\n        echo \"[client.sh] $(date '+%F %T') - FAIL (socket missing)\"\n    fi\n    sleep 1\ndone\n\nEXIT_MESSAGE=\"${GREEN}client.sh succeeded${RESET}\"\n"
         },
         {
             "id": "demos-custom-watchdog-clients-client-php",
@@ -257,7 +282,7 @@
             "name": "HeartbeatServer",
             "file": "src/HeartbeatServer.js",
             "require": "const HeartbeatServer = require('@vbarbarosh/node-helpers/src/HeartbeatServer');",
-            "source_code": "const EventEmitter = require('events');\nconst Promise = require('bluebird');\nconst fs = require('fs');\nconst fs_path_join = require('./fs_path_join');\nconst fs_rmf = require('./fs_rmf');\nconst net = require('net');\nconst now_fs = require('./now_fs');\nconst os = require('os');\n\nclass HeartbeatServer extends EventEmitter\n{\n    #socket_path;\n    #last_ping = Date.now();\n    #interval_ms;\n    #promise;\n    #reject;\n    #timer;\n    #server;\n\n    constructor(interval_ms = 5000) {\n        super();\n        this.#interval_ms = interval_ms;\n        this.#init();\n    }\n\n    #init() {\n        const _this = this;\n\n        this.#timer = setInterval(() => this.#tick(), this.#interval_ms);\n\n        // Put socket on tmpfs to avoid slow disks.\n        this.#socket_path = fs.existsSync('/dev/shm')\n            ? fs_path_join('/dev/shm', `watchdog-${process.pid}-${now_fs()}.sock`)\n            : fs_path_join(os.tmpdir(), `watchdog-${process.pid}-${now_fs()}.sock`);\n\n        this.#promise = new Promise((resolve, reject) => {\n            this.#reject = reject;\n        });\n\n        this.#server = net.createServer(function (socket) {\n            socket.setEncoding('utf8');\n            socket.on('error', function (error) {\n                _this.#reject(new Error(`Client Socket Failed: ${error.message}`));\n            });\n            socket.on('end', function () {\n                _this.#last_ping = Date.now();\n                _this.emit('heartbeat');\n            });\n            socket.on('data', function () {\n                // Not really interested in any data\n            });\n            socket.end('OK');\n        });\n        this.#server.on('error', function (error) {\n            _this.#reject(new Error(`Server Failed: ${error.message}`));\n        });\n        this.#server.on('close', function () {\n            _this.#reject(new Error(`Server Closed`));\n        });\n        this.#server.listen(this.#socket_path, function () {\n            // started = true;\n        });\n    }\n\n    #tick() {\n        if (this.#last_ping + this.#interval_ms < Date.now()) {\n            clearInterval(this.#timer);\n            this.#timer = null;\n            this.#reject(new Error(`No heartbeat for the last ${this.#interval_ms}ms`));\n        }\n    }\n\n    get socket_path() {\n        return this.#socket_path;\n    }\n\n    promise() {\n        return this.#promise;\n    }\n\n    async dispose() {\n        if (this.#timer) {\n            clearInterval(this.#timer);\n            this.#timer = null;\n        }\n        try {\n            const _this = this;\n            await new Promise(function (resolve, reject) {\n                _this.#server.removeAllListeners();\n                _this.#server.close(error => error ? reject(error) : resolve());\n            });\n        }\n        finally {\n            await fs_rmf(this.#socket_path);\n        }\n    }\n}\n\nmodule.exports = HeartbeatServer;\n",
+            "source_code": "const EventEmitter = require('events');\nconst ExitCodeError = require('./errors/ExitCodeError');\nconst Promise = require('bluebird');\nconst fs = require('fs');\nconst fs_path_join = require('./fs_path_join');\nconst fs_rmf = require('./fs_rmf');\nconst net = require('net');\nconst now_fs = require('./now_fs');\nconst os = require('os');\n\n// 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal\nclass HeartbeatServer extends EventEmitter\n{\n    #socket_path;\n    #last_ping = Date.now();\n    #interval_ms;\n    #promise;\n    #reject;\n    #timer;\n    #server;\n\n    constructor(interval_ms = 5000) {\n        super();\n        this.#interval_ms = interval_ms;\n        this.#init();\n    }\n\n    #init() {\n        const _this = this;\n\n        this.#timer = setInterval(() => this.#tick(), this.#interval_ms);\n\n        // Put socket on tmpfs to avoid slow disks.\n        this.#socket_path = fs.existsSync('/dev/shm')\n            ? fs_path_join('/dev/shm', `watchdog-${process.pid}-${now_fs()}.sock`)\n            : fs_path_join(os.tmpdir(), `watchdog-${process.pid}-${now_fs()}.sock`);\n\n        this.#promise = new Promise((resolve, reject) => {\n            this.#reject = reject;\n        });\n\n        this.#server = net.createServer(function (client) {\n            let bytes_received = 0;\n            client.setEncoding('utf8');\n            client.on('error', function (error) {\n                if (!_this.#server) {\n                    return;\n                }\n                _this.emit('warning', error);\n            });\n            client.on('end', function () {\n                if (!_this.#server) {\n                    return;\n                }\n                _this.#last_ping = Date.now();\n                _this.emit('heartbeat');\n            });\n            client.on('data', function (buf) {\n                if (!_this.#server) {\n                    return;\n                }\n                // Not really interested in any data\n                bytes_received += buf.length;\n                if (bytes_received > 1024*1024) {\n                    _this.emit('warning', new Error(`Client floods. Bytes recieved: ${bytes_received}`));\n                    client.destroy();\n                }\n            });\n            client.end('OK');\n        });\n        this.#server.on('error', function (error) {\n            _this.#reject(new Error(`Server Failed: ${error.message}`));\n        });\n        this.#server.on('close', function () {\n            _this.#reject(new Error('Server Closed'));\n        });\n        this.#server.listen(this.#socket_path, function () {\n            // started = true;\n        });\n    }\n\n    async #tick() {\n        if (this.#last_ping + this.#interval_ms < Date.now()) {\n            clearInterval(this.#timer);\n            this.#timer = null;\n            this.#reject(new ExitCodeError(124, `No heartbeat for the last ${this.#interval_ms}ms`));\n            await this.dispose();\n        }\n    }\n\n    get socket_path() {\n        return this.#socket_path;\n    }\n\n    promise() {\n        return this.#promise;\n    }\n\n    // - Stops the watchdog\n    // - Closes socket\n    // - Removes socket file\n    // - Rejects the internal promise with a \"Server Closed\" error\n    // - Safe to call multiple times (idempotent)\n    async dispose() {\n        if (this.#timer) {\n            clearInterval(this.#timer);\n            this.#timer = null;\n        }\n        if (!this.#server) {\n            return;\n        }\n        try {\n            const _this = this;\n            await new Promise(function (resolve, reject) {\n                _this.#server.removeAllListeners();\n                _this.#server.close(error => error ? reject(error) : resolve());\n                _this.#server = null;\n            });\n        }\n        finally {\n            await fs_rmf(this.#socket_path);\n            this.#socket_path = null;\n        }\n    }\n}\n\nmodule.exports = HeartbeatServer;\n",
             "markdown": null
         },
         {
@@ -305,8 +330,8 @@
             "name": "array_gcd",
             "file": "src/array_gcd.js",
             "require": "const array_gcd = require('@vbarbarosh/node-helpers/src/array_gcd');",
-            "source_code": "// https://stackoverflow.com/a/39764792/1478566\nfunction array_gcd(array, fn = Number)\n{\n    return array.reduce((a,b) => gcd(fn(a), fn(b)));\n}\n\n// https://stackoverflow.com/a/39764792/1478566\nfunction gcd(a, b)\n{\n    if (b) {\n        return gcd(b, a % b);\n    }\n    return a;\n}\n\nmodule.exports = array_gcd;\n",
-            "markdown": null
+            "source_code": "const math_gcd = require('./math_gcd');\n\n// https://stackoverflow.com/a/39764792/1478566\nfunction array_gcd(array, fn = Number)\n{\n    return array.reduce((a,b) => math_gcd(fn(a), fn(b)));\n}\n\nmodule.exports = array_gcd;\n",
+            "markdown": "Returns the greatest common divisor (GCD) of all elements in the array.\n`fn(item)` is applied to each element before computing.\n"
         },
         {
             "id": "array_group",
@@ -333,12 +358,20 @@
             "markdown": null
         },
         {
+            "id": "array_lcm",
+            "name": "array_lcm",
+            "file": "src/array_lcm.js",
+            "require": "const array_lcm = require('@vbarbarosh/node-helpers/src/array_lcm');",
+            "source_code": "const math_lcm = require('./math_lcm');\n\nfunction array_lcm(array, fn = Number)\n{\n    return array.reduce((a,b) => math_lcm(fn(a), fn(b)));\n}\n\nmodule.exports = array_lcm;\n",
+            "markdown": "Returns the least common multiple (LCM) of all elements in the array.\n`fn(item)` is applied to each element before computing.\n"
+        },
+        {
             "id": "array_max",
             "name": "array_max",
             "file": "src/array_max.js",
             "require": "const array_max = require('@vbarbarosh/node-helpers/src/array_max');",
             "source_code": "const identity = require('./identity');\n\n/**\n * Returns the first element in the array with the maximal weight\n */\nfunction array_max(array, fn = identity)\n{\n    let out = null;\n    let max = null;\n    array.forEach(function (item, i) {\n        const weight = fn(item);\n        if (i === 0 || max < weight) {\n            max = weight;\n            out = item;\n        }\n    });\n    return out;\n}\n\nmodule.exports = array_max;\n",
-            "markdown": "Returns the first element in the array with the maximal weight.\n"
+            "markdown": "Returns the first element of the array for which `fn(item)` is maximized.\nIf multiple elements have the same maximal weight, the earliest one is returned.\n"
         },
         {
             "id": "array_min",
@@ -346,7 +379,7 @@
             "file": "src/array_min.js",
             "require": "const array_min = require('@vbarbarosh/node-helpers/src/array_min');",
             "source_code": "const identity = require('./identity');\n\n/**\n * Returns the first element in the array with the minimal weight\n */\nfunction array_min(array, fn = identity)\n{\n    let out = null;\n    let min = null;\n    array.forEach(function (item, i) {\n        const weight = fn(item);\n        if (i === 0 || min > weight) {\n            min = weight;\n            out = item;\n        }\n    });\n    return out;\n}\n\nmodule.exports = array_min;\n",
-            "markdown": "Returns the first element in the array with the minimal weight.\n"
+            "markdown": "Returns the first element of the array for which `fn(item)` is minimized.\nIf multiple elements have the same minimal weight, the earliest one is returned.\n"
         },
         {
             "id": "array_permutations",
@@ -417,7 +450,7 @@
             "name": "cli",
             "file": "src/cli.js",
             "require": "const cli = require('@vbarbarosh/node-helpers/src/cli');",
-            "source_code": "/**\n * Entry point for Node CLI apps\n */\nfunction cli(main)\n{\n    // https://stackoverflow.com/a/46916601/1478566\n    const timer = setInterval(v => v, 1E9);\n\n    Promise.resolve(main()).then(resolve, reject);\n\n    function resolve() {\n        clearInterval(timer);\n    }\n    function reject(error) {\n        clearInterval(timer);\n        console.error(error);\n        process.exit(1);\n    }\n}\n\nmodule.exports = cli;\n",
+            "source_code": "const ExitCodeError = require('./errors/ExitCodeError');\nconst Promise = require('bluebird');\n\n/**\n * Entry point for Node CLI apps\n */\nfunction cli(main, report = error => console.error(error))\n{\n    // https://stackoverflow.com/a/46916601/1478566\n    const timer = setInterval(v => v, 1E9);\n\n    Promise.resolve(main()).then(resolve, reject);\n\n    function resolve() {\n        clearInterval(timer);\n    }\n    function reject(error) {\n        clearInterval(timer);\n        report(error);\n        if (error instanceof ExitCodeError) {\n            process.exit(error.exit_code);\n        }\n        else {\n            process.exit(1);\n        }\n    }\n}\n\nmodule.exports = cli;\n",
             "markdown": null
         },
         {
@@ -850,6 +883,14 @@
             "file": "src/fs_assert_file_readable.js",
             "require": "const fs_assert_file_readable = require('@vbarbarosh/node-helpers/src/fs_assert_file_readable');",
             "source_code": "const fs_fi = require('./fs_fi');\n\nasync function fs_assert_file_readable(file)\n{\n    const fi = await fs_fi(file);\n    if (!fi.isFile()) {\n        throw new Error(`Not a file: ${file}`);\n    }\n    if (fi.mode & 0o111) {\n        throw new Error(`File is not readable by all: ${file}`);\n    }\n}\n\nmodule.exports = fs_assert_file_readable;\n",
+            "markdown": null
+        },
+        {
+            "id": "fs_assert_file_socket",
+            "name": "fs_assert_file_socket",
+            "file": "src/fs_assert_file_socket.js",
+            "require": "const fs_assert_file_socket = require('@vbarbarosh/node-helpers/src/fs_assert_file_socket');",
+            "source_code": "const fs_fi = require('./fs_fi');\n\nasync function fs_assert_file_socket(file)\n{\n    const fi = await fs_fi(file);\n    if (!fi.isSocket()) {\n        throw new Error(`Not a socket: ${file}`);\n    }\n}\n\nmodule.exports = fs_assert_file_socket;\n",
             "markdown": null
         },
         {
@@ -1453,6 +1494,22 @@
             "markdown": null
         },
         {
+            "id": "math_gcd",
+            "name": "math_gcd",
+            "file": "src/math_gcd.js",
+            "require": "const math_gcd = require('@vbarbarosh/node-helpers/src/math_gcd');",
+            "source_code": "// https://stackoverflow.com/a/39764792/1478566\nfunction math_gcd(a, b)\n{\n    if (b) {\n        return math_gcd(b, a % b);\n    }\n    return a;\n}\n\nmodule.exports = math_gcd;\n",
+            "markdown": "Returns the greatest common divisor (GCD) of two integers a and b\nusing the Euclidean algorithm.\n"
+        },
+        {
+            "id": "math_lcm",
+            "name": "math_lcm",
+            "file": "src/math_lcm.js",
+            "require": "const math_lcm = require('@vbarbarosh/node-helpers/src/math_lcm');",
+            "source_code": "const math_gcd = require('./math_gcd');\n\nfunction math_lcm(a, b)\n{\n    return Math.abs(a*b) / math_gcd(a, b);\n}\n\nmodule.exports = math_lcm;\n",
+            "markdown": "Returns the least common multiple (LCM) of two integers a and b\nusing the relationship `LCM(a, b) = |a * b| / GCD(a, b)`.\n"
+        },
+        {
             "id": "mongo_stream_upsert",
             "name": "mongo_stream_upsert",
             "file": "src/mongo_stream_upsert.js",
@@ -1541,6 +1598,14 @@
             "markdown": null
         },
         {
+            "id": "parse_hms",
+            "name": "parse_hms",
+            "file": "src/parse_hms.js",
+            "require": "const parse_hms = require('@vbarbarosh/node-helpers/src/parse_hms');",
+            "source_code": "function parse_hms(expr)\n{\n    if (!expr && expr !== 0) {\n        return 0;\n    }\n\n    expr = String(expr).trim();\n    if (!expr) {\n        return 0;\n    }\n\n    const parts = expr.split(':');\n\n    let h = 0, m = 0, s = 0;\n\n    if (parts.length === 1) {\n        // \"SS(.fff)\"\n        s = parseFloat(parts[0]);\n    }\n    else if (parts.length === 2) {\n        // \"MM:SS(.fff)\"\n        m = parseFloat(parts[0]);\n        s = parseFloat(parts[1]);\n    }\n    else if (parts.length === 3) {\n        // \"HH:MM:SS(.fff)\"\n        h = parseFloat(parts[0]);\n        m = parseFloat(parts[1]);\n        s = parseFloat(parts[2]);\n    }\n    else {\n        return Number.NaN;\n    }\n\n    // Any failed numeric parse ⇒ NaN\n    if ([h, m, s].some(n => Number.isNaN(n))) {\n        return Number.NaN;\n    }\n\n    return h*3600 + m*60 + s;\n}\n\nmodule.exports = parse_hms;\n",
+            "markdown": "Parses a time expression into seconds.\n\n**Supported formats:**\n- `SS(.fff)` — seconds\n- `MM:SS(.fff)` — minutes and seconds\n- `HH:MM:SS(.fff)` — hours, minutes, and seconds\n\n**Returns:**  \nA number representing total seconds, or `NaN` if the input is invalid.\n"
+        },
+        {
             "id": "parse_http_content_range",
             "name": "parse_http_content_range",
             "file": "src/parse_http_content_range.js",
@@ -1589,11 +1654,27 @@
             "markdown": null
         },
         {
+            "id": "pgid_exists",
+            "name": "pgid_exists",
+            "file": "src/pgid_exists.js",
+            "require": "const pgid_exists = require('@vbarbarosh/node-helpers/src/pgid_exists');",
+            "source_code": "// group id == leader pid\n// keep in sync with pid_exists\nfunction pgid_exists(pgid)\n{\n    try {\n        process.kill(-pgid, 0);\n        return true;\n    }\n    catch {\n        return false;\n    }\n}\n\nmodule.exports = pgid_exists;\n",
+            "markdown": null
+        },
+        {
+            "id": "pgid_kill_grace",
+            "name": "pgid_kill_grace",
+            "file": "src/pgid_kill_grace.js",
+            "require": "const pgid_kill_grace = require('@vbarbarosh/node-helpers/src/pgid_kill_grace');",
+            "source_code": "const Promise = require('bluebird');\nconst format_thousands = require('./format_thousands');\nconst ignore = require('./ignore');\nconst pgid_exists = require('./pgid_exists');\n\n// group id == leader pid\n// keep in sync with pid_kill_grace\nasync function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {})\n{\n    log(`Terminating process group ${pgid}: sending SIGTERM`);\n    try {\n        process.kill(-pgid, 'SIGTERM');\n    }\n    catch (error) {\n        throw new Error(`Failed to send SIGTERM to process group ${pgid}: ${error.message}`);\n    }\n\n    const end = Date.now() + grace_timeout_ms;\n    while (true) {\n        if (!pgid_exists(pgid)) {\n            return;\n        }\n        if (Date.now() >= end) {\n            break;\n        }\n        const remain = end - Date.now();\n        log(`Process group ${pgid} still alive; grace time remaining: ${format_thousands(remain)}ms`);\n        await Promise.delay(Math.max(0, Math.min(100, remain)));\n    }\n\n    try {\n        log(`SIGTERM grace period expired for group ${pgid}; sending SIGKILL`);\n        process.kill(-pgid, 'SIGKILL');\n    }\n    catch (error) {\n        if (error.code === 'ESRCH' && error.syscall === 'kill') {\n            log(`Process group ${pgid} already terminated`);\n            return;\n        }\n        throw error;\n    }\n\n    // Wait for kernel to deliver SIGKILL\n    const final_deadline = Date.now() + 200;\n    while (Date.now() < final_deadline) {\n        if (!pgid_exists(pgid)) {\n            return;\n        }\n        await Promise.delay(10);\n    }\n\n    throw new Error(`Process group ${pgid} survived SIGKILL`);\n}\n\nmodule.exports = pgid_kill_grace;\n",
+            "markdown": null
+        },
+        {
             "id": "pid_exists",
             "name": "pid_exists",
             "file": "src/pid_exists.js",
             "require": "const pid_exists = require('@vbarbarosh/node-helpers/src/pid_exists');",
-            "source_code": "function pid_exists(pid)\n{\n    try {\n        process.kill(pid, 0);\n        return true;\n    }\n    catch {\n        return false;\n    }\n}\n\nmodule.exports = pid_exists;\n",
+            "source_code": "// keep in sync with pgid_exists\nfunction pid_exists(pid)\n{\n    try {\n        process.kill(pid, 0);\n        return true;\n    }\n    catch {\n        return false;\n    }\n}\n\nmodule.exports = pid_exists;\n",
             "markdown": null
         },
         {
@@ -1601,7 +1682,7 @@
             "name": "pid_kill_grace",
             "file": "src/pid_kill_grace.js",
             "require": "const pid_kill_grace = require('@vbarbarosh/node-helpers/src/pid_kill_grace');",
-            "source_code": "const Promise = require('bluebird');\nconst format_thousands = require('./format_thousands');\nconst ignore = require('./ignore');\nconst pid_exists = require('./pid_exists');\n\nasync function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})\n{\n    log('Sending SIGTERM');\n    if (!process.kill(pid, 'SIGTERM')) {\n        throw new Error('SIGTERM Failed');\n    }\n\n    const end = Date.now() + grace_timeout_ms;\n    while (Date.now() < end) {\n        if (!pid_exists(pid)) {\n            return;\n        }\n        log(`Process is still there, waiting for 100ms, ${format_thousands(end - Date.now())}ms left`);\n        await Promise.delay(100);\n    }\n\n    log('Sending SIGKILL');\n    if (!process.kill(pid, 'SIGKILL')) {\n        throw new Error('SIGKILL Failed');\n    }\n}\n\nmodule.exports = pid_kill_grace;\n",
+            "source_code": "const Promise = require('bluebird');\nconst format_thousands = require('./format_thousands');\nconst ignore = require('./ignore');\nconst pid_exists = require('./pid_exists');\n\n// keep in sync with pgid_kill_grace\nasync function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})\n{\n    log(`Terminating process ${pid}: sending SIGTERM`);\n    try {\n        process.kill(pid, 'SIGTERM');\n    }\n    catch (error) {\n        throw new Error(`Failed to send SIGTERM to process ${pid}: ${error.message}`);\n    }\n\n    const end = Date.now() + grace_timeout_ms;\n    while (true) {\n        if (!pid_exists(pid)) {\n            return;\n        }\n        if (Date.now() >= end) {\n            break;\n        }\n        const remain = end - Date.now();\n        log(`Process ${pid} still alive; grace time remaining: ${format_thousands(remain)}ms`);\n        await Promise.delay(Math.max(0, Math.min(100, remain)));\n    }\n\n    try {\n        log(`SIGTERM grace period expired for process ${pid}; sending SIGKILL`);\n        process.kill(pid, 'SIGKILL');\n    }\n    catch (error) {\n        if (error.code === 'ESRCH' && error.syscall === 'kill') {\n            log(`Process ${pid} already terminated`);\n            return;\n        }\n        throw error;\n    }\n\n    // Give kernel a moment to deliver SIGKILL\n    const final_deadline = Date.now() + 200;\n    while (Date.now() < final_deadline) {\n        if (!pid_exists(pid)) {\n            return;\n        }\n        await Promise.delay(10);\n    }\n\n    throw new Error(`Process ${pid} survived SIGKILL`);\n}\n\nmodule.exports = pid_kill_grace;\n",
             "markdown": null
         },
         {
@@ -1609,7 +1690,7 @@
             "name": "ping_socket",
             "file": "src/ping_socket.js",
             "require": "const ping_socket = require('@vbarbarosh/node-helpers/src/ping_socket');",
-            "source_code": "const Promise = require('bluebird');\nconst net = require('net');\n\n/**\n * - Always closes the socket.\n * - Throws on any error or timeout.\n * - Doesn’t hang if the server sends nothing.\n */\nfunction ping_socket(socket_path, data = 'PING', timeout_ms = 1000)\n{\n    return new Promise(function (resolve, reject) {\n        let done = false;\n        const buf = [];\n        const socket = net.connect(socket_path);\n        socket.setTimeout(timeout_ms, () => finish(new Error('Socket Timeout')));\n        socket.on('end', () => finish(null, Buffer.concat(buf)))\n        socket.on('error', finish);\n        socket.on('connect', () => socket.end(data));\n        socket.on('data', chunk => buf.push(chunk));\n        function finish(error, out) {\n            if (done) {\n                return;\n            }\n            done = true;\n            socket.removeAllListeners();\n            socket.destroy();\n            error ? reject(error) : resolve(out);\n        }\n    });\n}\n\nmodule.exports = ping_socket;\n",
+            "source_code": "const Promise = require('bluebird');\nconst net = require('net');\n\n/**\n * - Always closes the socket.\n * - Throws on any error or timeout.\n * - Doesn’t hang if the server sends nothing.\n */\nfunction ping_socket(socket_path, data = 'PING', timeout_ms = 1000)\n{\n    return new Promise(function (resolve, reject) {\n        let done = false;\n        const buf = [];\n        const client = net.connect(socket_path);\n        client.setTimeout(timeout_ms, () => finish(new Error('Socket Timeout')));\n        client.on('end', () => finish(null, Buffer.concat(buf)))\n        client.on('error', finish);\n        client.on('connect', () => client.end(data));\n        client.on('data', chunk => buf.push(chunk));\n        function finish(error, out) {\n            if (done) {\n                return;\n            }\n            done = true;\n            client.removeAllListeners();\n            client.destroy();\n            error ? reject(error) : resolve(out);\n        }\n    });\n}\n\nmodule.exports = ping_socket;\n",
             "markdown": "- Always closes the socket.\n- Throws on any error or timeout.\n- Doesn’t hang if the server sends nothing.\n"
         },
         {
@@ -1635,6 +1716,14 @@
             "require": "const random_int = require('@vbarbarosh/node-helpers/src/random_int');",
             "source_code": "function random_int(min, max)\n{\n    return Math.floor(Math.random()*(max - min + 1) + min);\n}\n\nmodule.exports = random_int;\n",
             "markdown": null
+        },
+        {
+            "id": "range",
+            "name": "range",
+            "file": "src/range.js",
+            "require": "const range = require('@vbarbarosh/node-helpers/src/range');",
+            "source_code": "const na = Symbol();\n\nfunction range(begin, end = na, step = 1, limit = 1E6)\n{\n    if (end === na) {\n        if (begin < 0) {\n            return [];\n        }\n        return range_forward(0, begin, 1, limit);\n    }\n\n    if (begin < end) {\n        return range_forward(begin, end, step, limit);\n    }\n    return range_backward(begin, end, step, limit);\n}\n\nfunction range_forward(begin, end, step, limit)\n{\n    if (step < 0) {\n        return [];\n    }\n\n    const out = [];\n    for (let value = begin; value < end && out.length < limit; value += step) {\n        out.push(value);\n    }\n    return out;\n}\n\nfunction range_backward(begin, end, step, limit)\n{\n    if (step > 0) {\n        return [];\n    }\n\n    const out = [];\n    for (let value = begin; value > end && out.length < limit; value += step) {\n        out.push(value);\n    }\n    return out;\n}\n\nmodule.exports = range;\n",
+            "markdown": "Generates a numeric sequence.\n\n**Supported forms:**\n- `range(stop)` — from `0` up to `stop` (exclusive)\n- `range(start, stop)` — from `start` up to `stop` (exclusive)\n- `range(start, stop, step)` — with custom step\n\n**Rules:**\n- The `stop` value is **exclusive**\n- Positive `step` counts **up** while `value < stop`\n- Negative `step` counts **down** while `value > stop`\n- If `step` direction does not allow progress, the result is an empty array\n\n**Returns:**\nAn array of numbers.\n"
         },
         {
             "id": "redis_connect",
@@ -1761,7 +1850,7 @@
             "name": "shell_spawn",
             "file": "src/shell_spawn.js",
             "require": "const shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');",
-            "source_code": "const Promise = require('bluebird');\nconst child_process = require('child_process');\n\nfunction shell_spawn(args, options)\n{\n    let init, promise;\n    const out = child_process.spawn(args[0], args.slice(1), options);\n    out.init = function () {\n        return init = init || new Promise(function (resolve, reject) {\n            out.once('error', init_error);\n            out.once('spawn', init_spawn);\n            function init_error(error) {\n                out.off('spawn', init_spawn);\n                reject(error);\n            }\n            function init_spawn() {\n                out.off('error', init_error);\n                resolve(out);\n            }\n        });\n    };\n    out.promise = function () {\n        return promise = promise || new Promise(function (resolve, reject) {\n            out.once('error', promise_error);\n            out.once('exit', promise_exit);\n            function promise_error(error) {\n                out.off('exit', promise_exit);\n                reject(error);\n            }\n            function promise_exit(code, signal) {\n                out.off('error', promise_error);\n                code ? reject(new Error(`Process terminated with code ${code}`)) : resolve(signal);\n            }\n        });\n    };\n    return out;\n}\n\nmodule.exports = shell_spawn;\n",
+            "source_code": "const ExitCodeError = require('./errors/ExitCodeError');\nconst Promise = require('bluebird');\nconst child_process = require('child_process');\n\n// 📕 Notes by ChatGPT:\n// If the child is killed by a signal (e.g. SIGKILL from outside),\n// Node’s exit event gives code = null, signal = 'SIGKILL'.\n// Your code treats this as success (resolve).\n// That might be fine for your use case, but be aware:\n//\n// If you want “child died by signal” to be treated as non-zero,\n// you’d need to change this check to something like:\n//\n// > function promise_exit(code, signal) {\n// >     out.off('error', promise_error);\n// >     if (code === 0) {\n// >         resolve(signal);\n// >     } else {\n// >         reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));\n// >     }\n// > }\n\n// ⚠️ Both .init and .promise are targets for race conditions!\nfunction shell_spawn(args, options)\n{\n    let init, promise;\n    const out = child_process.spawn(args[0], args.slice(1), options);\n    out.init = function () {\n        return init = init || new Promise(function (resolve, reject) {\n            out.once('error', init_error);\n            out.once('spawn', init_spawn);\n            function init_error(error) {\n                out.off('spawn', init_spawn);\n                reject(error);\n            }\n            function init_spawn() {\n                out.off('error', init_error);\n                resolve(out);\n            }\n        });\n    };\n    out.promise = function () {\n        return promise = promise || new Promise(function (resolve, reject) {\n            out.once('error', promise_error);\n            out.once('exit', promise_exit);\n            function promise_error(error) {\n                out.off('exit', promise_exit);\n                reject(error);\n            }\n            function promise_exit(code, signal) {\n                out.off('error', promise_error);\n                if (code === 0) {\n                    resolve();\n                }\n                else {\n                    reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));\n                }\n            }\n        });\n    };\n    return out;\n}\n\nmodule.exports = shell_spawn;\n",
             "markdown": null
         },
         {
@@ -2002,6 +2091,14 @@
             "file": "src/stream_ytdlp_progress.js",
             "require": "const stream_ytdlp_progress = require('@vbarbarosh/node-helpers/src/stream_ytdlp_progress');",
             "source_code": "const format_bytes = require('./format_bytes');\nconst format_percents = require('./format_percents');\nconst parse_bytes = require('./parse_bytes');\nconst stream = require('stream');\nconst stream_filter = require('./stream_filter');\nconst stream_lines = require('./stream_lines');\nconst stream_map = require('./stream_map');\n\n// [download]   0.0% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.0% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.0% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.1% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.2% of   15.71MiB at   21.76MiB/s ETA 00:00\n// [download]   0.4% of   15.71MiB at   16.48MiB/s ETA 00:00\n// [download]   0.8% of   15.71MiB at   25.54MiB/s ETA 00:00\n// [download]   1.6% of   15.71MiB at   30.65MiB/s ETA 00:00\n// [download]   3.2% of   15.71MiB at   42.99MiB/s ETA 00:00\n// [download]   6.4% of   15.71MiB at   66.25MiB/s ETA 00:00\n// [download]  12.7% of   15.71MiB at   81.24MiB/s ETA 00:00\n// [download]  25.5% of   15.71MiB at   55.11MiB/s ETA 00:00\n// [download]  50.9% of   15.71MiB at   33.83MiB/s ETA 00:00\n// [download]  61.7% of   15.71MiB at   33.98MiB/s ETA 00:00\n// [download]  61.7% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.7% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.7% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.8% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.9% of   15.71MiB at   12.32MiB/s ETA 00:00\n// [download]  62.1% of   15.71MiB at   14.26MiB/s ETA 00:00\n// [download]  62.5% of   15.71MiB at   25.10MiB/s ETA 00:00\n// [download]  63.3% of   15.71MiB at   34.18MiB/s ETA 00:00\n// [download]  64.9% of   15.71MiB at    8.95MiB/s ETA 00:00\n// [download]  68.1% of   15.71MiB at   16.75MiB/s ETA 00:00\n// [download]  74.4% of   15.71MiB at   29.10MiB/s ETA 00:00\n// [download]  87.2% of   15.71MiB at   40.45MiB/s ETA 00:00\n// [download] 100.0% of   15.71MiB at   47.64MiB/s ETA 00:00\n// [download] 100% of   15.71MiB in 00:00:00 at 29.07MiB/s\n// [Merger] Merging formats into \"xxxxxxxxxxxxxxx.webm\"\n// Deleting original file xxxxxxxxxxxxxxx.f251.webm (pass -k to keep)\n// Deleting original file xxxxxxxxxxxxxxx.f248.webm (pass -k to keep)\n\nfunction stream_ytdlp_progress()\n{\n    let last = {};\n    let current_part = 1;\n    const downloading_formats = [];\n    return stream.compose(\n        stream_lines(),\n        stream_map(function (line) {\n            let m;\n            if (m = line.match(/^\\[info] \\S+: Downloading \\d+ format\\(s\\): (.+)$/)) {\n                downloading_formats.push(...m[1].split('+'));\n                return false;\n            }\n            if (m = line.match(/^\\[download] Destination: .*f(\\d+)\\.[^.]+/)) {\n                current_part = downloading_formats.indexOf(m[1]) + 1;\n                return false;\n            }\n            if (m = line.match(/^\\[Merger]/i)) {\n                last.merging = true;\n                return last;\n            }\n            if (m = line.match(/^\\[download] (.*) of (.*) at (.*) ETA (.*)$/)) {\n                const percentage = parseFloat(m[1].trim())/100;\n                const total = parse_bytes(m[2].trim());\n                const speed = m[3].trim().replace('i', '');\n                const eta = m[4].trim();\n                return last = {\n                    current_part,\n                    total_parts: downloading_formats.length,\n                    perc: format_percents(percentage),\n                    done: format_bytes(percentage*total),\n                    total: format_bytes(total),\n                    speed: speed.toLowerCase().includes('unknown') ? '~' : speed,\n                    eta: eta.toLowerCase().includes('unknown') ? '~' : eta,\n                    merging: false,\n                };\n            }\n            return false;\n        }),\n        stream_filter(v => v),\n    );\n}\n\nmodule.exports = stream_ytdlp_progress;\n",
+            "markdown": null
+        },
+        {
+            "id": "strtr",
+            "name": "strtr",
+            "file": "src/strtr.js",
+            "require": "const strtr = require('@vbarbarosh/node-helpers/src/strtr');",
+            "source_code": "// PHP’s strtr tries the longest possible key first when multiple keys overlap.\n// echo strtr(\"hello\", [\"he\" => \"X\", \"hell\" => \"Y\"]);\nfunction strtr(subject, map)\n{\n    let out = subject;\n    Object.entries(map).sort(fcmp).forEach(function ([search, replace]) {\n        out = out.replaceAll(search, replace);\n    });\n    return out;\n    function fcmp(b, a) {\n        return a[0].length - b[0].length;\n    }\n}\n\nmodule.exports = strtr;\n",
             "markdown": null
         },
         {
