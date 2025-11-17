@@ -9,6 +9,7 @@ const make = require('@vbarbarosh/type-helpers/src/make');
 const now_human = require('../now_human');
 const pgid_exists = require('../pgid_exists');
 const pgid_kill_grace = require('../pgid_kill_grace');
+const pkg = require('../../package.json');
 const shell_spawn = require('../shell_spawn');
 
 const LOGS_ROOT_UID = cuid.createId();
@@ -39,6 +40,14 @@ async function main()
     if (!args.length) {
         usage();
         process.exit(1);
+    }
+
+    switch (args[0]) {
+    case '-v':
+    case '--version':
+        version();
+        process.exit(0);
+        break;
     }
 
     log('[heartbeat_begin]');
@@ -143,4 +152,9 @@ SIGTERM                 | 143
 watchdog internal error | 1
 -----------------------------------
 `.trim() + '\n');
+}
+
+function version()
+{
+    process.stdout.write(`watchdog v${pkg.version}\n`);
 }
