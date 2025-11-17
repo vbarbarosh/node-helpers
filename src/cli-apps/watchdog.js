@@ -50,7 +50,7 @@ async function main()
         break;
     }
 
-    log('[heartbeat_begin]');
+    log(`[heartbeat_begin] v${pkg.version}`);
 
     const WATCHDOG_INTERVAL = make(process.env.WATCHDOG_INTERVAL, {type: 'int', min: 1000, default: 5000});
     const heartbeat_server = new HeartbeatServer(WATCHDOG_INTERVAL);
@@ -59,6 +59,7 @@ async function main()
     heartbeat_server.on('warning', error => log(`[heartbeat_warn] ⚠️ ${error}`))
 
     try {
+        log(`[heartbeat_interval] ${WATCHDOG_INTERVAL}`);
         log(`[heartbeat_socket_path] ${heartbeat_server.socket_path}`);
         const env = {...process.env, WATCHDOG_INTERVAL, WATCHDOG_SOCKET};
         const proc = await shell_spawn(args, {stdio: 'inherit', env, detached: true}).init();
