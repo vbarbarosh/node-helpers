@@ -42,8 +42,10 @@
         "json-stringify-safe": "^5.0.1",
         "mime-types": "^2.1.35",
         "sanitize-filename": "^1.6.3",
-        "split": "^1.0.1",
-        "ssh2": "^1.16.0"
+        "split": "^1.0.1"
+    },
+    "optionalDependencies": {
+      "ssh2": "^1.16.0"
     },
     "devDependencies": {
         "@vbarbarosh/tree": "^0.5.0",
