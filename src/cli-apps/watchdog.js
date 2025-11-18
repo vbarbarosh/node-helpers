@@ -56,7 +56,9 @@ async function main()
 
     log(`[watchdog_begin] v${pkg.version}`);
 
-    const WATCHDOG_INTERVAL = make(process.env.WATCHDOG_INTERVAL, {type: 'int', min: 1000, default: 5000});
+    const WATCHDOG_INTERVAL = process.env.__TESTING__
+        ? make(process.env.WATCHDOG_INTERVAL, {type: 'int', min: 1, default: 5000})
+        : make(process.env.WATCHDOG_INTERVAL, {type: 'int', min: 1000, default: 5000});
     const heartbeat_server = new HeartbeatServer(WATCHDOG_INTERVAL);
     const WATCHDOG_SOCKET = heartbeat_server.socket_path;
     heartbeat_server.on('heartbeat', () => log(`[watchdog_ping] ❤️ ${render_stats(++PING_COUNTER)}`))
