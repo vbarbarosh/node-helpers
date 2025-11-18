@@ -5,14 +5,18 @@ const HeartbeatServer = require('../HeartbeatServer');
 const Promise = require('bluebird');
 const cli = require('../cli');
 const cuid = require('@paralleldrive/cuid2');
+const format_ms3 = require('../format_ms3');
+const format_thousands = require('../format_thousands');
 const make = require('@vbarbarosh/type-helpers/src/make');
-const now_human = require('../now_human');
 const pgid_exists = require('../pgid_exists');
 const pgid_kill_grace = require('../pgid_kill_grace');
 const pkg = require('../../package.json');
 const shell_spawn = require('../shell_spawn');
 
+const STARTED_AT = Date.now();
 const LOGS_ROOT_UID = cuid.createId();
+
+let PING_COUNTER = 0;
 
 // 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 
@@ -31,7 +35,7 @@ cli(main, report);
 
 function report(error)
 {
-    log(`[watchdog_end_error] ${error.message}`);
+    log(`[watchdog_end_error] ${render_stats()} | ${error.message}`);
 }
 
 async function main()
@@ -55,7 +59,7 @@ async function main()
     const WATCHDOG_INTERVAL = make(process.env.WATCHDOG_INTERVAL, {type: 'int', min: 1000, default: 5000});
     const heartbeat_server = new HeartbeatServer(WATCHDOG_INTERVAL);
     const WATCHDOG_SOCKET = heartbeat_server.socket_path;
-    heartbeat_server.on('heartbeat', () => log('[watchdog_ping] ❤️'))
+    heartbeat_server.on('heartbeat', () => log(`[watchdog_ping] ❤️ ${render_stats(++PING_COUNTER)}`))
     heartbeat_server.on('warning', error => log(`[watchdog_warn] ⚠️ ${error}`))
 
     try {
@@ -94,7 +98,7 @@ async function main()
         await Promise.resolve(heartbeat_server.dispose()).timeout(1000);
     }
 
-    log('[watchdog_end_ok]');
+    log(`[watchdog_end_ok] ${render_stats()}`);
     process.exit(0);
 }
 
@@ -102,11 +106,16 @@ function log(s)
 {
     const ss = JSON.stringify(s).slice(1, -1).replaceAll('\\"', '"');
     if (ss[0] === '[') {
-        console.log(`[${LOGS_ROOT_UID}][${now_human()}]${ss}`);
+        console.log(`[${LOGS_ROOT_UID}][+${format_ms3(Date.now() - STARTED_AT)}]${ss}`);
     }
     else {
-        console.log(`[${LOGS_ROOT_UID}][${now_human()}] ${ss}`);
+        console.log(`[${LOGS_ROOT_UID}][+${format_ms3(Date.now() - STARTED_AT)}] ${ss}`);
     }
+}
+
+function render_stats()
+{
+    return `pings=${format_thousands(PING_COUNTER)}`;
 }
 
 function usage()
