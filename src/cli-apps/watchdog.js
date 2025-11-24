@@ -15,6 +15,7 @@ const shell_spawn = require('../shell_spawn');
 
 const STARTED_AT = Date.now();
 const LOGS_ROOT_UID = cuid.createId();
+const ARGS = process.argv.slice(2);
 
 let PING_COUNTER = 0;
 
@@ -35,18 +36,17 @@ cli(main, report);
 
 function report(error)
 {
-    log(`[watchdog_end_error] ${render_stats()} | ${error.message}`);
+    log(`[watchdog_end_error] ${render_stats()} | ${error.message} | ${ARGS.join(' ')}`);
 }
 
 async function main()
 {
-    const args = process.argv.slice(2);
-    if (!args.length) {
+    if (!ARGS.length) {
         usage();
         process.exit(1);
     }
 
-    switch (args[0]) {
+    switch (ARGS[0]) {
     case '-v':
     case '--version':
         version();
@@ -65,11 +65,11 @@ async function main()
     heartbeat_server.on('warning', error => log(`[watchdog_warn] ⚠️ ${error}`))
 
     try {
-        log(`[watchdog_args] ${args.join(' ')}`);
+        log(`[watchdog_args] ${ARGS.join(' ')}`);
         log(`[watchdog_interval] ${WATCHDOG_INTERVAL}`);
         log(`[watchdog_socket_path] ${heartbeat_server.socket_path}`);
         const env = {...process.env, WATCHDOG_INTERVAL, WATCHDOG_SOCKET};
-        const proc = await shell_spawn(args, {stdio: 'inherit', env, detached: true}).init();
+        const proc = await shell_spawn(ARGS, {stdio: 'inherit', env, detached: true}).init();
         const pgid = proc.pid; // group id == leader pid
 
         const signal = new Promise(function (resolve, reject) {
@@ -100,7 +100,7 @@ async function main()
         await Promise.resolve(heartbeat_server.dispose()).timeout(1000);
     }
 
-    log(`[watchdog_end_ok] ${render_stats()}`);
+    log(`[watchdog_end_ok] ${render_stats()} | ${ARGS.join(' ')}`);
     process.exit(0);
 }
 
@@ -108,10 +108,10 @@ function log(s)
 {
     const ss = JSON.stringify(s).slice(1, -1).replaceAll('\\"', '"');
     if (ss[0] === '[') {
-        console.log(`[${LOGS_ROOT_UID}][+${format_ms3(Date.now() - STARTED_AT)}]${ss}`);
+        console.log(`[${LOGS_ROOT_UID}][${format_ms3(Date.now() - STARTED_AT, true)}]${ss}`);
     }
     else {
-        console.log(`[${LOGS_ROOT_UID}][+${format_ms3(Date.now() - STARTED_AT)}] ${ss}`);
+        console.log(`[${LOGS_ROOT_UID}][${format_ms3(Date.now() - STARTED_AT, true)}] ${ss}`);
     }
 }
 
