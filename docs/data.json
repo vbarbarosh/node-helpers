@@ -446,6 +446,14 @@
             "markdown": null
         },
         {
+            "id": "clamp",
+            "name": "clamp",
+            "file": "src/clamp.js",
+            "require": "const clamp = require('@vbarbarosh/node-helpers/src/clamp');",
+            "source_code": "function clamp(min, max, value)\n{\n    return Math.max(min, Math.min(max, value));\n}\n\nmodule.exports = clamp;\n",
+            "markdown": null
+        },
+        {
             "id": "cli",
             "name": "cli",
             "file": "src/cli.js",
@@ -802,7 +810,7 @@
             "name": "format_ms3",
             "file": "src/format_ms3.js",
             "require": "const format_ms3 = require('@vbarbarosh/node-helpers/src/format_ms3');",
-            "source_code": "const factorize_ms = require('./factorize_ms');\n\n/**\n * Format milliseconds\n */\nfunction format_ms3(ms)\n{\n    if (!ms) {\n        ms = 0;\n    }\n\n    // 00:05.445\n    const [h, m, s, xx] = factorize_ms(ms);\n    if (h) {\n        return `0${h}:0${m}:0${s}.00${xx}`.replace(/0+(?=\\d\\d+[:.]|\\d\\d\\d)/g, '');\n    }\n    return `0${m}:0${s}.00${xx}`.replace(/0+(?=\\d\\d+[:.]|\\d\\d\\d)/g, '')\n}\n\nmodule.exports = format_ms3;\n",
+            "source_code": "const factorize_ms = require('./factorize_ms');\n\n/**\n * Format milliseconds\n */\nfunction format_ms3(ms, include_zero_hours = false)\n{\n    if (!ms) {\n        ms = 0;\n    }\n\n    // 00:05.445\n    const [h, m, s, xx] = factorize_ms(ms);\n    if (h || include_zero_hours) {\n        return `0${h}:0${m}:0${s}.00${xx}`.replace(/0+(?=\\d\\d+[:.]|\\d\\d\\d)/g, '');\n    }\n    return `0${m}:0${s}.00${xx}`.replace(/0+(?=\\d\\d+[:.]|\\d\\d\\d)/g, '')\n}\n\nmodule.exports = format_ms3;\n",
             "markdown": null
         },
         {
@@ -1774,6 +1782,14 @@
             "markdown": null
         },
         {
+            "id": "round",
+            "name": "round",
+            "file": "src/round.js",
+            "require": "const round = require('@vbarbarosh/node-helpers/src/round');",
+            "source_code": "// // round(34.037531, 0.001) -> 34.038000000000004\n// function round(value, precision = 1)\n// {\n//     return Math.round(value / precision) * precision;\n// }\n\n// // round(1.005, 0.01) -> 1\n// function round(value, precision = 1)\n// {\n//     const p = 1 / precision;\n//     return Math.round(value * p) / p;\n// }\n\nfunction round(value, precision = 1)\n{\n    if (precision === 0) {\n        return value;\n    }\n    const factor = 1 / precision;\n    const epsilon = 1e-12 * Math.sign(value);\n    return Math.round((value * factor) + epsilon) / factor;\n}\n\nmodule.exports = round;\n",
+            "markdown": null
+        },
+        {
             "id": "sanitize_dash_name",
             "name": "sanitize_dash_name",
             "file": "src/sanitize_dash_name.js",
@@ -1819,7 +1835,7 @@
             "file": "src/shell.js",
             "require": "const shell = require('@vbarbarosh/node-helpers/src/shell');",
             "source_code": "const child_process = require('child_process');\n\nfunction shell(args, options)\n{\n    return new Promise(function (resolve, reject) {\n        child_process.execFile(args[0], args.slice(1), options, function (error, stdout, stderr) {\n            if (error) {\n                reject(error);\n            }\n            else if (stderr) {\n                reject(new Error(`Process terminated with the following STDERR:\\n\\n${stderr}`));\n            }\n            else {\n                resolve(stdout);\n            }\n        });\n    });\n}\n\nmodule.exports = shell;\n",
-            "markdown": null
+            "markdown": "Basic helper for running external commands via `execFile`.\n\n- Fails if the command exits with non-zero code.\n- Fails if anything is printed to `stderr`.\n- Resolves with `stdout` (string), exactly as produced.\n\n## Signature\n\n```\nshell(args, options) → Promise<string>\n```\n\n## Notes\n\n- `args[0]` is the executable; `args[1..]` are arguments.\n- Suitable for commands that produce clean stdout and no warnings.\n"
         },
         {
             "id": "shell_curl_progress",
@@ -1835,7 +1851,7 @@
             "file": "src/shell_json.js",
             "require": "const shell_json = require('@vbarbarosh/node-helpers/src/shell_json');",
             "source_code": "const child_process = require('child_process');\n\nfunction shell_json(args, options)\n{\n    return new Promise(function (resolve, reject) {\n        child_process.execFile(args[0], args.slice(1), options, function (error, stdout, stderr) {\n            if (error) {\n                reject(error);\n            }\n            else if (stderr) {\n                reject(new Error(`Process terminated with the following STDERR:\\n\\n${stderr}`));\n            }\n            else {\n                try {\n                    resolve(JSON.parse(stdout));\n                }\n                catch (error) {\n                    reject(error);\n                }\n            }\n        });\n    });\n}\n\nmodule.exports = shell_json;\n",
-            "markdown": null
+            "markdown": "Basic helper for running external commands via `execFile`, and parse result by JSON.parse.\n\n- Fails if the command exits with non-zero code.\n- Fails if anything is printed to `stderr`.\n- Fails if stdout is not valid JSON.\n- Resolves with parsed JSON value.\n\n## Signature\n\n```\nshell_json(args, options) → Promise<any>\n```\n"
         },
         {
             "id": "shell_lines",
@@ -1843,15 +1859,15 @@
             "file": "src/shell_lines.js",
             "require": "const shell_lines = require('@vbarbarosh/node-helpers/src/shell_lines');",
             "source_code": "const shell = require('./shell');\n\nasync function shell_lines(args, options)\n{\n    const s = await shell(args, options);\n    return s.trimEnd().split('\\n');\n}\n\nmodule.exports = shell_lines;\n",
-            "markdown": null
+            "markdown": "Basic helper for running external commands via `execFile`, and splits stdout into lines.\n\n- Fails if the command exits with non-zero code.\n- Fails if anything is printed to `stderr`.\n- Strips trailing newline(s).\n- Returns array of lines.\n\n## Signature\n\n```\nshell_lines(args, options) → Promise<string[]>\n```\n"
         },
         {
             "id": "shell_spawn",
             "name": "shell_spawn",
             "file": "src/shell_spawn.js",
             "require": "const shell_spawn = require('@vbarbarosh/node-helpers/src/shell_spawn');",
-            "source_code": "const ExitCodeError = require('./errors/ExitCodeError');\nconst Promise = require('bluebird');\nconst child_process = require('child_process');\n\n// 📕 Notes by ChatGPT:\n// If the child is killed by a signal (e.g. SIGKILL from outside),\n// Node’s exit event gives code = null, signal = 'SIGKILL'.\n// Your code treats this as success (resolve).\n// That might be fine for your use case, but be aware:\n//\n// If you want “child died by signal” to be treated as non-zero,\n// you’d need to change this check to something like:\n//\n// > function promise_exit(code, signal) {\n// >     out.off('error', promise_error);\n// >     if (code === 0) {\n// >         resolve(signal);\n// >     } else {\n// >         reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));\n// >     }\n// > }\n\n// ⚠️ Both .init and .promise are targets for race conditions!\nfunction shell_spawn(args, options)\n{\n    let init, promise;\n    const out = child_process.spawn(args[0], args.slice(1), options);\n    out.init = function () {\n        return init = init || new Promise(function (resolve, reject) {\n            out.once('error', init_error);\n            out.once('spawn', init_spawn);\n            function init_error(error) {\n                out.off('spawn', init_spawn);\n                reject(error);\n            }\n            function init_spawn() {\n                out.off('error', init_error);\n                resolve(out);\n            }\n        });\n    };\n    out.promise = function () {\n        return promise = promise || new Promise(function (resolve, reject) {\n            out.once('error', promise_error);\n            out.once('exit', promise_exit);\n            function promise_error(error) {\n                out.off('exit', promise_exit);\n                reject(error);\n            }\n            function promise_exit(code, signal) {\n                out.off('error', promise_error);\n                if (code === 0) {\n                    resolve();\n                }\n                else {\n                    reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));\n                }\n            }\n        });\n    };\n    return out;\n}\n\nmodule.exports = shell_spawn;\n",
-            "markdown": null
+            "source_code": "const ExitCodeError = require('./errors/ExitCodeError');\nconst Promise = require('bluebird');\nconst child_process = require('child_process');\nconst ignore = require('./ignore');\n\n// 📕 Notes by ChatGPT:\n// If the child is killed by a signal (e.g. SIGKILL from outside),\n// Node’s exit event gives code = null, signal = 'SIGKILL'.\n// Your code treats this as success (resolve).\n// That might be fine for your use case, but be aware:\n//\n// If you want “child died by signal” to be treated as non-zero,\n// you’d need to change this check to something like:\n//\n// > function promise_exit(code, signal) {\n// >     out.off('error', promise_error);\n// >     if (code === 0) {\n// >         resolve(signal);\n// >     } else {\n// >         reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));\n// >     }\n// > }\n\nfunction shell_spawn(args, options)\n{\n    const init = {};\n    const run = {};\n\n    init.promise = new Promise(function (resolve, reject) {\n        init.resolve = resolve;\n        init.reject = reject;\n    });\n    run.promise = new Promise(function (resolve, reject) {\n        run.resolve = resolve;\n        run.reject = reject;\n    });\n\n    const out = child_process.spawn(args[0], args.slice(1), options);\n    out.once('error', onerror);\n    out.once('spawn', onspawn);\n    out.once('exit', onexit);\n    out.init = () => init.promise;\n    out.promise = () => run.promise;\n    return out;\n\n    function onerror(error) {\n        init.reject(error);\n        run.reject(error);\n    }\n    function onexit(code, signal) {\n        if (code === 0) {\n            run.resolve();\n        }\n        else {\n            run.reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));\n        }\n    }\n    function onspawn() {\n        init.resolve(out);\n        init.reject = ignore;\n    }\n}\n\nmodule.exports = shell_spawn;\n",
+            "markdown": "Spawn-based helper for long-running or streaming commands.\n\nProvides two promises:\n\n- `proc.init()` — resolves when the child emits `spawn`.\n- `proc.promise()` — resolves when the child exits with code 0.\n\n## Failure semantics\n\n- Rejects if `error` event occurs.\n- Rejects if exit code is non-zero.\n- If child dies by signal, treated as non-zero exit (uses exitCode = 128).\n\n## Signature\n\n```\nconst proc = shell_spawn(args, options)\nproc.init() → Promise<ChildProcess>\nproc.promise() → Promise<void>\n```\n\n## Notes\n\n- Output is streamed (not buffered).\n- Use when you need live stdout/stderr or long-running jobs.\n"
         },
         {
             "id": "shell_stdall",
@@ -1859,7 +1875,7 @@
             "file": "src/shell_stdall.js",
             "require": "const shell_stdall = require('@vbarbarosh/node-helpers/src/shell_stdall');",
             "source_code": "const child_process = require('child_process');\n\nfunction shell_stdall(args, options)\n{\n    return new Promise(function (resolve, reject) {\n        child_process.execFile(args[0], args.slice(1), options, function (error, stdout, stderr) {\n            error ? reject(error) : resolve({stdout, stderr});\n        });\n    });\n}\n\nmodule.exports = shell_stdall;\n",
-            "markdown": null
+            "markdown": "Runs a command via `execFile` and returns both stdout and stderr.\n\n- Rejects only on exec error.\n- Resolves with `{stdout, stderr}`.\n- Does NOT treat stderr output as failure.\n\n## Signature\n\n```\nshell_stdall(args, options) → Promise<{stdout: string, stderr: string}>\n```\n"
         },
         {
             "id": "shell_thru",
@@ -1867,7 +1883,7 @@
             "file": "src/shell_thru.js",
             "require": "const shell_thru = require('@vbarbarosh/node-helpers/src/shell_thru');",
             "source_code": "const shell_spawn = require('./shell_spawn');\n\nfunction shell_thru(args, options)\n{\n    return shell_spawn(args, {stdio: 'inherit', ...options});\n}\n\nmodule.exports = shell_thru;\n",
-            "markdown": null
+            "markdown": "Convenience wrapper over `shell_spawn` with `stdio: 'inherit'`.\n\n- Child stdout/stderr are streamed directly to parent terminal.\n- Supports `proc.init()` and `proc.promise()` like `shell_spawn`.\n\n## Signature\n\n```\nshell_thru(args, options) → ChildProcess\n```\n"
         },
         {
             "id": "shell_ytdlp_progress",
