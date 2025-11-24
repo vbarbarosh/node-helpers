@@ -1,6 +1,7 @@
 const ExitCodeError = require('./errors/ExitCodeError');
 const Promise = require('bluebird');
 const child_process = require('child_process');
+const ignore = require('./ignore');
 
 // 📕 Notes by ChatGPT:
 // If the child is killed by a signal (e.g. SIGKILL from outside),
@@ -20,45 +21,44 @@ const child_process = require('child_process');
 // >     }
 // > }
 
-// ⚠️ Both .init and .promise are targets for race conditions!
 function shell_spawn(args, options)
 {
-    let init, promise;
+    const init = {};
+    const run = {};
+
+    init.promise = new Promise(function (resolve, reject) {
+        init.resolve = resolve;
+        init.reject = reject;
+    });
+    run.promise = new Promise(function (resolve, reject) {
+        run.resolve = resolve;
+        run.reject = reject;
+    });
+
     const out = child_process.spawn(args[0], args.slice(1), options);
-    out.init = function () {
-        return init = init || new Promise(function (resolve, reject) {
-            out.once('error', init_error);
-            out.once('spawn', init_spawn);
-            function init_error(error) {
-                out.off('spawn', init_spawn);
-                reject(error);
-            }
-            function init_spawn() {
-                out.off('error', init_error);
-                resolve(out);
-            }
-        });
-    };
-    out.promise = function () {
-        return promise = promise || new Promise(function (resolve, reject) {
-            out.once('error', promise_error);
-            out.once('exit', promise_exit);
-            function promise_error(error) {
-                out.off('exit', promise_exit);
-                reject(error);
-            }
-            function promise_exit(code, signal) {
-                out.off('error', promise_error);
-                if (code === 0) {
-                    resolve();
-                }
-                else {
-                    reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));
-                }
-            }
-        });
-    };
+    out.once('error', onerror);
+    out.once('spawn', onspawn);
+    out.once('exit', onexit);
+    out.init = () => init.promise;
+    out.promise = () => run.promise;
     return out;
+
+    function onerror(error) {
+        init.reject(error);
+        run.reject(error);
+    }
+    function onexit(code, signal) {
+        if (code === 0) {
+            run.resolve();
+        }
+        else {
+            run.reject(new ExitCodeError(code || 128, `Process terminated with code ${code} and signal ${signal}`));
+        }
+    }
+    function onspawn() {
+        init.resolve(out);
+        init.reject = ignore;
+    }
 }
 
 module.exports = shell_spawn;
