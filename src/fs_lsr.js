@@ -3,6 +3,9 @@ const fs_fi = require('./fs_fi');
 const fs_path_join = require('./fs_path_join');
 const fs_readdir = require('./fs_readdir');
 
+/**
+ * @deprecated Deprecated in favor or fs_walk
+ */
 async function fs_lsr(pathname = '.')
 {
     const fi = await fs_fi(pathname);
