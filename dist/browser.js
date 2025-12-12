@@ -80,7 +80,7 @@ function serializer(replacer, cycleReplacer) {
 
 var map = {
 	"./array_chunk.js": "./src/array_chunk.js",
-	"./array_chunk_jobs.js": "./src/array_chunk_jobs.js",
+	"./array_chunk_balanced.js": "./src/array_chunk_balanced.js",
 	"./array_fps.js": "./src/array_fps.js",
 	"./array_gcd.js": "./src/array_gcd.js",
 	"./array_group.js": "./src/array_group.js",
@@ -205,39 +205,44 @@ module.exports = array_chunk;
 
 /***/ }),
 
-/***/ "./src/array_chunk_jobs.js":
-/*!*********************************!*\
-  !*** ./src/array_chunk_jobs.js ***!
-  \*********************************/
+/***/ "./src/array_chunk_balanced.js":
+/*!*************************************!*\
+  !*** ./src/array_chunk_balanced.js ***!
+  \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const clamp = __webpack_require__(/*! ./clamp */ "./src/clamp.js");
 
 /**
- * Split an array of jobs between up to `max_threads`, while trying to put at least
- * `min_jobs_per_thread` items into each chunk.
+ * Split an array into up to `max_chunks` balanced chunks, while ensuring that
+ * each chunk contains at least `min_items_per_chunk` items (when possible).
  *
- * - If an array is empty → returns [].
- * - If there are too few items to satisfy `min_items_per_chunk`, even for 1 chunk,
- *   everything goes into a single chunk.
+ * The function distributes items as evenly as possible:
+ * - Chunk sizes differ by at most 1 item.
+ * - The number of chunks never exceeds `max_chunks`.
  *
- * Alternative names:
- *   - array_chunk_balanced
+ * Originally designed for distributing workload across threads
+ * (e.g. `array_chunk_balanced(jobs, max_threads, min_jobs_per_thread)`).
  *
- * @param array
- * @param max_threads
- * @param min_jobs_per_thread
- * @returns {*[]}
+ * Edge cases:
+ * - If the input array is empty → returns [].
+ * - If there are too few items to satisfy `min_items_per_chunk`, even for a single
+ *   chunk, all items are placed into one chunk.
+ *
+ * @param {Array} array
+ * @param {number} max_chunks
+ * @param {number} min_items_per_chunk
+ * @returns {Array<Array>}
  */
-function array_chunk_jobs(array = [], max_threads = 1, min_jobs_per_thread = 1)
+function array_chunk_balanced(array = [], max_chunks = 1, min_items_per_chunk = 1)
 {
-    const total_threads = clamp(1, max_threads, Math.floor(array.length / min_jobs_per_thread));
-    const jobs_per_thread = Math.floor(array.length / total_threads);
-    let extra = array.length % total_threads;
+    const total_chunks = clamp(1, max_chunks, Math.floor(array.length / min_items_per_chunk));
+    const items_per_chunk = Math.floor(array.length / total_chunks);
+    let extra = array.length % total_chunks;
 
     const out = [];
     for (let i = 0; i < array.length; ) {
-        const size = jobs_per_thread + (extra ? 1 : 0);
+        const size = items_per_chunk + (extra ? 1 : 0);
         out.push(array.slice(i, i + size));
         i += size;
         if (extra) {
@@ -247,7 +252,7 @@ function array_chunk_jobs(array = [], max_threads = 1, min_jobs_per_thread = 1)
     return out;
 }
 
-module.exports = array_chunk_jobs;
+module.exports = array_chunk_balanced;
 
 
 /***/ }),
@@ -2479,10 +2484,10 @@ var __webpack_exports__ = {};
   \******************************/
 const ns = new URL(document.currentScript.src).searchParams.get('var') ?? 'h';
 if (typeof window[ns] !== 'undefined') {
-    console.log(`❌ @vbarbarosh/node-helpers@${"3.73.0"} was not injected — window.${ns} is already in use`);
+    console.log(`❌ @vbarbarosh/node-helpers@${"3.74.0"} was not injected — window.${ns} is already in use`);
 }
 else {
-    console.log(`🎉 @vbarbarosh/node-helpers@${"3.73.0"} successfully exposed as window.${ns}`);
+    console.log(`🎉 @vbarbarosh/node-helpers@${"3.74.0"} successfully exposed as window.${ns}`);
     window[ns] = {};
     // https://github.com/webpack/webpack/issues/625
     // https://webpack.js.org/guides/dependency-management/#require-context

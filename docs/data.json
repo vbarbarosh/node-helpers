@@ -331,11 +331,11 @@
             "markdown": null
         },
         {
-            "id": "array_chunk_jobs",
-            "name": "array_chunk_jobs",
-            "file": "src/array_chunk_jobs.js",
-            "require": "const array_chunk_jobs = require('@vbarbarosh/node-helpers/src/array_chunk_jobs');",
-            "source_code": "const clamp = require('./clamp');\n\n/**\n * Split an array of jobs between up to `max_threads`, while trying to put at least\n * `min_jobs_per_thread` items into each chunk.\n *\n * - If an array is empty → returns [].\n * - If there are too few items to satisfy `min_items_per_chunk`, even for 1 chunk,\n *   everything goes into a single chunk.\n *\n * Alternative names:\n *   - array_chunk_balanced\n *\n * @param array\n * @param max_threads\n * @param min_jobs_per_thread\n * @returns {*[]}\n */\nfunction array_chunk_jobs(array = [], max_threads = 1, min_jobs_per_thread = 1)\n{\n    const total_threads = clamp(1, max_threads, Math.floor(array.length / min_jobs_per_thread));\n    const jobs_per_thread = Math.floor(array.length / total_threads);\n    let extra = array.length % total_threads;\n\n    const out = [];\n    for (let i = 0; i < array.length; ) {\n        const size = jobs_per_thread + (extra ? 1 : 0);\n        out.push(array.slice(i, i + size));\n        i += size;\n        if (extra) {\n            extra--;\n        }\n    }\n    return out;\n}\n\nmodule.exports = array_chunk_jobs;\n",
+            "id": "array_chunk_balanced",
+            "name": "array_chunk_balanced",
+            "file": "src/array_chunk_balanced.js",
+            "require": "const array_chunk_balanced = require('@vbarbarosh/node-helpers/src/array_chunk_balanced');",
+            "source_code": "const clamp = require('./clamp');\n\n/**\n * Split an array into up to `max_chunks` balanced chunks, while ensuring that\n * each chunk contains at least `min_items_per_chunk` items (when possible).\n *\n * The function distributes items as evenly as possible:\n * - Chunk sizes differ by at most 1 item.\n * - The number of chunks never exceeds `max_chunks`.\n *\n * Originally designed for distributing workload across threads\n * (e.g. `array_chunk_balanced(jobs, max_threads, min_jobs_per_thread)`).\n *\n * Edge cases:\n * - If the input array is empty → returns [].\n * - If there are too few items to satisfy `min_items_per_chunk`, even for a single\n *   chunk, all items are placed into one chunk.\n *\n * @param {Array} array\n * @param {number} max_chunks\n * @param {number} min_items_per_chunk\n * @returns {Array<Array>}\n */\nfunction array_chunk_balanced(array = [], max_chunks = 1, min_items_per_chunk = 1)\n{\n    const total_chunks = clamp(1, max_chunks, Math.floor(array.length / min_items_per_chunk));\n    const items_per_chunk = Math.floor(array.length / total_chunks);\n    let extra = array.length % total_chunks;\n\n    const out = [];\n    for (let i = 0; i < array.length; ) {\n        const size = items_per_chunk + (extra ? 1 : 0);\n        out.push(array.slice(i, i + size));\n        i += size;\n        if (extra) {\n            extra--;\n        }\n    }\n    return out;\n}\n\nmodule.exports = array_chunk_balanced;\n",
             "markdown": null
         },
         {
