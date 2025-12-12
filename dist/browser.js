@@ -80,6 +80,8 @@ function serializer(replacer, cycleReplacer) {
 
 var map = {
 	"./array_chunk.js": "./src/array_chunk.js",
+	"./array_chunk_jobs.js": "./src/array_chunk_jobs.js",
+	"./array_fps.js": "./src/array_fps.js",
 	"./array_gcd.js": "./src/array_gcd.js",
 	"./array_group.js": "./src/array_group.js",
 	"./array_group_map.js": "./src/array_group_map.js",
@@ -199,6 +201,83 @@ function array_chunk(array = [], limit = 1)
 }
 
 module.exports = array_chunk;
+
+
+/***/ }),
+
+/***/ "./src/array_chunk_jobs.js":
+/*!*********************************!*\
+  !*** ./src/array_chunk_jobs.js ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const clamp = __webpack_require__(/*! ./clamp */ "./src/clamp.js");
+
+/**
+ * Split an array of jobs between up to `max_threads`, while trying to put at least
+ * `min_jobs_per_thread` items into each chunk.
+ *
+ * - If an array is empty → returns [].
+ * - If there are too few items to satisfy `min_items_per_chunk`, even for 1 chunk,
+ *   everything goes into a single chunk.
+ *
+ * Alternative names:
+ *   - array_chunk_balanced
+ *
+ * @param array
+ * @param max_threads
+ * @param min_jobs_per_thread
+ * @returns {*[]}
+ */
+function array_chunk_jobs(array = [], max_threads = 1, min_jobs_per_thread = 1)
+{
+    const total_threads = clamp(1, max_threads, Math.floor(array.length / min_jobs_per_thread));
+    const jobs_per_thread = Math.floor(array.length / total_threads);
+    let extra = array.length % total_threads;
+
+    const out = [];
+    for (let i = 0; i < array.length; ) {
+        const size = jobs_per_thread + (extra ? 1 : 0);
+        out.push(array.slice(i, i + size));
+        i += size;
+        if (extra) {
+            extra--;
+        }
+    }
+    return out;
+}
+
+module.exports = array_chunk_jobs;
+
+
+/***/ }),
+
+/***/ "./src/array_fps.js":
+/*!**************************!*\
+  !*** ./src/array_fps.js ***!
+  \**************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const round = __webpack_require__(/*! ./round */ "./src/round.js");
+
+const EPS = 0.00001;
+
+function array_fps(duration_sec, fps)
+{
+    const total_frames = Math.floor(duration_sec * fps);
+
+    if (total_frames <= 1) {
+        return [0];
+    }
+
+    const out = [];
+    for (let i = 0; i < total_frames; ++i) {
+        out.push(round((i / (total_frames - 1)) * (duration_sec - EPS), EPS));
+    }
+    return out;
+}
+
+module.exports = array_fps;
 
 
 /***/ }),
@@ -642,6 +721,22 @@ function array_unique_last(array, fn = identity)
 }
 
 module.exports = array_unique_last;
+
+
+/***/ }),
+
+/***/ "./src/clamp.js":
+/*!**********************!*\
+  !*** ./src/clamp.js ***!
+  \**********************/
+/***/ ((module) => {
+
+function clamp(min, max, value)
+{
+    return Math.max(min, Math.min(max, value));
+}
+
+module.exports = clamp;
 
 
 /***/ }),
@@ -2126,6 +2221,117 @@ module.exports = random_int;
 
 /***/ }),
 
+/***/ "./src/round.js":
+/*!**********************!*\
+  !*** ./src/round.js ***!
+  \**********************/
+/***/ ((module) => {
+
+function round(value, precision = 1)
+{
+    if (precision === 0) {
+        return value;
+    }
+
+    const factor = 1 / precision;
+    const sign = Math.sign(value);
+
+    // Count decimal places for the cleanup (toFixed)
+    const exponent = get_decimal_places(precision);
+
+    // Small epsilon helps fix most floating point edge cases involving ties
+    const epsilon = 1e-12*sign;
+
+    // Scale → Nudge → Round → Unscale
+    const final = (Math.round(value*factor + epsilon) / factor);
+
+    // Cleanup trailing garbage such as: 34.038000000000004 → 34.038
+    return Number(final.toFixed(exponent));
+}
+
+function get_decimal_places(precision)
+{
+    if (Math.floor(precision) === precision) {
+        return 0;
+    }
+
+    // Scientific notation support: e.g., 1e-20
+    const e = precision.toExponential().split('e');
+    if (e.length > 1) {
+        return Math.abs(parseInt(e[1], 10));
+    }
+
+    // Normal decimal notation (e.g., 0.001)
+    return precision.toString().split('.')[1]?.length || 0;
+}
+
+// // round(34.037531, 0.001) -> 34.038000000000004
+// function round(value, precision = 1)
+// {
+//     return Math.round(value / precision) * precision;
+// }
+
+// // round(1.005, 0.01) -> 1
+// function round(value, precision = 1)
+// {
+//     const p = 1 / precision;
+//     return Math.round(value * p) / p;
+// }
+
+// function round(value, precision = 1)
+// {
+//     if (precision === 0) {
+//         return value;
+//     }
+//     const factor = 1 / precision;
+//     const epsilon = 1e-12 * Math.sign(value);
+//     return Number((Math.round((value * factor) + epsilon) / factor).toPrecision(15));
+// }
+
+// function round(value, precision = 1)
+// {
+//     if (precision === 0) {
+//         return value;
+//     }
+//
+//     const factor = 1 / precision;
+//
+//     // The exponent is critical for defining the precision of the cleanup
+//     const exponent = Math.max(0, String(precision).length - 2);
+//
+//     // 1. Calculate the scaled value.
+//     let scaled = value * factor;
+//
+//     // 2. Strategic Nudge: Add a tiny, signed epsilon (1e-12) to correct floating-point
+//     //    representation errors and force symmetric rounding (as Math.abs failed).
+//     const epsilon = 1e-12 * Math.sign(value);
+//
+//     // 3. Round the nudged value.
+//     const roundedScaled = Math.round(scaled + epsilon);
+//
+//     // 4. Unscale the value.
+//     const result = roundedScaled / factor;
+//
+//     // 5. CRITICAL FINAL STEP: Use .toFixed() with the required decimal places for cleanup.
+//     // This stabilizes the result against the strict equality checks, including
+//     // the safe integer boundary errors caused by the final division.
+//     return Number(result.toFixed(exponent));
+// }
+
+// 💎 The most precise solution, but - extra dependency.
+//
+// const Decimal = require('decimal.js');
+//
+// function round(value, precision = 1)
+// {
+//     return new Decimal(value).div(precision).round().times(precision).toNumber();
+// }
+
+module.exports = round;
+
+
+/***/ }),
+
 /***/ "./src/urlmod.js":
 /*!***********************!*\
   !*** ./src/urlmod.js ***!
@@ -2273,10 +2479,10 @@ var __webpack_exports__ = {};
   \******************************/
 const ns = new URL(document.currentScript.src).searchParams.get('var') ?? 'h';
 if (typeof window[ns] !== 'undefined') {
-    console.log(`❌ @vbarbarosh/node-helpers@${"3.72.5"} was not injected — window.${ns} is already in use`);
+    console.log(`❌ @vbarbarosh/node-helpers@${"3.73.0"} was not injected — window.${ns} is already in use`);
 }
 else {
-    console.log(`🎉 @vbarbarosh/node-helpers@${"3.72.5"} successfully exposed as window.${ns}`);
+    console.log(`🎉 @vbarbarosh/node-helpers@${"3.73.0"} successfully exposed as window.${ns}`);
     window[ns] = {};
     // https://github.com/webpack/webpack/issues/625
     // https://webpack.js.org/guides/dependency-management/#require-context
