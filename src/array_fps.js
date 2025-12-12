@@ -12,7 +12,6 @@ function array_fps(duration_sec, fps)
 
     const out = [];
     for (let i = 0; i < total_frames; ++i) {
-        // console.log((i / (total_frames - 1)) * (duration_sec - EPS), round((i / (total_frames - 1)) * (duration_sec - EPS), EPS));
         out.push(round((i / (total_frames - 1)) * (duration_sec - EPS), EPS));
     }
     return out;
