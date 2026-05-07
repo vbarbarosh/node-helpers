@@ -467,6 +467,14 @@
             "markdown": null
         },
         {
+            "id": "cache",
+            "name": "cache",
+            "file": "src/cache.js",
+            "require": "const cache = require('@vbarbarosh/node-helpers/src/cache');",
+            "source_code": "// read, write, refresh\nasync function cache({get, set, refresh})\n{\n    try {\n        return await get();\n    }\n    catch {\n    }\n\n    const value = await refresh();\n    await set(value);\n    return value;\n}\n\nmodule.exports = cache;\n",
+            "markdown": "Probably the most basic cache engine ever.\n\n```javascript\nawait cache({\n    get: () => fs_read_json('data.json'),\n    set: v => fs_write_json('data.json', v),\n    refresh: () => compute(),\n});\n```\n"
+        },
+        {
             "id": "clamp",
             "name": "clamp",
             "file": "src/clamp.js",
@@ -2169,6 +2177,14 @@
             "require": "const urlmod = require('@vbarbarosh/node-helpers/src/urlmod');",
             "source_code": "/**\n * Set, change, or remove query string parameters.\n *\n * urlmod('', {a: 1})           '?a=1'  set\n * urlmod('?a=1', {a: 2})       '?a=2'  change\n * urlmod('?a=1', {a: null})    ''      remove\n */\nfunction urlmod(url, params)\n{\n    const tmp_url = new URL(url||'', 'xxx://___base___/');\n    const tmp_search = tmp_url.searchParams;\n    Object.entries(params || {}).forEach(function ([key, value]) {\n        switch (value) {\n        case null:\n        case undefined:\n            tmp_search.delete(key);\n            break;\n        case true:\n            tmp_search.set(key, 1);\n            break;\n        case false:\n            tmp_search.set(key, 0);\n            break;\n        default:\n            tmp_search.set(key, value);\n            break;\n        }\n    });\n    if (url && url[0] === '/') {\n        return tmp_url.toString().replace(/^xxx:\\/\\/___base___/, '');\n    }\n    return tmp_url.toString().replace(/^xxx:\\/\\/___base___\\//, '');\n}\n\nmodule.exports = urlmod;\n",
             "markdown": "Set, change, or remove query string parameters.\n\n```js\nurlmod('', {a: 1})          // '?a=1'  set\nurlmod('?a=1', {a: 2})      // '?a=2'  change\nurlmod('?a=1', {a: null})   // ''      remove\n```\n"
+        },
+        {
+            "id": "urlparts",
+            "name": "urlparts",
+            "file": "src/urlparts.js",
+            "require": "const urlparts = require('@vbarbarosh/node-helpers/src/urlparts');",
+            "source_code": "function urlparts(url)\n{\n    const tmp = url instanceof URL\n        ? url\n        : new URL((typeof url === 'string' ? url : ''), 'fake://fake/');\n    return {\n        href: tmp.href,\n        protocol: tmp.protocol,\n        hostname: tmp.hostname,\n        username: tmp.username,\n        password: tmp.password,\n        host: tmp.host,\n        port: tmp.port,\n        path: tmp.pathname,\n        search: tmp.search,\n        hash: tmp.hash,\n    };\n}\n\nmodule.exports = urlparts;\n",
+            "markdown": null
         },
         {
             "id": "user_friendly_status",
