@@ -14,7 +14,7 @@ vue_component('main-demos', {
         demos: function () {
             const package_json = `{
   "dependencies": {
-    "@vbarbarosh/node-helpers": "^3.74.1"
+    "@vbarbarosh/node-helpers": "^3.75.0"
   }
 }`;
             const tmp = {};

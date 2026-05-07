@@ -2484,10 +2484,10 @@ var __webpack_exports__ = {};
   \******************************/
 const ns = new URL(document.currentScript.src).searchParams.get('var') ?? 'h';
 if (typeof window[ns] !== 'undefined') {
-    console.log(`❌ @vbarbarosh/node-helpers@${"3.74.1"} was not injected — window.${ns} is already in use`);
+    console.log(`❌ @vbarbarosh/node-helpers@${"3.75.0"} was not injected — window.${ns} is already in use`);
 }
 else {
-    console.log(`🎉 @vbarbarosh/node-helpers@${"3.74.1"} successfully exposed as window.${ns}`);
+    console.log(`🎉 @vbarbarosh/node-helpers@${"3.75.0"} successfully exposed as window.${ns}`);
     window[ns] = {};
     // https://github.com/webpack/webpack/issues/625
     // https://webpack.js.org/guides/dependency-management/#require-context
