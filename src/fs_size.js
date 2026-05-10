@@ -1,8 +1,8 @@
 const fs_stat = require('./fs_stat');
 
-async function fs_size(file)
+async function fs_size(path)
 {
-    const stat = await fs_stat(file);
+    const stat = await fs_stat(path);
     return stat.size;
 }
 
