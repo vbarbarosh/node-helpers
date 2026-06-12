@@ -23,6 +23,9 @@
         "node",
         "helpers"
     ],
+    "engines": {
+        "node": ">=22"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/vbarbarosh/node-helpers.git"
@@ -31,7 +34,7 @@
         "url": "https://github.com/vbarbarosh/node-helpers/issues"
     },
     "peerDependencies": {
-        "@paralleldrive/cuid2": "*",
+        "@paralleldrive/cuid2": "^3.3.0",
         "@vbarbarosh/type-helpers": "^0.2.0",
         "axios": "^1.7.9",
         "bluebird": "^3.7.2",
