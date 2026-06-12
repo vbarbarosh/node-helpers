@@ -6,7 +6,7 @@ const redis = require('redis');
 async function redis_connect(url)
 {
     const tmp = new URL(url);
-    const password = tmp.password || tmp.searchParams.get('password');
+    const password = tmp.password ? decodeURIComponent(tmp.password) : tmp.searchParams.get('password');
 
     if (url.match(/^tls:/)) {
         const out = redis.createClient({

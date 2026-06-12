@@ -6,7 +6,7 @@ async function fs_assert_file_readable(file)
     if (!fi.isFile()) {
         throw new Error(`Not a file: ${file}`);
     }
-    if (fi.mode & 0o111) {
+    if ((fi.mode & 0o444) !== 0o444) {
         throw new Error(`File is not readable by all: ${file}`);
     }
 }

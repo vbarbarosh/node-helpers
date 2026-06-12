@@ -36,6 +36,7 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
     let connections = 0;
     let next_first = 0;
     let total_written = 0;
+    let rs0_used = false;
 
     const timer = setInterval(tick, 1000);
     function tick() {
@@ -70,15 +71,17 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
             if (first > last) {
                 return;
             }
-            const rs = (first === 0) ? rs0 : await read_stream_with_range(first, last);
+            const rs = (first === 0 && !rs0_used) ? rs0 : await read_stream_with_range(first, last);
+            rs0_used = rs0_used || (rs === rs0);
             if (rs.content_range.total !== total) {
                 rs.once('error', ignore);
                 rs.destroy();
                 throw new UserFriendlyError('Size of a file changed during download');
             }
+            let counted = 0;
             const acc = new stream.PassThrough({
                 transform(buf, encoding, next) {
-                    first += buf.length;
+                    counted += buf.length;
                     total_written += buf.length;
                     progress.add(buf.length);
                     next(null, buf);
@@ -88,7 +91,15 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
                 flags: fs.constants.O_WRONLY, // |fs.constants.O_CREAT,
                 start: first,
             });
-            await stream.promises.pipeline(rs, acc, ws);
+            try {
+                await stream.promises.pipeline(rs, acc, ws);
+            }
+            catch (error) {
+                // Counted bytes may not have reached the disk; retry rewrites the chunk from its start
+                total_written -= counted;
+                progress.add(-counted);
+                throw error;
+            }
         }
     }
 }

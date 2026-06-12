@@ -49,7 +49,9 @@ async function parallel({concurrency, spawn, progress})
                     if (failed) {
                         return;
                     }
+                    failed = true;
                     running.splice(0, running.length);
+                    clearInterval(timer);
                     reject(error);
                 }
             }

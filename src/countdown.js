@@ -11,31 +11,39 @@ function countdown(ctx)
 {
     let done = false;
     let timer = null;
+    let timeout_timer = null;
     return new Promise(function (resolve, reject) {
         ctx.value = ctx.fn ? Promise.method(ctx.fn).call() : Promise.resolve(ctx.value);
         ctx.timeout = ctx.timeout || 0; // ⚠️ Rename to timeout_ms
         ctx.time_now = new Date();
         ctx.time_begin = new Date();
-        ctx.time_end = Date.now() + ctx.timeout;
+        // No timeout means no deadline
+        ctx.time_end = ctx.timeout ? Date.now() + ctx.timeout : Infinity;
         ctx.tick_ms = ctx.tick_ms || 1000;
         ctx.tick = ctx.tick || function () {};
         ctx.resolve = function (value) {
             if (done) {
-                throw new Error('Already settled');
+                return;
             }
             done = true;
             clearInterval(timer);
+            clearTimeout(timeout_timer);
             resolve(value);
         };
         ctx.reject = function (error) {
             if (done) {
-                throw new Error('Already settled');
+                return;
             }
             done = true;
             clearInterval(timer);
+            clearTimeout(timeout_timer);
             reject(error);
         };
         timer = setInterval(tick, ctx.tick_ms);
+        if (ctx.timeout) {
+            // The interval alone enforces the deadline only at tick_ms granularity
+            timeout_timer = setTimeout(tick, ctx.timeout);
+        }
         ctx.value.then(ctx.resolve, ctx.reject);
         tick();
         function tick() {

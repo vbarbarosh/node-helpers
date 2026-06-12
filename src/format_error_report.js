@@ -37,11 +37,11 @@ ${JSON.stringify(error.response.config.headers||{}, null, 4).slice(1, -1).replac
 
 ${error.response.status} ${error.response.statusText}
 
-${(error.response.data.toString()||'').slice(0, 10240) || 'n/a'}
+${String(error.response.data ?? '').slice(0, 10240) || 'n/a'}
 
 --- STACK ---
 
-${error.stack ? error.stack.split(/\\n\\s*/) : 'n/a'}
+${error.stack ?? 'n/a'}
 `.trimStart();
 }
 
@@ -58,7 +58,7 @@ ${JSON.stringify(error.config.headers||{}, null, 4).slice(1, -1).replace(/^\s+|,
 
 --- STACK ---
 
-${error.stack ? error.stack.split(/\\n\\s*/) : 'n/a'}
+${error.stack ?? 'n/a'}
 `.trimStart();
 }
 

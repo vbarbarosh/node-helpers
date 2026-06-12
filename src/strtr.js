@@ -2,13 +2,23 @@
 // echo strtr("hello", ["he" => "X", "hell" => "Y"]);
 function strtr(subject, map)
 {
-    let out = subject;
-    Object.entries(map).sort(fcmp).forEach(function ([search, replace]) {
-        out = out.replaceAll(search, replace);
-    });
+    // Single pass, like PHP: replaced text is never scanned again
+    const keys = Object.keys(map).filter(v => v.length).sort(fcmp);
+    let out = '';
+    for (let i = 0; i < subject.length; ) {
+        const key = keys.find(v => subject.startsWith(v, i));
+        if (key) {
+            out += map[key];
+            i += key.length;
+        }
+        else {
+            out += subject[i];
+            i++;
+        }
+    }
     return out;
     function fcmp(b, a) {
-        return a[0].length - b[0].length;
+        return a.length - b.length;
     }
 }
 

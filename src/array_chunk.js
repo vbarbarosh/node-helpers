@@ -8,7 +8,7 @@
 function array_chunk(array = [], limit = 1)
 {
     if (limit < 1) {
-        throw new Error('Limit value should be greater than 1');
+        throw new Error('Limit value should be at least 1');
     }
 
     const out = [];

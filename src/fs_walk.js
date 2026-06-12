@@ -3,7 +3,7 @@ const fs_path_join = require('./fs_path_join');
 const fs_readdir = require('./fs_readdir');
 const ignore = require('./ignore');
 
-async function fs_walk({path = '.', user_friendly_status = ignore, error_handler = error_handler, signal})
+async function fs_walk({path = '.', user_friendly_status = ignore, error_handler = default_error_handler, signal})
 {
     const out = [];
     const queue = [path];
@@ -32,7 +32,7 @@ async function fs_walk({path = '.', user_friendly_status = ignore, error_handler
     return out;
 }
 
-function error_handler(error)
+function default_error_handler(error)
 {
     console.log(`⚠️ ${error.message}`);
 }

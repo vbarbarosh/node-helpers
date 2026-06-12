@@ -14,8 +14,8 @@ async function http_get_stream_range(url, first, last)
         out.content_range = parse_http_content_range(res.headers['content-range']);
     }
     else {
-        const len = res.headers['content-length'];
-        out.content_range = parse_http_content_range(`${res.headers['accept-ranges']} 0-${len}/${len}`);
+        const len = +res.headers['content-length'];
+        out.content_range = parse_http_content_range(`${res.headers['accept-ranges']} 0-${len - 1}/${len}`);
     }
     if (a && out.content_range.first !== a) {
         out.destroy(new Error(`First byte of a returned range (${format_thousands(out.content_range.first)}) is not as expected: [${format_thousands(a)}]`));
