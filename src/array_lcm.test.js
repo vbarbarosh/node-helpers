@@ -9,4 +9,12 @@ describe('array_lcm', function () {
         assert.deepStrictEqual(array_lcm([4,8,16]), 16);
         assert.deepStrictEqual(array_lcm([300,100,200,300]), 600);
     });
+    it('should handle single-element and empty arrays', function () {
+        assert.deepStrictEqual(array_lcm([5]), 5);
+        assert.deepStrictEqual(array_lcm([]), 1);
+    });
+    it('should be non-negative for negative input', function () {
+        assert.deepStrictEqual(array_lcm([4,-6]), 12);
+        assert.deepStrictEqual(array_lcm([-4,-6]), 12);
+    });
 });
