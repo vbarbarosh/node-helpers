@@ -48,6 +48,7 @@
         "split": "^1.0.1"
     },
     "optionalDependencies": {
+        "redis": "^4.6.0",
         "ssh2": "^1.16.0"
     },
     "devDependencies": {
