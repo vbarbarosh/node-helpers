@@ -39,8 +39,8 @@ function parse_spec(spec)
 function parse_expr(expr)
 {
     let substr;
-    let starts = false; // ^
-    let ends = false; // $
+    let starts; // ^
+    let ends; // $
     substr = expr.replaceAll('^', '');
     starts = (substr.length !== expr.length);
     expr = substr;

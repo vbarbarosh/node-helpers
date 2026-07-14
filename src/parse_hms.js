@@ -11,7 +11,7 @@ function parse_hms(expr)
 
     const parts = expr.split(':');
 
-    let h = 0, m = 0, s = 0;
+    let h = 0, m = 0, s;
 
     if (parts.length === 1) {
         // "SS(.fff)"
