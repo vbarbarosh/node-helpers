@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const assert = require('assert');
 const pid_exists = require('./pid_exists');
 const shell_spawn = require('./shell_spawn');
@@ -24,6 +25,32 @@ describe('shell_spawn', function () {
     });
     it('should throw when init fails', async function () {
         await assert.rejects(shell_spawn(['ggg111']).init(), /^Error: spawn ggg111 ENOENT$/);
+    });
+    it('should not leak an unhandled rejection when only init() is awaited', async function () {
+        const unhandled = [];
+        const listener = e => unhandled.push(e);
+        process.on('unhandledRejection', listener);
+        try {
+            await assert.rejects(shell_spawn(['ggg111']).init(), /ENOENT/);
+            await Promise.delay(100);
+            assert.deepStrictEqual(unhandled, []);
+        }
+        finally {
+            process.off('unhandledRejection', listener);
+        }
+    });
+    it('should not leak an unhandled rejection when only promise() is awaited', async function () {
+        const unhandled = [];
+        const listener = e => unhandled.push(e);
+        process.on('unhandledRejection', listener);
+        try {
+            await assert.rejects(shell_spawn(['ggg111']).promise(), /ENOENT/);
+            await Promise.delay(100);
+            assert.deepStrictEqual(unhandled, []);
+        }
+        finally {
+            process.off('unhandledRejection', listener);
+        }
     });
     it('should throw when process exists with non zero code', async function () {
         const proc = await shell_spawn(['false']).init();

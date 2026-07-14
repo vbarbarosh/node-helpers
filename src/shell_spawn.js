@@ -35,6 +35,13 @@ function shell_spawn(args, options)
         run.reject = reject;
     });
 
+    // A spawn failure rejects both stages with the same error, and callers
+    // are expected to await only one of them (e.g. watchdog awaits init()
+    // alone): without a pre-registered handler the sibling rejection is
+    // reported as unhandled and can crash under --unhandled-rejections=strict.
+    init.promise.catch(ignore);
+    run.promise.catch(ignore);
+
     const out = child_process.spawn(args[0], args.slice(1), options);
     out.once('error', onerror);
     out.once('spawn', onspawn);
