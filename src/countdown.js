@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 
 /**
  * Wait for a promise/value to be settled. Meanwhile, call `tick` function every `tick_ms` milliseconds.
- * After `timeout` seconds, reject with 'Timeout' error.
+ * After `timeout` milliseconds, reject with 'Timeout' error.
  *
  * @see user_friendly_status
  * @see progress
@@ -50,7 +50,16 @@ function countdown(ctx)
             ctx.time_now = Date.now();
             ctx.time_elapsed = ctx.time_now - ctx.time_begin;
             ctx.time_remained = Math.max(0, ctx.time_end - ctx.time_now);
-            ctx.tick(ctx);
+            try {
+                ctx.tick(ctx);
+            }
+            catch (error) {
+                // A throwing tick must reject and clear the timers: a bare
+                // throw inside setInterval is an uncaughtException, and the
+                // interval would keep firing (and throwing) forever.
+                ctx.reject(error);
+                return;
+            }
             if (!ctx.time_remained) {
                 ctx.reject(new Error('Timeout'));
             }
