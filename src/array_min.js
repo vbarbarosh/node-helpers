@@ -7,9 +7,16 @@ function array_min(array, fn = identity)
 {
     let out = null;
     let min = null;
-    array.forEach(function (item, i) {
+    let seeded = false;
+    array.forEach(function (item) {
         const weight = fn(item);
-        if (i === 0 || min > weight) {
+        // NaN compares false with everything: seeding min with it would
+        // make every subsequent comparison fail
+        if (Number.isNaN(weight)) {
+            return;
+        }
+        if (!seeded || min > weight) {
+            seeded = true;
             min = weight;
             out = item;
         }

@@ -7,9 +7,16 @@ function array_max(array, fn = identity)
 {
     let out = null;
     let max = null;
-    array.forEach(function (item, i) {
+    let seeded = false;
+    array.forEach(function (item) {
         const weight = fn(item);
-        if (i === 0 || max < weight) {
+        // NaN compares false with everything: seeding max with it would
+        // make every subsequent comparison fail
+        if (Number.isNaN(weight)) {
+            return;
+        }
+        if (!seeded || max < weight) {
+            seeded = true;
             max = weight;
             out = item;
         }

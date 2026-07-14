@@ -9,6 +9,11 @@ describe('array_min', function () {
         assert.deepStrictEqual(array_min([1, 1, 2, 2, 3, 3, 1]), 1);
         assert.deepStrictEqual(array_min([{x:2},{x:1}], v => v.x), {x: 1});
     });
+    it('should skip NaN weights', function () {
+        assert.deepStrictEqual(array_min([NaN, 5, 2]), 2);
+        assert.deepStrictEqual(array_min([5, NaN, 2]), 2);
+        assert.deepStrictEqual(array_min([NaN]), null);
+    });
     it('should handle strings', function () {
         const items = [
             {id: 1, time: '2025-08-08T05:03:13+00:00'},

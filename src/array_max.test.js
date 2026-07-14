@@ -9,6 +9,11 @@ describe('array_max', function () {
         assert.deepStrictEqual(array_max([1, 1, 2, 2, 3, 3, 1]), 3);
         assert.deepStrictEqual(array_max([{x:1},{x:2}], v => v.x), {x: 2});
     });
+    it('should skip NaN weights', function () {
+        assert.deepStrictEqual(array_max([NaN, 5, 2]), 5);
+        assert.deepStrictEqual(array_max([1, NaN, 5]), 5);
+        assert.deepStrictEqual(array_max([NaN]), null);
+    });
     it('should handle strings', function () {
         const items = [
             {id: 1, time: '2025-08-08T05:03:13+00:00'},
