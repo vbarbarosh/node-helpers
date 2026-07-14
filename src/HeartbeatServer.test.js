@@ -27,6 +27,28 @@ describe('HeartbeatServer', function () {
         }
     });
 
+    it('should dispose safely before the server starts listening, and twice', async function () {
+        const server = new HeartbeatServer();
+        await server.dispose();
+        await server.dispose();
+    });
+    it('should dispose safely when listen failed', async function () {
+        const a = new HeartbeatServer();
+        try {
+            // Same process + same second → same socket path → EADDRINUSE.
+            // (If the paths ever become unique, b just starts normally and
+            // only the idempotence below is exercised.)
+            const b = new HeartbeatServer();
+            if (b.socket_path === a.socket_path) {
+                await assert.rejects(b.promise(), /Server Failed/);
+            }
+            await b.dispose();
+            await b.dispose();
+        }
+        finally {
+            await a.dispose();
+        }
+    });
     it('should emit a "warning" event when a client floods', async function () {
         const server = new HeartbeatServer();
         try {

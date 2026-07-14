@@ -113,7 +113,16 @@ class HeartbeatServer extends EventEmitter
             const _this = this;
             await new Promise(function (resolve, reject) {
                 _this.#server.removeAllListeners();
-                _this.#server.close(error => error ? reject(error) : resolve());
+                _this.#server.close(function (error) {
+                    // close() reports ERR_SERVER_NOT_RUNNING when listen
+                    // never completed (failed or still pending): dispose is
+                    // documented idempotent, "nothing to close" is not an error
+                    if (error && error.code !== 'ERR_SERVER_NOT_RUNNING') {
+                        reject(error);
+                        return;
+                    }
+                    resolve();
+                });
                 _this.#server = null;
             });
         }
