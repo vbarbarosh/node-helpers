@@ -55,7 +55,7 @@ function stream_ytdlp_progress()
                 current_part = downloading_formats.indexOf(m[1]) + 1;
                 return false;
             }
-            if (m = line.match(/^\[Merger]/i)) {
+            if (line.match(/^\[Merger]/i)) {
                 last.merging = true;
                 return last;
             }
