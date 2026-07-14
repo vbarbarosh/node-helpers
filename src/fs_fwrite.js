@@ -5,12 +5,12 @@ const fs = require('fs');
  */
 async function fs_fwrite(fp, buffer, offset = null)
 {
-    const {bytesWritten} = await new Promise(function (resolve, reject) {
+    const bytes_written = await new Promise(function (resolve, reject) {
         fs.write(fp, buffer, 0, buffer.length, offset, function (error, out) {
             error ? reject(error) : resolve(out);
         });
     });
-    return bytesWritten;
+    return bytes_written;
 }
 
 module.exports = fs_fwrite;
