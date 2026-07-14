@@ -36,6 +36,15 @@ const items = [
     [1.2345e-20, 1e-20, 1e-20],             // Testing very small numbers
     [1.0000000000000001, 0.0000000000000001, 1.0000000000000000], // Testing rounding near Number.EPSILON range
 
+    // Precisions that are not a power of 10 (mantissa digits matter:
+    // 0.25 needs 2 decimal places, not the 1 its exponent suggests)
+    [1.13, 0.25, 1.25],
+    [1.3, 0.25, 1.25],
+    [1.38, 0.25, 1.5],
+    [-1.13, 0.25, -1.25],
+    [7.3, 2.5, 7.5],
+    [0.07, 0.025, 0.075],
+
     [9007199254740992, 1, 9007199254740992],
     [9007199254740991.5, 1, 9007199254740992],
     [Number.MIN_SAFE_INTEGER, 1, Number.MIN_SAFE_INTEGER],

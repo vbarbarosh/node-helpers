@@ -26,14 +26,13 @@ function get_decimal_places(precision)
         return 0;
     }
 
-    // Scientific notation support: e.g., 1e-20
-    const e = precision.toExponential().split('e');
-    if (e.length > 1) {
-        return Math.abs(parseInt(e[1], 10));
-    }
-
-    // Normal decimal notation (e.g., 0.001)
-    return precision.toString().split('.')[1]?.length || 0;
+    // toExponential gives MANTISSAe±EXP; decimal places = mantissa fraction
+    // digits minus the exponent. Counting the exponent alone is not enough:
+    // 0.25 → "2.5e-1" → 1 - (-1) = 2 (not 1, which would re-round 1.25 → 1.3)
+    // 0.001 → "1e-3" → 0 - (-3) = 3
+    const [mantissa, exp] = precision.toExponential().split('e');
+    const digits = (mantissa.split('.')[1] || '').length;
+    return Math.max(0, digits - parseInt(exp, 10));
 }
 
 // // round(34.037531, 0.001) -> 34.038000000000004
