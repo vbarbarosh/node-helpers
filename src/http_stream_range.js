@@ -69,11 +69,9 @@ async function http_stream_range(req, res, file)
             res.header('Content-Length', last - first + 1);
         }
 
-        let total_read = 0;
         for (let offset = first; offset <= last && !req_close; ) {
             const chunk = await fs_fread(fp, buf, offset, Math.min(buf.length, last - offset + 1));
             offset += chunk.length;
-            total_read += chunk.length;
             if (res.write(chunk)) {
                 // req.log(`[http_stream_range_write] ${chunk.length}`);
                 continue;
@@ -96,7 +94,7 @@ async function http_stream_range(req, res, file)
             });
         }
 
-        // req.log(`[http_stream_range_end_ok] ${JSON.stringify({req_close, total_read})}`);
+        // req.log(`[http_stream_range_end_ok] ${JSON.stringify({req_close})}`);
         res.end();
     }
     finally {

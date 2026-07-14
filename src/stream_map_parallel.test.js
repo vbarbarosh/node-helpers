@@ -45,7 +45,7 @@ describe('stream_map_parallel', function () {
             stream.Readable.from([1, 2, 3]),
             stream_map_parallel({
                 concurrency: 2,
-                handler: async function (num) {
+                handler: async function () {
                     throw new Error('boom');
                 },
             }),

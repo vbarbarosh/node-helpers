@@ -1,5 +1,4 @@
 const assert = require('assert');
-const ignore = require('./ignore');
 const stream = require('stream');
 const stream_multiplex = require('./stream_multiplex');
 
