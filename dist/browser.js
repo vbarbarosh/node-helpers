@@ -190,7 +190,7 @@ webpackContext.id = "./src sync recursive ^(?%21.*(cli-apps%7Cbrowser%7C\\.d)\\/
 function array_chunk(array = [], limit = 1)
 {
     if (limit < 1) {
-        throw new Error('Limit value should be greater than 1');
+        throw new Error('Limit value should be at least 1');
     }
 
     const out = [];
@@ -298,7 +298,7 @@ const math_gcd = __webpack_require__(/*! ./math_gcd */ "./src/math_gcd.js");
 // https://stackoverflow.com/a/39764792/1478566
 function array_gcd(array, fn = Number)
 {
-    return array.reduce((a,b) => math_gcd(fn(a), fn(b)));
+    return array.map(v => fn(v)).reduce((a,b) => math_gcd(a, b));
 }
 
 module.exports = array_gcd;
@@ -401,7 +401,7 @@ const math_lcm = __webpack_require__(/*! ./math_lcm */ "./src/math_lcm.js");
 
 function array_lcm(array, fn = Number)
 {
-    return array.reduce((a,b) => math_lcm(fn(a), fn(b)));
+    return array.map(v => fn(v)).reduce((a,b) => math_lcm(a, b));
 }
 
 module.exports = array_lcm;
@@ -1544,11 +1544,11 @@ ${JSON.stringify(error.response.config.headers||{}, null, 4).slice(1, -1).replac
 
 ${error.response.status} ${error.response.statusText}
 
-${(error.response.data.toString()||'').slice(0, 10240) || 'n/a'}
+${String(error.response.data ?? '').slice(0, 10240) || 'n/a'}
 
 --- STACK ---
 
-${error.stack ? error.stack.split(/\\n\\s*/) : 'n/a'}
+${error.stack ?? 'n/a'}
 `.trimStart();
 }
 
@@ -1565,7 +1565,7 @@ ${JSON.stringify(error.config.headers||{}, null, 4).slice(1, -1).replace(/^\s+|,
 
 --- STACK ---
 
-${error.stack ? error.stack.split(/\\n\\s*/) : 'n/a'}
+${error.stack ?? 'n/a'}
 `.trimStart();
 }
 
@@ -2260,14 +2260,13 @@ function get_decimal_places(precision)
         return 0;
     }
 
-    // Scientific notation support: e.g., 1e-20
-    const e = precision.toExponential().split('e');
-    if (e.length > 1) {
-        return Math.abs(parseInt(e[1], 10));
-    }
-
-    // Normal decimal notation (e.g., 0.001)
-    return precision.toString().split('.')[1]?.length || 0;
+    // toExponential gives MANTISSAe±EXP; decimal places = mantissa fraction
+    // digits minus the exponent. Counting the exponent alone is not enough:
+    // 0.25 → "2.5e-1" → 1 - (-1) = 2 (not 1, which would re-round 1.25 → 1.3)
+    // 0.001 → "1e-3" → 0 - (-3) = 3
+    const [mantissa, exp] = precision.toExponential().split('e');
+    const digits = (mantissa.split('.')[1] || '').length;
+    return Math.max(0, digits - parseInt(exp, 10));
 }
 
 // // round(34.037531, 0.001) -> 34.038000000000004
