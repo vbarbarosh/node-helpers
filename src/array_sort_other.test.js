@@ -6,4 +6,8 @@ describe('array_sort_other', function () {
         assert.deepStrictEqual(array_sort_other([1,2,3,4,5], v => v, [5]), [5,1,2,3,4]);
         assert.deepStrictEqual(array_sort_other([{id:1},{id:2},{id:3},{id:4},{id:5}], v => v.id, [5]), [{id:5},{id:1},{id:2},{id:3},{id:4}]);
     });
+    it('should not be confused by Object.prototype keys', function () {
+        assert.deepStrictEqual(array_sort_other(['a', 'constructor', 'b'], v => v, ['b', 'a']), ['b', 'a', 'constructor']);
+        assert.deepStrictEqual(array_sort_other(['b', '__proto__', 'a'], v => v, ['__proto__', 'a', 'b']), ['__proto__', 'a', 'b']);
+    });
 });

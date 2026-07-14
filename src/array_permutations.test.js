@@ -7,6 +7,11 @@ describe('array_permutations', function () {
         assert.deepStrictEqual(array_permutations([1,2]), [[1,2],[2,1]]);
         assert.deepStrictEqual(array_permutations([1,2,3]), [[1,2,3],[2,1,3],[3,1,2],[1,3,2],[2,3,1],[3,2,1]]);
     });
+    it('should not mutate the input array', function () {
+        const input = [1, 2, 3];
+        array_permutations(input);
+        assert.deepStrictEqual(input, [1, 2, 3]);
+    });
     it('should handle k', function () {
         assert.deepStrictEqual(array_permutations([1,2], 1), [[1],[2]]);
         assert.deepStrictEqual(array_permutations([1,2,3], 2), [[1,2],[1,3],[2,1],[2,3],[3,1],[3,2]]);

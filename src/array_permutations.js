@@ -5,6 +5,10 @@ function array_permutations(array, k = array.length)
         return array_permutations_k(array, k);
     }
 
+    // Heap's algorithm permutes in place: work on a copy, the caller's
+    // array must not be left in an arbitrary permuted state.
+    array = array.slice();
+
     let length = array.length;
     let out = [array.slice()];
     let c = new Array(length).fill(0);

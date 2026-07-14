@@ -12,7 +12,10 @@ const fcmp_default = require('./fcmp_default');
  */
 function array_sort_other(array, fn, other, fcmp = fcmp_default)
 {
-    const other_map = {};
+    // No-prototype object: with a plain {} the keys 'constructor',
+    // 'toString', '__proto__', ... would collide with Object.prototype
+    // members and corrupt the sort order.
+    const other_map = Object.create(null);
     other.forEach((v,i) => other_map[v] = i + 1);
     return array.sort(function (a, b) {
         const ax = other_map[fn(a)];
