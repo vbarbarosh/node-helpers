@@ -28,11 +28,22 @@ async function parallel({concurrency, spawn, progress})
                 if (failed) {
                     break;
                 }
-                const w = spawn();
+                let w;
+                try {
+                    w = spawn();
+                }
+                catch (error) {
+                    // A synchronous throw from spawn must go through fail():
+                    // when schedule() runs inside a resolved() handler it
+                    // would otherwise become an unhandled rejection and this
+                    // promise would never settle (and the timer would leak).
+                    fail(error);
+                    return;
+                }
                 if (!w) {
                     break;
                 }
-                const item = Promise.resolve(w).then(resolved, rejected);
+                const item = Promise.resolve(w).then(resolved, fail);
                 running.push(item);
                 function resolved() {
                     if (failed) {
@@ -45,21 +56,21 @@ async function parallel({concurrency, spawn, progress})
                     running.splice(i, 1);
                     schedule();
                 }
-                function rejected(error) {
-                    if (failed) {
-                        return;
-                    }
-                    failed = true;
-                    running.splice(0, running.length);
-                    clearInterval(timer);
-                    reject(error);
-                }
             }
-            if (running.length === 0) {
+            if (running.length === 0 && !failed) {
                 tick();
                 clearInterval(timer);
                 resolve();
             }
+        }
+        function fail(error) {
+            if (failed) {
+                return;
+            }
+            failed = true;
+            running.splice(0, running.length);
+            clearInterval(timer);
+            reject(error);
         }
         function tick() {
             if (progress) {
