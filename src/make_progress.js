@@ -32,16 +32,19 @@ function make_progress(total)
         },
         refresh: function () {
             out.duration = (Date.now() - time0)/1000;
+            // `rate` and `eta` are null while unknown (same as before the
+            // first add): a zero time window would give rate = Infinity,
+            // and a zero rate would give eta = Infinity.
             if (history.length) {
                 const delta = history.reduce((a,v) => a + v.delta, 0);
                 const time_sec = (Date.now() - history[0].time)/1000;
-                out.rate = delta/time_sec;
+                out.rate = time_sec ? delta/time_sec : null;
             }
             else {
-                out.rate = out.done/out.duration;
+                out.rate = out.duration ? out.done/out.duration : null;
             }
             out.percents = !out.total ? null : out.done/out.total;
-            out.eta = !out.total ? null : (out.total - out.done)/out.rate;
+            out.eta = (!out.total || !out.rate) ? null : (out.total - out.done)/out.rate;
         },
     };
     return out;
