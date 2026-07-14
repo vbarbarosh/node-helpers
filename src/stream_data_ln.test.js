@@ -13,6 +13,18 @@ describe('stream_data_ln', function () {
         off();
         assert.deepStrictEqual(actual, fs.readFileSync(__filename, {encoding: 'utf8'}));
     });
+    it('should not corrupt multi-byte utf8 split across chunks', async function () {
+        const lines = [];
+        const s = new stream.PassThrough();
+        stream_data_ln(s, v => lines.push(v));
+        const buf = Buffer.from('héllo\nwörld\n');
+        for (let i = 0; i < buf.length; ++i) {
+            s.write(buf.subarray(i, i + 1)); // 1-byte chunks: the worst case
+        }
+        s.end();
+        await stream.promises.finished(s);
+        assert.deepStrictEqual(lines, ['héllo', 'wörld']);
+    });
     it('split', async function () {
         let actual = '';
         const s = fs.createReadStream(__filename);

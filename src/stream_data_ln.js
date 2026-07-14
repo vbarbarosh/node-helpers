@@ -1,3 +1,5 @@
+const {StringDecoder} = require('string_decoder');
+
 /**
  * Split stream on each \n and call `fn` for each line.
  *
@@ -7,6 +9,9 @@
  */
 function stream_data_ln(stream, fn)
 {
+    // StringDecoder buffers a multi-byte character split across chunk
+    // boundaries; plain buffer.toString('utf8') would corrupt it into �.
+    const decoder = new StringDecoder('utf8');
     let utf8 = '';
     stream.on('data', data);
     stream.on('end', end);
@@ -18,12 +23,13 @@ function stream_data_ln(stream, fn)
     }
     function end() {
         off();
+        utf8 += decoder.end();
         if (utf8) {
             fn(utf8, true);
         }
     }
     function data(buffer) {
-        utf8 += buffer.toString('utf8');
+        utf8 += (typeof buffer === 'string') ? buffer : decoder.write(buffer);
         for (let iteration = 1; true; ++iteration) {
             if (iteration == 1000000) {
                 throw new Error('Too many iterations');
