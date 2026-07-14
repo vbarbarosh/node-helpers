@@ -138,7 +138,8 @@ async function worker(log, request, options)
             try {
                 await new Promise(function (resolve, reject) {
                     proc.once('error', reject);
-                    proc.once('exit', code => code ? reject(new Error(`Process terminated with code ${code}`)) : resolve());
+                    // A signal-killed process exits with code = null: only 0 is a success
+                    proc.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Process terminated with code ${code} and signal ${signal}`)));
                     end_stdout = stream_data_ln(proc.stdout, line => log(`[${log_worker_stdout}] ${line}`));
                     end_stderr = stream_data_ln(proc.stderr, line => log(`[${log_worker_stderr}] ${line}`));
                     end_user_friendly_status = stream_data_ln(proc.stdio[3], function (line) {

@@ -21,7 +21,8 @@ async function shell_curl_progress(args, {options, user_friendly_status})
     const promises = [];
     promises.push(new Promise(function (resolve, reject) {
         proc.once('error', reject);
-        proc.once('exit', code => code ? reject(new Error(`Process terminated with code ${code}`)) : resolve());
+        // A signal-killed process exits with code = null: only 0 is a success
+        proc.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Process terminated with code ${code} and signal ${signal}`)));
     }));
     promises.push(stream.promises.pipeline(proc.stderr, stream_curl_progress(), stream_each(progress_fn)));
 

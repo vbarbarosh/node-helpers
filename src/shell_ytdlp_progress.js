@@ -12,7 +12,8 @@ async function shell_ytdlp_progress(args, {user_friendly_status, ...options})
     const promises = [];
     promises.push(new Promise(function (resolve, reject) {
         proc.once('error', reject);
-        proc.once('exit', code => code ? reject(new Error(`Process terminated with code ${code}`)) : resolve());
+        // A signal-killed process exits with code = null: only 0 is a success
+        proc.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Process terminated with code ${code} and signal ${signal}`)));
     }));
     promises.push(stream.promises.pipeline(proc.stdout, stream_ytdlp_progress(), stream_each(progress_fn)));
     promises.push(stream.promises.pipeline(proc.stderr, stream_each(v => console.log(`[stderr] ${v}`))));
