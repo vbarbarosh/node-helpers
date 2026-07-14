@@ -34,7 +34,9 @@ const items = [
     [-0.5, 1, -1],                          // Symmetric negative rounding for half
     [123456789123.45, 1000, 123456789000],  // Testing very large numbers
     [1.2345e-20, 1e-20, 1e-20],             // Testing very small numbers
-    [1.0000000000000001, 0.0000000000000001, 1.0000000000000000], // Testing rounding near Number.EPSILON range
+    // Testing rounding near Number.EPSILON range
+    // eslint-disable-next-line no-loss-of-precision
+    [1.0000000000000001, 0.0000000000000001, 1.0000000000000000],
 
     // Precisions that are not a power of 10 (mantissa digits matter:
     // 0.25 needs 2 decimal places, not the 1 its exponent suggests)
@@ -46,7 +48,7 @@ const items = [
     [0.07, 0.025, 0.075],
 
     [9007199254740992, 1, 9007199254740992],
-    [9007199254740991.5, 1, 9007199254740992],
+    [9007199254740991.5, 1, 9007199254740992], // eslint-disable-line no-loss-of-precision
     [Number.MIN_SAFE_INTEGER, 1, Number.MIN_SAFE_INTEGER],
     [Number.MAX_SAFE_INTEGER, 1, Number.MAX_SAFE_INTEGER],
 

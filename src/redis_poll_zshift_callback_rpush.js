@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars -- destructured option lists document the full options contract */
 const Promise = require('bluebird');
 const random_int = require('./random_int');
 const redis_zshift = require('./redis_zshift');

@@ -10,6 +10,7 @@ const users = [
 
 // https://dummyjson.com/docs/products
 
+// eslint-disable-next-line no-unused-vars
 const products = [
     {id: 1, name: 'Yoga Mat', category: 'Yoga', price: 25.99, brand: 'BalanceFrom', rating: 4.6, discount: 0.1, availability: 'in_stock'},
     {id: 2, name: 'Adjustable Dumbbells', category: 'Strength', price: 199.99, brand: 'Bowflex', rating: 4.8, availability: 'preorder'},
