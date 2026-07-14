@@ -3,6 +3,10 @@ const stream = require('stream');
 
 /**
  * Transform each item using a simple function in parallel.
+ *
+ * Returning null or undefined from `handler` drops the item: streams cannot
+ * carry null (it is an eof mark), so pushing it would end the stream and
+ * silently discard everything after it.
  */
 function stream_map_parallel({handler, concurrency})
 {
@@ -46,7 +50,11 @@ function stream_map_parallel({handler, concurrency})
     function ready() {
         running--;
         while (buf.length && buf[0].isFulfilled()) {
-            out.push(buf.shift().value());
+            const value = buf.shift().value();
+            // null is an eof mark, pushing it would end the stream
+            if (value !== null && value !== undefined) {
+                out.push(value);
+            }
         }
         if (callback_next && buf.length < buf_limit) {
             const tmp = callback_next;

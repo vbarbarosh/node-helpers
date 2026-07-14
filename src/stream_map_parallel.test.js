@@ -23,4 +23,33 @@ describe('stream_map_parallel', function () {
         );
         assert.deepStrictEqual(actual, expected);
     });
+    it('should drop items mapped to null', async function () {
+        const actual = [];
+        await stream.promises.pipeline(
+            stream.Readable.from([1, 2, 3, 4, 5]),
+            stream_map_parallel({
+                concurrency: 2,
+                handler: async function (num) {
+                    await Promise.delay(0);
+                    return (num === 2) ? null : num;
+                },
+            }),
+            stream_each(function (item) {
+                actual.push(item);
+            }),
+        );
+        assert.deepStrictEqual(actual, [1, 3, 4, 5]);
+    });
+    it('should reject when handler fails', async function () {
+        await assert.rejects(stream.promises.pipeline(
+            stream.Readable.from([1, 2, 3]),
+            stream_map_parallel({
+                concurrency: 2,
+                handler: async function (num) {
+                    throw new Error('boom');
+                },
+            }),
+            stream_each(function () {}),
+        ), /boom/);
+    });
 });
