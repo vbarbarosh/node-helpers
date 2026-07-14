@@ -15,7 +15,19 @@ async function fs_fi(pathname)
         const target = await fs_readlink(fi.pathname);
         const target_pathname = fs_path_resolve(fs_path_dirname(pathname), target);
         fi.target = target;
-        fi.target_fi = await fs_lstat(target_pathname);
+        try {
+            fi.target_fi = await fs_lstat(target_pathname);
+        }
+        catch (error) {
+            if (!['ENOENT', 'ENOTDIR', 'ELOOP'].includes(error.code)) {
+                throw error;
+            }
+            // A broken symlink is a legitimate directory entry: report it
+            // with target_fi = null instead of failing the whole listing
+            // (fs_find, fs_list, fs_ls, fs_lsr, fs_list_deep).
+            fi.target_fi = null;
+            return fi;
+        }
         fi.target_fi.pathname = target_pathname;
         fi.target_fi.basename = fs_path_basename(target_pathname);
         flags(fi.target_fi);
