@@ -6,6 +6,9 @@ const items = [
     ['http://127.0.0.1:3000/proxy', 'http://127.0.0.1:3000/proxy'],
     ['http://127.0.0.1:3000/proxy?url=http://127.0.0.1:3000/static/&redirects=2', 'http://127.0.0.1:3000/proxy?url=http://127.0.0.1:3000/static/&redirects=2'],
     ['http://127.0.0.1:3000/proxy?url=http%3A%2F%2F127.0.0.1%3A3000%2Fstatic%2F&redirects=1', 'http://127.0.0.1:3000/proxy?url=http://127.0.0.1:3000/static/&redirects=1'],
+    ['http://127.0.0.1:3000/p?a=1#frag', 'http://127.0.0.1:3000/p?a=1#frag'],
+    ['http://127.0.0.1:3000/p?url=http%3A%2F%2Fx#frag', 'http://127.0.0.1:3000/p?url=http://x#frag'],
+    ['http://127.0.0.1:3000/p#frag', 'http://127.0.0.1:3000/p#frag'],
 ];
 
 describe('urlclean', function () {

@@ -26,6 +26,11 @@ function urlmod(url, params)
             break;
         }
     });
+    if (url && url[0] === '/' && url[1] === '/') {
+        // Protocol-relative url: the fake base host was replaced by the
+        // real one, only the fake scheme is left to strip.
+        return tmp_url.toString().replace(/^xxx:/, '');
+    }
     if (url && url[0] === '/') {
         return tmp_url.toString().replace(/^xxx:\/\/___base___/, '');
     }

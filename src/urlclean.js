@@ -6,6 +6,13 @@ const querystring = require('querystring');
  */
 function urlclean(url)
 {
+    // The #fragment is not part of the query string: without splitting it
+    // off first it would be percent-encoded into the last query value.
+    const h = url.indexOf('#');
+    const hash = (h === -1) ? '' : url.slice(h);
+    if (hash) {
+        url = url.slice(0, h);
+    }
     const i = url.indexOf('?') + 1;
     if (i) {
         const s = querystring.stringify(querystring.parse(url.slice(i)), '&', '=', {
@@ -13,9 +20,9 @@ function urlclean(url)
                 return encodeURIComponent(v).replaceAll('%3A', ':').replaceAll('%2F', '/');
             },
         });
-        return url.slice(0, i) + s;
+        return url.slice(0, i) + s + hash;
     }
-    return url;
+    return url + hash;
 }
 
 module.exports = urlclean;

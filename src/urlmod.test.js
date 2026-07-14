@@ -32,6 +32,10 @@ describe('urlmod', function () {
         assert.deepEqual(urlmod('/#ex', {b: 2}), '/?b=2#ex');
         assert.deepEqual(urlmod('http://www.example.com/some/path?a=1#ex', {b: 2}), 'http://www.example.com/some/path?a=1&b=2#ex');
     });
+    it('should keep protocol-relative urls', function () {
+        assert.strictEqual(urlmod('//cdn.example.com/app.js', {v: 2}), '//cdn.example.com/app.js?v=2');
+        assert.strictEqual(urlmod('//cdn.example.com/app.js?v=1#x', {v: 2}), '//cdn.example.com/app.js?v=2#x');
+    });
     it('should keep port', function () {
         const actual = urlmod('http://localhost:3000/auth/sign-in', {return: '/auth/profile'});
         const expected = 'http://localhost:3000/auth/sign-in?return=%2Fauth%2Fprofile';
