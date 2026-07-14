@@ -15,8 +15,9 @@ function mongo_stream_upsert({collection, concurrency = 1})
             next();
         },
         destroy: async function (error, next) {
+            // Wait for in-flight bulkWrite operations before tearing down.
             await wait_while(() => this.running > 0);
-            next();
+            next(error);
         },
         write: async function (items, enc, next) {
             if (errors.length) {
@@ -39,7 +40,10 @@ function mongo_stream_upsert({collection, concurrency = 1})
                     };
                 });
                 this.running++;
-                Promise.resolve(collection.bulkWrite(operations)).catch(e => errors.push(e)).finally(() => this.running--);
+                // Promise.try turns a synchronous throw from bulkWrite into a
+                // rejection, so `running` is always decremented; otherwise
+                // destroy/final would wait for it forever.
+                Promise.try(() => collection.bulkWrite(operations)).catch(e => errors.push(e)).finally(() => this.running--);
                 next();
             }
             catch (error) {
@@ -47,11 +51,14 @@ function mongo_stream_upsert({collection, concurrency = 1})
             }
         },
         final: async function (next) {
+            // Wait for in-flight bulkWrite operations before checking `errors`,
+            // otherwise an error from the last batch(es) would be silently
+            // dropped and the stream would finish successfully.
+            await wait_while(() => this.running > 0);
             if (errors.length) {
                 next(errors[0]);
                 return;
             }
-            await wait_while(() => this.running > 0);
             next();
         },
     });
