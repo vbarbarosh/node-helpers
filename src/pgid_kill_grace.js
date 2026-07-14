@@ -12,7 +12,7 @@ async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {
         process.kill(-pgid, 'SIGTERM');
     }
     catch (error) {
-        throw new Error(`Failed to send SIGTERM to process group ${pgid}: ${error.message}`);
+        throw new Error(`Failed to send SIGTERM to process group ${pgid}: ${error.message}`, {cause: error});
     }
 
     const end = Date.now() + grace_timeout_ms;

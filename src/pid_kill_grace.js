@@ -11,7 +11,7 @@ async function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})
         process.kill(pid, 'SIGTERM');
     }
     catch (error) {
-        throw new Error(`Failed to send SIGTERM to process ${pid}: ${error.message}`);
+        throw new Error(`Failed to send SIGTERM to process ${pid}: ${error.message}`, {cause: error});
     }
 
     const end = Date.now() + grace_timeout_ms;
