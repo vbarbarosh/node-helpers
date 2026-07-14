@@ -19,31 +19,37 @@ async function sftp_get_stream_range(url, first, last, {user_friendly_status = i
         conn.connect({host, port, username, password});
     });
 
-    user_friendly_status('Asking for an sftp service...');
-    const sftp = await waitcb(cb => conn.sftp(cb));
+    try {
+        user_friendly_status('Asking for an sftp service...');
+        const sftp = await waitcb(cb => conn.sftp(cb));
 
-    user_friendly_status('Requesting file info...');
-    const stat = await waitcb(cb => sftp.stat(pathname, cb));
+        user_friendly_status('Requesting file info...');
+        const stat = await waitcb(cb => sftp.stat(pathname, cb));
 
-    if (first < 0 || last >= stat.size) {
-        throw new Error(`Invalid range: [first=${first}][last=${last}]`);
+        if (first < 0 || last >= stat.size) {
+            throw new Error(`Invalid range: [first=${first}][last=${last}]`);
+        }
+
+        const out = sftp.createReadStream(pathname, {start: first, end: last})
+        out.content_range = {
+            type: 'bytes',
+            first,
+            last,
+            total: stat.size,
+        };
+        out.total = out.content_range.total;
+        // 'close' fires on end, on error, and also when the consumer
+        // destroys the stream early (e.g. an aborted http range request) —
+        // 'end'/'error' alone would leak the connection in that case.
+        out.once('close', function () {
+            conn.destroy();
+        });
+        return out;
     }
-
-    const out = sftp.createReadStream(pathname, {start: first, end: last})
-    out.content_range = {
-        type: 'bytes',
-        first,
-        last,
-        total: stat.size,
-    };
-    out.total = out.content_range.total;
-    out.once('error', function () {
+    catch (error) {
         conn.destroy();
-    });
-    out.once('end', function () {
-        conn.destroy();
-    });
-    return out;
+        throw error;
+    }
 }
 
 module.exports = sftp_get_stream_range;

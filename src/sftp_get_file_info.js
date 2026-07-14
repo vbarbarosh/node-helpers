@@ -3,7 +3,7 @@ const ignore = require('./ignore');
 const ssh2 = require('ssh2');
 const waitcb = require('./waitcb');
 
-async function sftp_get_file_info(url, {user_friendly_status = ignore})
+async function sftp_get_file_info(url, {user_friendly_status = ignore} = {})
 {
     const u = new URL(url);
     const host = u.host;
