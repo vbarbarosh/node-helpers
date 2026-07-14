@@ -1,7 +1,9 @@
 const HeartbeatServer = require('./HeartbeatServer');
 const assert = require('assert');
 const fs_assert_file_socket = require('./fs_assert_file_socket');
+const net = require('net');
 const ping_socket = require('./ping_socket');
+const wait_while = require('./wait_while');
 
 // 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 
@@ -25,7 +27,49 @@ describe('HeartbeatServer', function () {
         }
     });
 
-    // should emit a "warning" event on any client errors
-    // should not send any heartbeat signals after rejection (decision to kill a child process)
-    // should reject when no heartbeat received in an expected interval
+    it('should emit a "warning" event when a client floods', async function () {
+        const server = new HeartbeatServer();
+        try {
+            const warnings = [];
+            server.on('warning', e => warnings.push(e));
+            await fs_assert_file_socket(server.socket_path);
+            const client = net.connect(server.socket_path);
+            await new Promise(resolve => client.on('connect', resolve));
+            client.on('error', function () {}); // the server destroys the socket mid-write
+            client.write(Buffer.alloc(2*1024*1024));
+            await wait_while(() => warnings.length === 0);
+            assert.match(warnings[0].message, /floods/);
+            client.destroy();
+        }
+        finally {
+            await server.dispose();
+        }
+    });
+    it('should reject when no heartbeat received in an expected interval', async function () {
+        const server = new HeartbeatServer(50);
+        try {
+            await assert.rejects(server.promise(), function (error) {
+                return error.exit_code === 124 && /No heartbeat/.test(error.message);
+            });
+        }
+        finally {
+            await server.dispose();
+        }
+    });
+    it('should not send any heartbeat signals after rejection', async function () {
+        const server = new HeartbeatServer(50);
+        try {
+            let heartbeats = 0;
+            server.on('heartbeat', () => heartbeats++);
+            const socket_path = server.socket_path;
+            await assert.rejects(server.promise());
+            // The watchdog disposed itself: the socket is gone, and no
+            // heartbeat may have been emitted along the way.
+            await assert.rejects(ping_socket(socket_path));
+            assert.strictEqual(heartbeats, 0);
+        }
+        finally {
+            await server.dispose();
+        }
+    });
 });
