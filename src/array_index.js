@@ -7,10 +7,10 @@ const identity = require('./identity');
  * Seems, there is a native way to do it:
  *     Object.fromEntries(items.map(v => [v.name, v]));
  */
-function array_index(array, fn = identity)
+function array_index(array, read = identity)
 {
     const out = {};
-    array.forEach(v => out[fn(v)] = v);
+    array.forEach(v => out[read(v)] = v);
     return out;
 }
 

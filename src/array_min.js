@@ -3,13 +3,13 @@ const identity = require('./identity');
 /**
  * Returns the first element in the array with the minimal weight
  */
-function array_min(array, fn = identity)
+function array_min(array, read = identity)
 {
     let out = null;
     let min = null;
     let seeded = false;
     array.forEach(function (item) {
-        const weight = fn(item);
+        const weight = read(item);
         // NaN compares false with everything: seeding min with it would
         // make every subsequent comparison fail
         if (Number.isNaN(weight)) {

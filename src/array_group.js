@@ -1,13 +1,13 @@
 /**
  * Group items by a common key and return an array of groups.
  *
- * @alternative Map.groupBy(items, fn)
+ * @alternative Map.groupBy(items, read)
  */
-function array_group(array, fn)
+function array_group(array, read)
 {
     const map = new Map();
     array.forEach(function (item) {
-        const key = fn(item);
+        const key = read(item);
         if (!map.has(key)) {
             map.set(key, {key, items: []});
         }

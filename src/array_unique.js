@@ -3,11 +3,11 @@ const identity = require('./identity');
 /**
  * Return unique values; if a value occurs multiple times, keep the first one.
  */
-function array_unique(values, fn = identity)
+function array_unique(values, read = identity)
 {
     const set = new Set();
     return values.filter(function (item) {
-        const key = fn(item);
+        const key = read(item);
         if (set.has(key)) {
             return false;
         }

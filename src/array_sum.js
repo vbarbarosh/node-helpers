@@ -1,8 +1,8 @@
-function array_sum(array, fn = Number)
+function array_sum(array, read = Number)
 {
     let out = 0;
     array.forEach(function (item) {
-        out += fn(item);
+        out += read(item);
     });
     return out;
 }
