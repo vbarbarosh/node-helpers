@@ -29,6 +29,14 @@ const cases = [
     // Step = -1 edge
     {args: [5, 5, -1], expected: []},
     {args: [6, 5, -1], expected: [6]},
+
+    // Step = 0 never makes progress (used to produce `limit` copies of start;
+    // the small limit keeps the failure diff readable if that ever regresses)
+    {args: [0, 5, 0, 10], expected: []},
+    {args: [5, 0, 0, 10], expected: []},
+
+    // Output is capped at `limit` items
+    {args: [0, 10, 1, 3], expected: [0,1,2]},
 ];
 
 describe('range', function () {

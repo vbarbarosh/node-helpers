@@ -17,7 +17,8 @@ function range(begin, end = na, step = 1, limit = 1E6)
 
 function range_forward(begin, end, step, limit)
 {
-    if (step < 0) {
+    // step = 0 cannot make progress: an empty array, not `limit` copies of begin
+    if (step <= 0) {
         return [];
     }
 
@@ -30,7 +31,8 @@ function range_forward(begin, end, step, limit)
 
 function range_backward(begin, end, step, limit)
 {
-    if (step > 0) {
+    // step = 0 cannot make progress: an empty array, not `limit` copies of begin
+    if (step >= 0) {
         return [];
     }
 
