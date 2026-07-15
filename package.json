@@ -6,6 +6,12 @@
     "description": "A set of helpers for JavaScript/Node.js",
     "unpkg": "dist/browser.js",
     "jsdelivr": "dist/browser.js",
+    "exports": {
+        "./src/*.js": "./src/*.js",
+        "./src/*": "./src/*.js",
+        "./dist/*": "./dist/*",
+        "./package.json": "./package.json"
+    },
     "homepage": "https://vbarbarosh.github.io/node-helpers/",
     "bin": {
         "watchdog": "src/cli-apps/watchdog.js"
