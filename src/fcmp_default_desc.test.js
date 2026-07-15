@@ -11,6 +11,7 @@ const items = [
     ['a', 'b', 1],
     ['b', 'a', -1],
     ['a', 'a', 0],
+    ['2', '10', 1], // natural order, descending
 ];
 
 describe('fcmp_default_desc', function () {
@@ -29,6 +30,9 @@ describe('fcmp_default_desc', function () {
     });
     it('should sort strings in descending order', function () {
         assert.deepStrictEqual(['banana', 'apple', 'cherry'].sort(fcmp_default_desc), ['cherry', 'banana', 'apple']);
+    });
+    it('should sort digit-bearing strings naturally, descending', function () {
+        assert.deepStrictEqual(['file1', 'file10', 'file2'].sort(fcmp_default_desc), ['file10', 'file2', 'file1']);
     });
     it('should return 0 for incomparable values', function () {
         assert.strictEqual(fcmp_default_desc(NaN, 1), 0);

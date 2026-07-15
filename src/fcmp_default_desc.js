@@ -1,12 +1,9 @@
+const fcmp_default = require('./fcmp_default');
+
+// See fcmp_default.md
 function fcmp_default_desc(b, a)
 {
-    if (a < b) {
-        return -1;
-    }
-    if (a > b) {
-        return 1;
-    }
-    return 0;
+    return fcmp_default(a, b);
 }
 
 module.exports = fcmp_default_desc;
