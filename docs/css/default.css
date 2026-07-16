@@ -53,6 +53,19 @@ body {
 a {
     color: var(--link);
 }
+button {
+    padding: 6px 12px;
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--pre-bg);
+    color: var(--fg);
+    cursor: pointer;
+}
+button:hover {
+    border-color: var(--accent);
+}
 main {
     flex: 1;
     padding: 40px 48px;
@@ -136,17 +149,6 @@ aside input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-ring);
 }
-aside .theme-toggle {
-    padding: 6px 10px;
-    border: 1px solid var(--border-input);
-    border-radius: 8px;
-    font-size: 14px;
-    background: var(--pre-bg);
-    cursor: pointer;
-}
-aside .theme-toggle:hover {
-    border-color: var(--accent);
-}
 aside ul {
     list-style: none;
     padding: 0;
@@ -160,9 +162,7 @@ aside li {
     font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
     font-size: 12.5px;
     color: var(--muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-all;
 }
 aside li:hover {
     color: var(--fg);
@@ -196,6 +196,7 @@ aside a:hover {
 }
 :root[data-theme="dark"] .files-browser-row.active {
     background: rgba(56, 139, 253, 0.25);
+    outline-color: rgba(56, 139, 253, 0.5);
 }
 
 /* prism-js/prism-bash inject prismjs/themes/prism.css — the light theme */
