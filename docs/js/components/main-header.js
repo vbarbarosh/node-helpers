@@ -11,7 +11,8 @@ vue_component('main-header', {
                 </p>
 
             <p align="center">
-                <img src="img/cover.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
+                <img class="light-only" src="img/cover.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
+                <img class="dark-only" src="img/cover-dark.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
             </p>
 
             <div>

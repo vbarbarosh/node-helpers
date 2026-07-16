@@ -6,6 +6,10 @@
     <title>@vbarbarosh/node-helpers</title>
     <link href="https://unpkg.com/@vbarbarosh/smcss@1.2.0/dist/sm.css" rel="stylesheet">
     <link href="css/default.css" rel="stylesheet">
+    <script>
+    // Apply theme before first paint to avoid flashing
+    document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    </script>
 </head>
 <body>
 
@@ -26,7 +30,10 @@ vue_component('app', {
                 <div style="height:50vh;" />
             </main>
             <aside class="vsplit w300">
-                <input-search ref="search" v-model="search" />
+                <div class="controls">
+                    <input-search ref="search" v-model="search" />
+                    <button class="theme-toggle" v-bind:title="(theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme')" v-on:click="click_theme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
+                </div>
                 <ul class="fluid oa">
                     <li v-for="item in items_all" v-bind:key="item.file" v-show="items_hit.has(item)" v-on:click="click_item_search(item)">
                         {{ item.file.replace(/^src\\//, '') }}
@@ -40,6 +47,7 @@ vue_component('app', {
             ready: false,
             search: '',
             items: null,
+            theme: document.documentElement.dataset.theme,
         };
     },
     computed: {
@@ -60,6 +68,11 @@ vue_component('app', {
         },
         click_item_search: function (item) {
            window.location.replace(`#${item.id}`);
+        },
+        click_theme: function () {
+            this.theme = (this.theme === 'dark') ? 'light' : 'dark';
+            document.documentElement.dataset.theme = this.theme;
+            localStorage.setItem('theme', this.theme);
         },
     },
     created: async function () {
