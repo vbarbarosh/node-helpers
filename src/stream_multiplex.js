@@ -3,6 +3,17 @@ const stream = require('stream');
 
 function stream_multiplex(...streams)
 {
+    if (streams.length === 0) {
+        // Multiplex of nothing is a sink which accepts and discards all writes
+        // (the generic write/final below would never invoke their callbacks).
+        return stream.Writable({
+            objectMode: true,
+            write: function (chunk, encoding, callback) {
+                callback();
+            },
+        });
+    }
+
     if (streams.length === 1) {
         return streams[0];
     }

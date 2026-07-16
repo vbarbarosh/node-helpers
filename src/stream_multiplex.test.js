@@ -3,6 +3,14 @@ const stream = require('stream');
 const stream_multiplex = require('./stream_multiplex');
 
 describe('stream_multiplex', function () {
+    it('zero streams should accept and discard all writes', async function () {
+        const rs = stream.Readable.from([1, 2, 3]);
+        await stream.promises.pipeline(rs, stream_multiplex());
+    });
+    it('a single stream is returned as is', function () {
+        const ws1 = stream_debug();
+        assert.strictEqual(stream_multiplex(ws1), ws1);
+    });
     it('basic', async function () {
         const input = [1, 2, 3, 'str1'];
         const rs = stream.Readable.from(input);

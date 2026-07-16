@@ -3,7 +3,7 @@ Basic helper for running external commands via `execFile`, and splits stdout int
 - Fails if the command exits with non-zero code.
 - Fails if anything is printed to `stderr`.
 - Strips trailing newline(s).
-- Returns array of lines.
+- Returns array of lines; empty output produces `[]`, not `['']`.
 
 ## Signature
 

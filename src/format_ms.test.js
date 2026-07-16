@@ -22,6 +22,11 @@ const items = [
     ['01:01:01', msval(1, 1, 1, 1)],
     ['12:12:12', msval(12, 12, 12, 12)],
     ['999:00:00', msval(999, 0, 0, 0)],
+
+    // Fractional and negative input
+    ['00:01', 1500.7],
+    ['-01:01', -msval(0, 1, 1, 0)],
+    ['-01:01:01', -msval(1, 1, 1, 0)],
 ];
 
 describe('format_ms', function () {
