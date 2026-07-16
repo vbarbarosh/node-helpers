@@ -5,8 +5,8 @@ const re = /^((?:\[\s*[^\]]*\])*)\s*(.*)$/m;
 
 /**
  * log = logger();
- * log.add('hey')
- * log.add('[tag] heyhey')
+ * log('hey');
+ * log('[tag] heyhey');
  */
 function logger(options = {})
 {
