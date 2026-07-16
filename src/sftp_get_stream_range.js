@@ -5,7 +5,7 @@ const waitcb = require('./waitcb');
 async function sftp_get_stream_range(url, first, last, {user_friendly_status = ignore} = {})
 {
     const u = new URL(url);
-    const host = u.host;
+    const host = u.hostname; // u.host would include the :port, breaking dns lookup
     const port = +u.port || 22;
     const username = decodeURIComponent(u.username);
     const password = decodeURIComponent(u.password);
@@ -42,6 +42,10 @@ async function sftp_get_stream_range(url, first, last, {user_friendly_status = i
         // destroys the stream early (e.g. an aborted http range request) —
         // 'end'/'error' alone would leak the connection in that case.
         out.once('close', function () {
+            // destroying the connection errors the in-flight sftp requests
+            // (prefetched READs) with "No response from server", and those
+            // land on this already-closed stream — ignore them
+            out.on('error', ignore);
             conn.destroy();
         });
         return out;

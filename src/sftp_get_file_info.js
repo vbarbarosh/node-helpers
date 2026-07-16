@@ -6,7 +6,7 @@ const waitcb = require('./waitcb');
 async function sftp_get_file_info(url, {user_friendly_status = ignore} = {})
 {
     const u = new URL(url);
-    const host = u.host;
+    const host = u.hostname; // u.host would include the :port, breaking dns lookup
     const port = +u.port || 22;
     const username = decodeURIComponent(u.username);
     const password = decodeURIComponent(u.password);
