@@ -47,6 +47,11 @@ async function main()
     }
 
     switch (ARGS[0]) {
+    case '-h':
+    case '--help':
+        usage();
+        process.exit(0);
+        break;
     case '-v':
     case '--version':
         version();

@@ -9,7 +9,9 @@ function cli(main, report = error => console.error(error))
     // https://stackoverflow.com/a/46916601/1478566
     const timer = setInterval(v => v, 1E9);
 
-    Promise.resolve(main()).then(resolve, reject);
+    // Promise.resolve(main()) would evaluate main() before wrapping:
+    // a synchronous throw would bypass report() and the exit code handling
+    Promise.try(main).then(resolve, reject);
 
     function resolve() {
         clearInterval(timer);

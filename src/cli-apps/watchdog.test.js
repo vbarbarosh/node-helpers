@@ -1,5 +1,6 @@
 const assert = require('assert');
 const pid_exists = require('../pid_exists');
+const shell = require('../shell');
 const shell_spawn = require('../shell_spawn');
 const stream = require('stream');
 const stream_each = require('../stream_each');
@@ -9,6 +10,14 @@ const stream_lines = require('../stream_lines');
 
 describe('watchdog', function () {
     this.timeout(1000);
+    it('--help prints usage and exits 0', async function () {
+        const stdout = await shell([`${__dirname}/watchdog.js`, '--help']);
+        assert.match(stdout, /^usage: watchdog/);
+    });
+    it('--version prints version and exits 0', async function () {
+        const stdout = await shell([`${__dirname}/watchdog.js`, '--version']);
+        assert.match(stdout, /^watchdog v\d/);
+    });
     it('Happy Path', async function () {
         const env = {...process.env, WATCHDOG_INTERVAL: 100, __TESTING__: 1};
         const proc = shell_spawn([`${__dirname}/watchdog.js`, `${__dirname}/watchdog.d/quick-exit-after-2-pings.js`], {env});

@@ -18,7 +18,10 @@ const scenarios = [
     ['^start1/!substr1', 'start1 without substr', true, 'Starts with start1 and have no substr1'],
     ['substr/!not', 'contains substr but no ...', true, 'Combination of positive and negative substrings'],
     ['!missing', 'this string does not mention it', true, 'Negative substring absent'],
-    ['missing', 'this string does not mention it', false, 'Substring missing']
+    ['missing', 'this string does not mention it', false, 'Substring missing'],
+    ['^!ab$', 'abc', true, 'Negated anchored pattern: not (starts and ends)'],
+    ['^!ab$', 'xy-ab', true, 'Negated anchored pattern: ends only → true'],
+    ['^!ab$', 'abab', false, 'Negated anchored pattern rejects a full match'],
 ];
 
 describe('filter1_from_spec', function () {

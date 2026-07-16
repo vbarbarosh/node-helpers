@@ -50,7 +50,7 @@ function parse_expr(expr)
     substr = expr.replaceAll('!', '');
     if ((expr.length - substr.length) % 2) { // not
         if (starts && ends) {
-            return s => !s.startsWith(substr) && !s.endsWith(substr);
+            return s => !(s.startsWith(substr) && s.endsWith(substr));
         }
         if (starts) {
             return s => !s.startsWith(substr);

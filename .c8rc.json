@@ -4,5 +4,5 @@
     "exclude": ["src/**/*.test.js", "src/**/*.d/**"],
     "reporter": ["text-summary"],
     "check-coverage": true,
-    "lines": 61
+    "lines": 62
 }

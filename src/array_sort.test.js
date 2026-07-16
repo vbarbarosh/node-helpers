@@ -8,6 +8,10 @@ describe('array_sort', function () {
         assert.deepStrictEqual(array_sort([5,4,3,2,1], v => [v]), [1,2,3,4,5]);
         assert.deepStrictEqual(array_sort([{id:5},{id:4},{id:3},{id:2},{id:1}], v => [v.id]), [{id:1},{id:2},{id:3},{id:4},{id:5}]);
     });
+    it('should handle a scalar mapper', function () {
+        assert.deepStrictEqual(array_sort([3,1,2], v => v), [1,2,3]);
+        assert.deepStrictEqual(array_sort([{id:3},{id:1},{id:2}], v => v.id), [{id:1},{id:2},{id:3}]);
+    });
     it('should handle sort by priorities', function () {
         assert.deepStrictEqual(array_sort([1,2,3,4,5], v => [[5].indexOf(v) >>> 0]), [5,1,2,3,4]);
         assert.deepStrictEqual(array_sort([{id:1},{id:2},{id:3},{id:4},{id:5}], v => [[5].indexOf(v.id) >>> 0]), [{id:5},{id:1},{id:2},{id:3},{id:4}]);
