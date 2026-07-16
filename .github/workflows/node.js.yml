@@ -45,4 +45,6 @@ jobs:
     - run: npm ci
     - run: npm run lint
     - run: npm run build --if-present
+    - name: Check committed dist is up to date with src
+      run: git diff --exit-code -- dist
     - run: npm run coverage

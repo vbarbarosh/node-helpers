@@ -3,8 +3,8 @@ const fs_path_resolve = require('./src/fs_path_resolve');
 const pkg = require('./package.json');
 const webpack = require('webpack');
 
-const dev = {
-    mode: 'development',
+const browser = {
+    mode: 'production',
     target: 'web',
     entry: './src/browser/index.js',
     devtool: false,
@@ -29,4 +29,4 @@ const dev = {
     ],
 };
 
-module.exports = [dev];
+module.exports = [browser];
