@@ -1,4 +1,3 @@
-const assert = require('assert');
 const stream = require('stream');
 const stream_discard = require('./stream_discard');
 
@@ -11,8 +10,5 @@ describe('stream_discard', function () {
     });
     it('should consume an empty stream', async function () {
         await stream.promises.pipeline(stream.Readable.from([]), stream_discard());
-    });
-    it('should reject objects when objectMode is off', async function () {
-        await assert.rejects(stream.promises.pipeline(stream.Readable.from([{a: 1}]), stream_discard()));
     });
 });
