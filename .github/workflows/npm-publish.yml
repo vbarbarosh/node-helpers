@@ -1,0 +1,38 @@
+# Publishes the package to npm when a release tag is pushed (bin/release
+# creates and pushes the tag; this workflow does the actual `npm publish`).
+#
+# Authenticates via npm Trusted Publishing (OIDC) — no token/secret involved.
+# The trusted publisher is configured in the package settings on npmjs.com:
+# GitHub Actions, vbarbarosh/node-helpers, workflow npm-publish.yml.
+
+name: npm publish
+
+on:
+  push:
+    tags: [ "v*" ]
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC)
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+    # Trusted Publishing requires npm >= 11.5.1; node 22 bundles npm 10
+    - run: npm install -g npm@latest
+    - run: npm ci
+    - run: npm run lint
+    - run: npm run build
+    - name: Check committed dist is up to date with src
+      run: git diff --exit-code -- dist
+    - run: npm test
+    - run: npm publish --access public

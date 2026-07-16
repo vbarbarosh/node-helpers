@@ -43,7 +43,7 @@
     "bugs": {
         "url": "https://github.com/vbarbarosh/node-helpers/issues"
     },
-    "peerDependencies": {
+    "dependencies": {
         "@paralleldrive/cuid2": "^3.3.0",
         "@vbarbarosh/type-helpers": "^0.2.0",
         "axios": "^1.7.9",

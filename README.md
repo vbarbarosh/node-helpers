@@ -28,7 +28,7 @@ A subset of `@vbarbarosh/node-helpers` is available for browser:
 ## Test
 
 ```sh
-bin/test
+npm test
 ```
 
 ## 📖 Conventions

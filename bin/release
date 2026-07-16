@@ -41,9 +41,7 @@ git commit -m "release v$version"
 # Create a tag
 git tag v$version
 
-# Submit changes to github
+# Submit changes to github; pushing the v* tag triggers the npm-publish
+# workflow, which runs the checks and publishes the package on npm
 git push
 git push --tags
-
-# Publish package on npm
-npm publish
