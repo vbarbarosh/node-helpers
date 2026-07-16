@@ -25,6 +25,32 @@ A subset of `@vbarbarosh/node-helpers` is available for browser:
 
 ⚠️ All browser functions are exposed globally.
 
+## Usage
+
+Each helper is a single file — require exactly what you need:
+
+```js
+const array_chunk = require('@vbarbarosh/node-helpers/src/array_chunk');
+const fcmpx = require('@vbarbarosh/node-helpers/src/fcmpx');
+const fs_tempdir = require('@vbarbarosh/node-helpers/src/fs_tempdir');
+const http_get_json = require('@vbarbarosh/node-helpers/src/http_get_json');
+const wait_while = require('@vbarbarosh/node-helpers/src/wait_while');
+
+array_chunk([1, 2, 3, 4, 5], 2); // [[1, 2], [3, 4], [5]]
+
+items.sort(fcmpx(['-age', 'name'])); // age desc, then name asc
+
+await fs_tempdir(async function (d) {
+    // ... `d` is removed after this function settles
+});
+
+const json = await http_get_json('https://api.example.com/items');
+
+await wait_while(() => download_in_progress);
+```
+
+The full list of helpers is available at [vbarbarosh.github.io/node-helpers](https://vbarbarosh.github.io/node-helpers/).
+
 ## Test
 
 ```sh
