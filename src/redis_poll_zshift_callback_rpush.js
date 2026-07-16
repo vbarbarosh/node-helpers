@@ -55,8 +55,6 @@ async function redis_poll_zshift_callback_rpush(options)
                 await Promise.delay(ms);
                 continue;
             }
-            console.log(message_string);
-
             let message = null;
             try {
                 message = JSON.parse(message_string);
