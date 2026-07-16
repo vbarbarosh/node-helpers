@@ -25,6 +25,12 @@ describe('redis_lshift', function () {
     it('should work with redis@4', async function () {
         await test_4(require('redis-v4'));
     });
+    it('should work with redis@5', async function () {
+        await test_4(require('redis-v5'));
+    });
+    it('should work with redis@6', async function () {
+        await test_4(require('redis-v6'));
+    });
 });
 
 // Without a handler, a connection error (e.g. redis dying mid-test) is an
@@ -79,6 +85,7 @@ async function test_4(redis)
         await assert.deepStrictEqual(actual, expected);
     }
     finally {
-        await r.quit();
+        // quit() is deprecated in redis@5+ in favor of close()
+        await (r.close ? r.close() : r.quit());
     }
 }
