@@ -71,4 +71,20 @@ describe('http_stream_range', function () {
         assert.strictEqual(res.status, 200);
         assert.strictEqual(res.headers['content-length'], String(content.length));
     });
+    it('should advertise Accept-Ranges on GET and HEAD', async function () {
+        const get = await axios.get(`${base}/file`, {responseType: 'arraybuffer'});
+        const head = await axios.head(`${base}/file`);
+        assert.strictEqual(get.headers['accept-ranges'], 'bytes');
+        assert.strictEqual(head.headers['accept-ranges'], 'bytes');
+    });
+    it('should ignore a Range expression it cannot parse (RFC 7233)', async function () {
+        const res = await axios.get(`${base}/file`, {responseType: 'arraybuffer', headers: {Range: 'items=0-9'}});
+        assert.strictEqual(res.status, 200);
+        assert(content.equals(Buffer.from(res.data)));
+    });
+    it('should respond 416 to an unsatisfiable range', async function () {
+        const res = await axios.get(`${base}/file`, {headers: {Range: 'bytes=99999999-'}, validateStatus: () => true});
+        assert.strictEqual(res.status, 416);
+        assert.strictEqual(res.headers['content-range'], `bytes */${content.length}`);
+    });
 });

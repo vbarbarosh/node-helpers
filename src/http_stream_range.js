@@ -27,6 +27,7 @@ async function http_stream_range(req, res, file)
     const mime = mime_types.lookup(file);
 
     if (req.method === 'HEAD') {
+        res.header('Accept-Ranges', 'bytes');
         res.header('Content-Type', mime);
         res.header('Content-Length', total);
         res.header('Content-Disposition', `inline; filename=${escape_content_disposition(fs_path_basename(file))};`);
@@ -40,6 +41,34 @@ async function http_stream_range(req, res, file)
         return;
     }
 
+    res.header('Accept-Ranges', 'bytes');
+
+    let first = 0;
+    let last = total - 1;
+    let status = 200;
+
+    // bytes=0-
+    // bytes=-100
+    if (req.headers.range) {
+        try {
+            const range = http_range_parse(req.headers.range, total);
+            first = range.first;
+            last = range.last;
+            status = 206;
+        }
+        catch (error) {
+            // A Range expression we cannot parse is ignored (RFC 7233 says to
+            // serve the whole resource), but a syntactically valid range which
+            // cannot be satisfied gets 416
+            if (error.message.startsWith('Invalid range')) {
+                res.status(416);
+                res.header('Content-Range', `bytes */${total}`);
+                res.end();
+                return;
+            }
+        }
+    }
+
     const fp = await fs_fopen(file);
     const buf = Buffer.alloc(2*1024*1024);
 
@@ -47,26 +76,12 @@ async function http_stream_range(req, res, file)
         let req_close = false;
         req.once('close', () => req_close = true);
 
-        let first, last;
-
-        // bytes=0-
-        // bytes=-100
-        if (req.headers.range) {
-            const range = http_range_parse(req.headers.range, total);
-            first = range.first;
-            last = range.last;
-            // req.log(`[http_stream_range_range] ${JSON.stringify({range: req.headers.range, first, last, total, orig: req.headers.range})}`);
-            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
-            res.status(206);
-            res.header('Content-Type', mime);
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
+        res.status(status);
+        res.header('Content-Type', mime);
+        res.header('Content-Length', last - first + 1);
+        if (status === 206) {
             res.header('Content-Range', `bytes ${first}-${last}/${total}`);
-            res.header('Content-Length', last - first + 1);
-        }
-        else {
-            first = 0;
-            last = total - 1;
-            res.header('Content-Type', mime);
-            res.header('Content-Length', last - first + 1);
         }
 
         for (let offset = first; offset <= last && !req_close; ) {
