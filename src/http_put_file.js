@@ -32,13 +32,11 @@ async function http_put_file(url, file, options = {})
                 chunks.push(chunk);
             });
             response.on('end', function () {
-                switch (response.statusCode) {
-                case 200:
+                if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve({request, response, data: Buffer.concat(chunks)});
-                    break;
-                default:
+                }
+                else {
                     reject(new Error(`${response.statusCode} ${response.statusMessage}\n\n${Buffer.concat(chunks).toString('utf8')}`));
-                    break;
                 }
             });
         });
@@ -53,7 +51,12 @@ async function http_put_file(url, file, options = {})
                 prev = ready;
             });
         }
-        fs.createReadStream(file).pipe(request);
+        const rs = fs.createReadStream(file);
+        rs.on('error', function (error) {
+            reject(error);
+            request.destroy();
+        });
+        rs.pipe(request);
     });
 }
 

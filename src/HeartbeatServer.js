@@ -4,9 +4,14 @@ const Promise = require('bluebird');
 const fs = require('fs');
 const fs_path_join = require('./fs_path_join');
 const fs_rmf = require('./fs_rmf');
+const ignore = require('./ignore');
 const net = require('net');
 const now_fs = require('./now_fs');
 const os = require('os');
+
+// now_fs has 1 second resolution: without a counter two instances created
+// within the same second would collide on the socket path (EADDRINUSE)
+let socket_counter = 0;
 
 // 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 class HeartbeatServer extends EventEmitter
@@ -31,13 +36,17 @@ class HeartbeatServer extends EventEmitter
         this.#timer = setInterval(() => this.#tick(), this.#interval_ms);
 
         // Put socket on tmpfs to avoid slow disks.
+        const socket_name = `watchdog-${process.pid}-${now_fs()}-${++socket_counter}.sock`;
         this.#socket_path = fs.existsSync('/dev/shm')
-            ? fs_path_join('/dev/shm', `watchdog-${process.pid}-${now_fs()}.sock`)
-            : fs_path_join(os.tmpdir(), `watchdog-${process.pid}-${now_fs()}.sock`);
+            ? fs_path_join('/dev/shm', socket_name)
+            : fs_path_join(os.tmpdir(), socket_name);
 
         this.#promise = new Promise((resolve, reject) => {
             this.#reject = reject;
         });
+        // A clean dispose rejects the internal promise: without a handler of
+        // our own that raises an unhandled rejection when nobody awaits promise()
+        this.#promise.catch(ignore);
 
         this.#server = net.createServer(function (client) {
             let bytes_received = 0;
@@ -109,6 +118,9 @@ class HeartbeatServer extends EventEmitter
         if (!this.#server) {
             return;
         }
+        // removeAllListeners below also removes the 'close' handler which
+        // would have rejected: reject explicitly, as documented
+        this.#reject(new Error('Server Closed'));
         try {
             const _this = this;
             await new Promise(function (resolve, reject) {

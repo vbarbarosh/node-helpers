@@ -27,6 +27,27 @@ describe('HeartbeatServer', function () {
         }
     });
 
+    it('should use unique socket paths for instances created in the same second', async function () {
+        const a = new HeartbeatServer();
+        const b = new HeartbeatServer();
+        try {
+            assert.notStrictEqual(b.socket_path, a.socket_path);
+            await fs_assert_file_socket(a.socket_path);
+            await fs_assert_file_socket(b.socket_path);
+            await ping_socket(b.socket_path);
+        }
+        finally {
+            await a.dispose();
+            await b.dispose();
+        }
+    });
+    it('should reject the internal promise on dispose', async function () {
+        const server = new HeartbeatServer();
+        await fs_assert_file_socket(server.socket_path);
+        const rejected = assert.rejects(server.promise(), /Server Closed/);
+        await server.dispose();
+        await rejected;
+    });
     it('should dispose safely before the server starts listening, and twice', async function () {
         const server = new HeartbeatServer();
         await server.dispose();
