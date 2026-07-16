@@ -1,7 +1,10 @@
 vue_component('main-header', {
     template: `
         <div>
-            <p>A set of helpers for JavaScript/Node.js</p>
+            <p align="center">
+                <img class="light-only" src="img/cover.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
+                <img class="dark-only" src="img/cover-dark.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
+            </p>
 
             <p class="flex-row-center gap10">
                 <a href="https://github.com/vbarbarosh/node-helpers/actions"><img src="https://github.com/vbarbarosh/node-helpers/actions/workflows/node.js.yml/badge.svg" alt="@vbarbarosh/node-helpers CI status" /></a>
@@ -9,11 +12,6 @@ vue_component('main-header', {
                 <a href="https://www.npmjs.com/package/@vbarbarosh/node-helpers" rel="nofollow"><img src="https://img.shields.io/npm/dw/@vbarbarosh/node-helpers.svg" alt="npm" /></a>
                 <a href="https://github.com/vbarbarosh/node-helpers" rel="nofollow"><img src="https://img.shields.io/github/stars/vbarbarosh/node-helpers" alt="stars" /></a>
                 </p>
-
-            <p align="center">
-                <img class="light-only" src="img/cover.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
-                <img class="dark-only" src="img/cover-dark.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
-            </p>
 
             <div>
                 <div class="rel"><copy-to-clipboard value="npm install @vbarbarosh/node-helpers" /></div>

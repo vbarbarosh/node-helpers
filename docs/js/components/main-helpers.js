@@ -2,7 +2,7 @@ vue_component('main-helpers', {
     props: ['items', 'items_hit'],
     template: `
         <section v-for="item in items" v-bind:key="item.file" v-show="items_hit.has(item)">
-            <h2 :id="item.id">{{ item.name }}</h2>
+            <h2 :id="item.id">{{ item.name }}<a class="anchor" v-bind:href="('#' + item.id)">#</a></h2>
             <tabs-underline>
                 <tabs-item label="Description">
                     <div class="rel"><copy-to-clipboard :value="item.require" /></div>

@@ -10,24 +10,30 @@
 :root {
     color-scheme: light;
     --bg: #fff;
-    --fg: #24292e;
-    --border: #e1e4e8;
-    --border-heading: #eaecef;
-    --border-input: #d1d5da;
+    --fg: #1f2328;
+    --muted: #59636e;
+    --border: #d1d9e0;
+    --border-heading: #d8dee4;
+    --border-input: #d1d9e0;
     --pre-bg: #f6f8fa;
     --aside-bg: #fafbfc;
-    --link: #0366d6;
+    --link: #0969da;
+    --accent: #1a7f37;
+    --accent-ring: rgba(26, 127, 55, 0.15);
 }
 :root[data-theme="dark"] {
     color-scheme: dark;
     --bg: #0d1117;
     --fg: #e6edf3;
+    --muted: #8b949e;
     --border: #30363d;
     --border-heading: #30363d;
     --border-input: #30363d;
     --pre-bg: #161b22;
     --aside-bg: #010409;
     --link: #58a6ff;
+    --accent: #3fb950;
+    --accent-ring: rgba(63, 185, 80, 0.2);
 }
 :root[data-theme="dark"] .light-only {
     display: none;
@@ -44,9 +50,20 @@ body {
     line-height: 1.6;
     display: flex;
 }
+a {
+    color: var(--link);
+}
 main {
     flex: 1;
-    padding: 40px;
+    padding: 40px 48px;
+}
+main > * {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+main section {
+    margin-bottom: 3rem;
 }
 main h1 {
     font-size: 2rem;
@@ -55,19 +72,38 @@ main h1 {
 }
 main h2 {
     margin-top: 2em;
-    font-size: 1.5rem;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 1.3rem;
     border-bottom: 1px solid var(--border-heading);
-    padding-bottom: 0.3em;
+    padding-bottom: 0.4em;
+    scroll-margin-top: 16px;
+}
+main h2 .anchor {
+    margin-left: 10px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: normal;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+main h2:hover .anchor {
+    opacity: 1;
+}
+main h2 .anchor:hover {
+    color: var(--accent);
 }
 pre {
     background: var(--pre-bg);
     border: 1px solid var(--border);
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px 14px;
+    border-radius: 8px;
     overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 0;
 }
 code {
-    font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
     font-size: 90%;
 }
 aside {
@@ -87,33 +123,50 @@ aside .controls {
 aside input {
     width: 100%;
     min-width: 0;
-    padding: 6px 8px;
+    padding: 6px 10px;
     border: 1px solid var(--border-input);
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
     background: var(--bg);
     color: var(--fg);
+}
+aside input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
 }
 aside .theme-toggle {
     padding: 6px 10px;
     border: 1px solid var(--border-input);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
     background: var(--pre-bg);
     cursor: pointer;
+}
+aside .theme-toggle:hover {
+    border-color: var(--accent);
 }
 aside ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    scrollbar-width: thin;
 }
 aside li {
-    padding: 6px 0;
+    padding: 3px 8px;
+    border-radius: 6px;
     cursor: pointer;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 aside li:hover {
-    color: var(--link);
-    text-decoration: underline;
+    color: var(--fg);
+    background: var(--pre-bg);
 }
 aside a {
     text-decoration: none;
@@ -125,21 +178,21 @@ aside a:hover {
 .hidden {
     display: none;
 }
-pre {
-    margin: 0;
-}
 
-/* Third-party components ship light-only styles; repaint them in dark */
+/* Third-party components ship light-only styles; repaint them with theme vars */
+.tabs-underline .tab-header {
+    border-bottom-color: var(--border);
+}
+.tabs-underline .tab-header .tab-button {
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+}
+.tabs-underline .tab-header .tab-button.active {
+    color: var(--fg);
+    border-bottom-color: var(--accent);
+}
 :root[data-theme="dark"] .white {
     background: var(--bg);
-}
-:root[data-theme="dark"] .tab-button {
-    color: #8b949e;
-    border-bottom-color: #8b949e;
-}
-:root[data-theme="dark"] .tab-button.active {
-    color: var(--fg);
-    border-bottom-color: var(--fg);
 }
 :root[data-theme="dark"] .files-browser-row.active {
     background: rgba(56, 139, 253, 0.25);
