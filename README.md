@@ -8,7 +8,7 @@ A set of helpers for JavaScript/Node.js
 </p>
 
 <p align="center">
-<img src="docs/img/node-helpers-by-chat-gpt.webp" style="max-height:400px;" />
+<img src="img/cover.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
 </p>
 
 ## Installation

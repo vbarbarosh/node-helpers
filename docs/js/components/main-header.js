@@ -11,7 +11,7 @@ vue_component('main-header', {
                 </p>
 
             <p align="center">
-                <img src="img/node-helpers-by-chat-gpt.webp" style="max-height:400px;" />
+                <img src="img/cover.webp" alt="@vbarbarosh/node-helpers" style="max-width:100%;" />
             </p>
 
             <div>

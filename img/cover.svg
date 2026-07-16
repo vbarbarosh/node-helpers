@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-label="@vbarbarosh/node-helpers — a set of helpers for JavaScript/Node.js">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0d1117"/>
+            <stop offset="1" stop-color="#161b22"/>
+        </linearGradient>
+        <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#5fa04e"/>
+            <stop offset="1" stop-color="#8bd17c"/>
+        </linearGradient>
+    </defs>
+
+    <!-- card -->
+    <rect x="8" y="8" width="1184" height="404" rx="18" fill="url(#bg)" stroke="#30363d" stroke-width="2"/>
+
+    <!-- terminal title bar -->
+    <circle cx="44" cy="46" r="7" fill="#ff5f56"/>
+    <circle cx="68" cy="46" r="7" fill="#ffbd2e"/>
+    <circle cx="92" cy="46" r="7" fill="#27c93f"/>
+    <line x1="8" y1="70" x2="1192" y2="70" stroke="#30363d" stroke-width="2"/>
+
+    <!-- title -->
+    <text x="60" y="150" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="30" fill="#8b949e">@vbarbarosh/</text>
+    <text x="60" y="205" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="58" font-weight="bold" fill="#e6edf3">node-<tspan fill="url(#accent)">helpers</tspan></text>
+
+    <!-- tagline -->
+    <text x="60" y="248" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="21" fill="#8b949e">A set of single-file helpers for JavaScript/Node.js</text>
+
+    <!-- code sample -->
+    <text x="60" y="308" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="19"><tspan fill="#27c93f">$</tspan><tspan fill="#e6edf3"> npm install @vbarbarosh/node-helpers</tspan></text>
+    <text x="60" y="340" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="19"><tspan fill="#ff7b72">const</tspan><tspan fill="#e6edf3"> range = </tspan><tspan fill="#d2a8ff">require</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'@vbarbarosh/node-helpers/src/range'</tspan><tspan fill="#e6edf3">);</tspan></text>
+
+    <!-- category strip -->
+    <text x="60" y="388" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#6e7681">array_* &#183; date_* &#183; fcmp_* &#183; format_* &#183; fs_* &#183; http_* &#183; redis_* &#183; sftp_* &#183; shell_* &#183; stream_*</text>
+</svg>
