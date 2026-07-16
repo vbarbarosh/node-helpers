@@ -464,7 +464,7 @@
             "file": "src/assert_valid_expires_at.js",
             "require": "const assert_valid_expires_at = require('@vbarbarosh/node-helpers/src/assert_valid_expires_at');",
             "source_code": "/**\n * Ensures that the provided value is a date pointing to the future.\n */\nfunction assert_valid_expires_at(expires_at)\n{\n    if (expires_at instanceof Date) {\n        if (expires_at.getTime() > Date.now()) {\n            return;\n        }\n    }\n    throw new Error('Invalid value for expires_at; it should be a Date object pointing to the future.');\n}\n\nmodule.exports = assert_valid_expires_at;\n",
-            "markdown": null
+            "markdown": "Asserts that `expires_at` is a `Date` object pointing to the future\n(`getTime() > Date.now()`). Returns nothing on success; throws an `Error`\nfor anything else — past dates, the current instant, timestamps, date\nstrings, or non-`Date` values.\n\n```js\nassert_valid_expires_at(new Date(Date.now() + 60000))   // ok, returns undefined\nassert_valid_expires_at(new Date(Date.now() - 1))       // throws Error\nassert_valid_expires_at(Date.now() + 60000)             // throws Error (number, not Date)\n```\n"
         },
         {
             "id": "cache",
@@ -496,7 +496,7 @@
             "file": "src/const_stream.js",
             "require": "const const_stream = require('@vbarbarosh/node-helpers/src/const_stream');",
             "source_code": "// Since Node.js streams cannot emit `null` values (it's an eof mark),\n// this is a workaround.\n\nconst const_stream = {\n    null: Symbol('stream[null]'),\n};\n\nmodule.exports = const_stream;\n",
-            "markdown": null
+            "markdown": "Constants for passing values through Node.js streams that the stream\nprotocol itself cannot carry.\n\n**Members:**\n- `const_stream.null` — a `Symbol('stream[null]')` used to represent `null`\n  inside an object-mode stream, since pushing a real `null` is the\n  end-of-stream mark.\n"
         },
         {
             "id": "const_type",
@@ -504,7 +504,7 @@
             "file": "src/const_type.js",
             "require": "const const_type = require('@vbarbarosh/node-helpers/src/const_type');",
             "source_code": "const const_type = {\n    null: 'null',\n    undefined: 'undefined',\n    boolean: 'boolean',\n    number: 'number',\n    bigint: 'bigint',\n    nan: 'nan',\n    neg_inf: '-inf',\n    pos_inf: '+inf',\n    string: 'string',\n    symbol: 'symbol',\n    function: 'function',\n    object: 'object',\n    array: 'array',\n};\n\nmodule.exports = const_type;\n",
-            "markdown": null
+            "markdown": "String constants for the type names returned by `gettype`. Covers the\nstandard `typeof` results (`'null'`, `'undefined'`, `'boolean'`, `'number'`,\n`'bigint'`, `'string'`, `'symbol'`, `'function'`, `'object'`) plus the extra\ndistinctions `gettype` makes: `array` → `'array'`, `nan` → `'nan'`,\n`neg_inf` → `'-inf'`, `pos_inf` → `'+inf'`.\n"
         },
         {
             "id": "countdown",
@@ -616,7 +616,7 @@
             "file": "src/escape_content_disposition.js",
             "require": "const escape_content_disposition = require('@vbarbarosh/node-helpers/src/escape_content_disposition');",
             "source_code": "/**\n * @link https://stackoverflow.com/a/72823174\n * @link https://github.com/jshttp/content-disposition/tree/master\n */\nfunction escape_content_disposition(s)\n{\n    const out = s.replaceAll('\\\\', '\\\\\\\\')\n        .replaceAll('\"', '\\\\\"')\n        .replaceAll('%', '\\\\%')\n        .replaceAll('\\n', '%x0A')\n        .replaceAll('\\0', '%x00');\n    // A bare value must be a pure RFC 7230 token: any other character\n    // (space, ';', ',', '\"', '\\', ...) requires the whole value to be a\n    // quoted-string — an unquoted 'a\\\"b' or 'a,b' breaks header parsing.\n    if (out === s && /^[!#$%&'*+.^_`|~0-9a-zA-Z-]+$/.test(s)) {\n        return s;\n    }\n    return `\"${out}\"`;\n}\n\nmodule.exports = escape_content_disposition;\n",
-            "markdown": null
+            "markdown": "Escapes a value (typically a filename) for use in a `Content-Disposition`\nheader. A pure RFC 7230 token (letters, digits, `!#$%&'*+.^_`|~-`) is returned\nas-is; anything else — spaces, `;`, `,`, quotes, etc. — becomes a quoted-string\nwith `\\` `\"` `%` backslash-escaped and `\\n`/`\\0` encoded as `%x0A`/`%x00`.\nAn unquoted `a\"b` or `a,b` would break header parsing.\n\n```js\nescape_content_disposition('report.pdf')  // 'report.pdf'\nescape_content_disposition('foo bar.txt') // '\"foo bar.txt\"'\nescape_content_disposition('foo\"bar')     // '\"foo\\\\\"bar\"'\nescape_content_disposition('foo\\nbar')    // '\"foo%x0Abar\"'\nescape_content_disposition('')            // '\"\"'\n```\n"
         },
         {
             "id": "escape_regexp",
@@ -808,7 +808,7 @@
             "file": "src/format_error_report.js",
             "require": "const format_error_report = require('@vbarbarosh/node-helpers/src/format_error_report');",
             "source_code": "const json_stringify_safe = require('./json_stringify_safe');\n\nfunction format_error_report(error)\n{\n    if (!error) {\n        return json_stringify_safe({error: error === undefined ? '---undefined---' : error});\n    }\n\n    if (error.response?.status && error.response?.statusText && error.response?.config) {\n        return fm_axios_response(error);\n    }\n\n    if (error.config) {\n        return fm_axios_config(error);\n    }\n\n    return json_stringify_safe({\n        code: error.code,\n        name: error.name,\n        message: error.message ?? 'n/a',\n        stack: error.stack && error.stack.split(/\\n\\s*/)\n    }, null, 4);\n}\n\nfunction fm_axios_response(error)\n{\n    return `\n${error.message ?? 'n/a'}\n\n--- REQUEST ---\n\n${(error.response.config.method||'').toUpperCase()} ${error.response.config.url}\n\n${JSON.stringify(error.response.config.headers||{}, null, 4).slice(1, -1).replace(/^\\s+|,$/mg, '').trim()}\n\n--- RESPONSE ---\n\n${error.response.status} ${error.response.statusText}\n\n${String(error.response.data ?? '').slice(0, 10240) || 'n/a'}\n\n--- STACK ---\n\n${error.stack ?? 'n/a'}\n`.trimStart();\n}\n\nfunction fm_axios_config(error)\n{\n    return `\n${error.message ?? 'n/a'}\n\n--- REQUEST ---\n\n${(error.config.method||'').toUpperCase()} ${error.config.url}\n\n${JSON.stringify(error.config.headers||{}, null, 4).slice(1, -1).replace(/^\\s+|,$/mg, '').trim()}\n\n--- STACK ---\n\n${error.stack ?? 'n/a'}\n`.trimStart();\n}\n\nmodule.exports = format_error_report;\n",
-            "markdown": null
+            "markdown": "Formats an error into a multi-line text report suitable for logs. Axios\nerrors get special treatment; everything else becomes indented JSON.\n\n**Rules:**\n- Axios error with a response (`error.response.status/statusText/config`) —\n  plain-text report with `--- REQUEST ---` (method, url, headers),\n  `--- RESPONSE ---` (status, first 10240 chars of body), and `--- STACK ---` sections.\n- Axios error without a response (`error.config`) — same, minus the RESPONSE section.\n- Any other truthy error — JSON with `code`, `name`, `message`, and `stack`\n  split into an array of lines (circular-safe via `json_stringify_safe`).\n- Falsy error — `{\"error\":null}`-style JSON; `undefined` is reported as the\n  string `'---undefined---'`.\n"
         },
         {
             "id": "format_hrtime",
@@ -864,7 +864,7 @@
             "file": "src/format_progress_bytes.js",
             "require": "const format_progress_bytes = require('@vbarbarosh/node-helpers/src/format_progress_bytes');",
             "source_code": "const format_bytes = require('./format_bytes');\nconst format_percents = require('./format_percents');\nconst format_seconds = require('./format_seconds');\nconst is_num_gt = require('@vbarbarosh/type-helpers/src/is_num_gt');\n\nfunction format_progress_bytes({percents, total, done, rate, eta, duration})\n{\n    const bps = is_num_gt(rate, 0) ? `${format_bytes(rate)}/s` : '~';\n    if (done > total) {\n        return `${format_bytes(done)} at ${bps} duration=${format_seconds(duration)}`;\n    }\n    if (is_num_gt(total, 0)) {\n        const eta_str = is_num_gt(eta, 0) ? format_seconds(eta) : '~';\n        return `${format_percents(percents)} | ${format_bytes(done)} of ${format_bytes(total)} at ${bps} ETA ${eta_str} duration=${format_seconds(duration)}`;\n    }\n    if (is_num_gt(done, 0)) {\n        return `${format_bytes(done)} of ~ at ${bps} duration=${format_seconds(duration)}`;\n    }\n    if (is_num_gt(duration, 0)) {\n        return `~ duration=${format_seconds(duration)}`;\n    }\n    return '~';\n}\n\nmodule.exports = format_progress_bytes;\n",
-            "markdown": null
+            "markdown": "Formats a `make_progress` snapshot (`{percents, total, done, rate, eta, duration}`)\nas a one-line byte-progress string, using 1024-based units (`format_bytes`).\nUnknown parts (zero/null rate, eta, total) render as `~`; the layout degrades\nas less is known: full form → `done of ~` (no total) → `~ duration=…`\n(nothing done) → `~`. When `done > total`, the percents/total part is\ndropped entirely.\n\n```js\nformat_progress_bytes({percents: 0.2525, total: 15*1024*1024, done: 5*1024*1024, rate: 10*1024*1024, eta: 5, duration: 1})\n// '25.25% | 5.0MB of 15.0MB at 10.0MB/s ETA 00:00:05 duration=00:00:01'\nformat_progress_bytes({percents: 0, total: 0, done: 0, rate: 0, eta: 0, duration: 0})\n// '~'\n```\n"
         },
         {
             "id": "format_progress_kilo",
@@ -872,7 +872,7 @@
             "file": "src/format_progress_kilo.js",
             "require": "const format_progress_kilo = require('@vbarbarosh/node-helpers/src/format_progress_kilo');",
             "source_code": "const format_kilo = require('./format_kilo');\nconst format_percents = require('./format_percents');\nconst format_seconds = require('./format_seconds');\nconst is_num_gt = require('@vbarbarosh/type-helpers/src/is_num_gt');\n\nfunction format_progress_kilo({percents, total, done, rate, eta, duration})\n{\n    const speed = is_num_gt(rate, 0) ? `${format_kilo(rate)}/s` : '~';\n    if (done > total) {\n        return `${format_kilo(done)} at ${speed} duration=${format_seconds(duration)}`;\n    }\n    if (is_num_gt(total, 0)) {\n        const eta_str = is_num_gt(eta, 0) ? format_seconds(eta) : '~';\n        return `${format_percents(percents)} | ${format_kilo(done)} of ${format_kilo(total)} at ${speed} ETA ${eta_str} duration=${format_seconds(duration)}`;\n    }\n    if (is_num_gt(done, 0)) {\n        return `${format_kilo(done)} of ~ at ${speed} duration=${format_seconds(duration)}`;\n    }\n    if (is_num_gt(duration, 0)) {\n        return `~ duration=${format_seconds(duration)}`;\n    }\n    return '~';\n}\n\nmodule.exports = format_progress_kilo;\n",
-            "markdown": null
+            "markdown": "Formats a `make_progress` snapshot (`{percents, total, done, rate, eta, duration}`)\nas a one-line progress string using metric 1000-based units (`format_kilo`) —\nfor counting items, jobs, rows, etc. Identical layout and degradation rules\nto `format_progress_bytes`: unknown parts render as `~`, and when\n`done > total` the percents/total part is dropped.\n\n```js\nformat_progress_kilo({percents: 0.2525, total: 15e6, done: 5e6, rate: 10e6, eta: 5, duration: 1})\n// '25.25% | 5.00M of 15.00M at 10.00M/s ETA 00:00:05 duration=00:00:01'\n```\n"
         },
         {
             "id": "format_seconds",
@@ -896,7 +896,7 @@
             "file": "src/fs_append.js",
             "require": "const fs_append = require('@vbarbarosh/node-helpers/src/fs_append');",
             "source_code": "const fs = require('fs');\n\nfunction fs_append(file, data, options)\n{\n    return fs.promises.appendFile(file, data, options);\n}\n\nmodule.exports = fs_append;\n",
-            "markdown": null
+            "markdown": "Appends data to a file, creating the file if it does not exist.\nThin wrapper over `fs.promises.appendFile(file, data, options)`; `data` may be a string or a `Buffer`.\nSee `fs_append_utf8` for text and `fs_append_json` for JSON lines.\n\n```js\nfs_append(file, data, options) → Promise<void>\n```\n"
         },
         {
             "id": "fs_append_json",
@@ -904,7 +904,7 @@
             "file": "src/fs_append_json.js",
             "require": "const fs_append_json = require('@vbarbarosh/node-helpers/src/fs_append_json');",
             "source_code": "const fs_append = require('./fs_append');\nconst json_stringify_stable = require('./json_stringify_stable');\n\nfunction fs_append_json(file, value)\n{\n    return fs_append(file, json_stringify_stable(value) + '\\n');\n}\n\nmodule.exports = fs_append_json;\n",
-            "markdown": null
+            "markdown": "Appends a value to a file as one line of JSON (JSON Lines format).\nThe value is serialized with `json_stringify_stable` (object keys sorted) and followed by a newline.\n\n```js\nawait fs_append_json(file, {b: 1, a: [2]});\nawait fs_append_json(file, 'x');\n// file content: '{\"a\":[2],\"b\":1}\\n\"x\"\\n'\n```\n"
         },
         {
             "id": "fs_append_utf8",
@@ -912,7 +912,7 @@
             "file": "src/fs_append_utf8.js",
             "require": "const fs_append_utf8 = require('@vbarbarosh/node-helpers/src/fs_append_utf8');",
             "source_code": "const fs = require('fs');\n\nfunction fs_append_utf8(file, text, options)\n{\n    return fs.promises.appendFile(file, text, options);\n}\n\nmodule.exports = fs_append_utf8;\n",
-            "markdown": null
+            "markdown": "Appends text to a file, creating the file if it does not exist.\nSame wrapper over `fs.promises.appendFile` as `fs_append`; the name documents the intent (UTF-8 is the default encoding).\n\n```js\nfs_append_utf8(file, text, options) → Promise<void>\n```\n"
         },
         {
             "id": "fs_assert_file_exists",
@@ -920,7 +920,7 @@
             "file": "src/fs_assert_file_exists.js",
             "require": "const fs_assert_file_exists = require('@vbarbarosh/node-helpers/src/fs_assert_file_exists');",
             "source_code": "const fs_fi = require('./fs_fi');\n\nasync function fs_assert_file_exists(file)\n{\n    const fi = await fs_fi(file);\n    if (!fi.isFile()) {\n        throw new Error(`Not a file: ${file}`);\n    }\n}\n\nmodule.exports = fs_assert_file_exists;\n",
-            "markdown": null
+            "markdown": "Asserts that `file` is a regular file; resolves with nothing on success.\nRejects with `ENOENT` if the path is missing, and with `Not a file: <file>` for anything else.\nThe check is lstat-based (`fs_fi`), so even a symlink pointing at a regular file rejects.\n"
         },
         {
             "id": "fs_assert_file_readable",
@@ -928,7 +928,7 @@
             "file": "src/fs_assert_file_readable.js",
             "require": "const fs_assert_file_readable = require('@vbarbarosh/node-helpers/src/fs_assert_file_readable');",
             "source_code": "const fs_fi = require('./fs_fi');\n\nasync function fs_assert_file_readable(file)\n{\n    const fi = await fs_fi(file);\n    if (!fi.isFile()) {\n        throw new Error(`Not a file: ${file}`);\n    }\n    if ((fi.mode & 0o444) !== 0o444) {\n        throw new Error(`File is not readable by all: ${file}`);\n    }\n}\n\nmodule.exports = fs_assert_file_readable;\n",
-            "markdown": null
+            "markdown": "Asserts that `file` is a regular file readable by everyone: rejects unless the mode\nincludes all three read bits (`0o444`).\nLike `fs_assert_file_exists`, the check is lstat-based, so symlinks fail it.\n"
         },
         {
             "id": "fs_assert_file_socket",
@@ -936,7 +936,7 @@
             "file": "src/fs_assert_file_socket.js",
             "require": "const fs_assert_file_socket = require('@vbarbarosh/node-helpers/src/fs_assert_file_socket');",
             "source_code": "const fs_fi = require('./fs_fi');\n\nasync function fs_assert_file_socket(file)\n{\n    const fi = await fs_fi(file);\n    if (!fi.isSocket()) {\n        throw new Error(`Not a socket: ${file}`);\n    }\n}\n\nmodule.exports = fs_assert_file_socket;\n",
-            "markdown": null
+            "markdown": "Asserts that `file` is a Unix domain socket.\nRejects with `Not a socket: <file>` for any other entry type, and with `ENOENT` if the path is missing.\n"
         },
         {
             "id": "fs_copy",
@@ -944,7 +944,7 @@
             "file": "src/fs_copy.js",
             "require": "const fs_copy = require('@vbarbarosh/node-helpers/src/fs_copy');",
             "source_code": "const fs = require('fs');\n\nfunction fs_copy(src, dest, mode)\n{\n    return fs.promises.copyFile(src, dest, mode);\n}\n\nmodule.exports = fs_copy;\n",
-            "markdown": null
+            "markdown": "Copies `src` to `dest`, overwriting `dest` if it exists.\nThin wrapper over `fs.promises.copyFile(src, dest, mode)`; `mode` takes `fs.constants` copy flags.\nUse `fs_copy_excl` to fail instead of overwriting.\n\n```js\nfs_copy(src, dest, mode) → Promise<void>\n```\n"
         },
         {
             "id": "fs_copy_excl",
@@ -952,7 +952,7 @@
             "file": "src/fs_copy_excl.js",
             "require": "const fs_copy_excl = require('@vbarbarosh/node-helpers/src/fs_copy_excl');",
             "source_code": "const fs = require('fs');\n\nfunction fs_copy_excl(src, dest)\n{\n    return fs.promises.copyFile(src, dest, fs.constants.COPYFILE_EXCL);\n}\n\nmodule.exports = fs_copy_excl;\n",
-            "markdown": null
+            "markdown": "Copies `src` to `dest`, rejecting with `EEXIST` if `dest` already exists (`COPYFILE_EXCL`).\nUse `fs_copy` when overwriting is fine.\n"
         },
         {
             "id": "fs_exists",
@@ -960,7 +960,7 @@
             "file": "src/fs_exists.js",
             "require": "const fs_exists = require('@vbarbarosh/node-helpers/src/fs_exists');",
             "source_code": "const fs = require('fs');\n\nasync function fs_exists(path)\n{\n    return new Promise(function (resolve) {\n        fs.access(path, error => resolve(!error));\n    });\n}\n\nmodule.exports = fs_exists;\n",
-            "markdown": null
+            "markdown": "Resolves with `true` if `path` is accessible and `false` otherwise; never rejects.\nFollows symlinks (via `fs.access`), so a broken symlink reports `false`.\n\n```js\nfs_exists(path) → Promise<boolean>\n```\n"
         },
         {
             "id": "fs_fclose",
@@ -968,7 +968,7 @@
             "file": "src/fs_fclose.js",
             "require": "const fs_fclose = require('@vbarbarosh/node-helpers/src/fs_fclose');",
             "source_code": "const fs = require('fs');\n\nfunction fs_fclose(fp)\n{\n    return new Promise(function (resolve, reject) {\n        fs.close(fp, function (error) {\n            error ? reject(error) : resolve();\n        });\n    });\n}\n\nmodule.exports = fs_fclose;\n",
-            "markdown": null
+            "markdown": "Closes a file descriptor obtained from `fs_fopen`.\n\n```js\nfs_fclose(fp) → Promise<void>\n```\n"
         },
         {
             "id": "fs_fi",
@@ -976,7 +976,7 @@
             "file": "src/fs_fi.js",
             "require": "const fs_fi = require('@vbarbarosh/node-helpers/src/fs_fi');",
             "source_code": "const fs_lstat = require('./fs_lstat');\nconst fs_path_basename = require('./fs_path_basename');\nconst fs_path_dirname = require('./fs_path_dirname');\nconst fs_path_resolve = require('./fs_path_resolve');\nconst fs_readlink = require('./fs_readlink');\n\nasync function fs_fi(pathname)\n{\n    const basename = fs_path_basename(pathname);\n    const fi = await fs_lstat(pathname);\n    fi.pathname = pathname;\n    fi.basename = basename;\n    flags(fi);\n    if (fi.isSymbolicLink()) {\n        const target = await fs_readlink(fi.pathname);\n        const target_pathname = fs_path_resolve(fs_path_dirname(pathname), target);\n        fi.target = target;\n        try {\n            fi.target_fi = await fs_lstat(target_pathname);\n        }\n        catch (error) {\n            if (!['ENOENT', 'ENOTDIR', 'ELOOP'].includes(error.code)) {\n                throw error;\n            }\n            // A broken symlink is a legitimate directory entry: report it\n            // with target_fi = null instead of failing the whole listing\n            // (fs_find, fs_list, fs_ls, fs_lsr, fs_list_deep).\n            fi.target_fi = null;\n            return fi;\n        }\n        fi.target_fi.pathname = target_pathname;\n        fi.target_fi.basename = fs_path_basename(target_pathname);\n        flags(fi.target_fi);\n    }\n    return fi;\n}\n\nfunction flags(fi)\n{\n    const tmp = [];\n    if (fi.isFile()) {\n        tmp.push('is_file');\n    }\n    if (fi.isDirectory()) {\n        tmp.push('is_directory');\n    }\n    if (fi.isBlockDevice()) {\n        tmp.push('is_block_device');\n    }\n    if (fi.isCharacterDevice()) {\n        tmp.push('is_character_device');\n    }\n    if (fi.isSymbolicLink()) {\n        tmp.push('is_symbolic_link');\n    }\n    if (fi.isFIFO()) {\n        tmp.push('is_fifo');\n    }\n    if (fi.isSocket()) {\n        tmp.push('is_socket');\n    }\n    fi.flags = tmp;\n    fi.flags_map = {};\n    tmp.forEach(key => fi.flags_map[key] = true);\n}\n\nmodule.exports = fs_fi;\n",
-            "markdown": null
+            "markdown": "Returns extended file info: an lstat `Stats` object augmented with `pathname`, `basename`,\n`flags` (e.g. `['is_file']`) and `flags_map` (e.g. `{is_file: true}`).\nFor a symlink it also resolves the target: `target` is the raw link text and `target_fi`\nthe target's own info object — or `null` for a broken symlink, so directory listings\n(`fs_find`, `fs_list`, ...) never fail on dangling links.\n\n```js\nawait fs_fi('/tmp/d/link');    // link → 'data.txt'\n// { ..., flags: ['is_symbolic_link'], target: 'data.txt',\n//   target_fi: { pathname: '/tmp/d/data.txt', flags: ['is_file'], ... } }\n```\n"
         },
         {
             "id": "fs_file_md5",
@@ -992,7 +992,7 @@
             "file": "src/fs_find.js",
             "require": "const fs_find = require('@vbarbarosh/node-helpers/src/fs_find');",
             "source_code": "const Promise = require('bluebird');\nconst fs_fi = require('./fs_fi');\nconst fs_path_resolve = require('./fs_path_resolve');\nconst fs_readdir = require('./fs_readdir');\n\nasync function fs_find(pathname = '.')\n{\n    const fi = await fs_fi(fs_path_resolve(pathname));\n    if (fi.isDirectory()) {\n        const names = await fs_readdir(pathname);\n        const rows = await Promise.all(names.map(v => fs_find(fs_path_resolve(pathname, v))));\n        const out = [fi];\n        for (let i = 0, end = rows.length; i < end; ++i) {\n            out.push(...rows[i]);\n        }\n        return out;\n    }\n    return [fi];\n}\n\nmodule.exports = fs_find;\n",
-            "markdown": null
+            "markdown": "Recursively lists a directory tree as an array of `fs_fi` info objects with absolute\npathnames — the root entry first, then its contents depth-first in `readdir` order.\nA non-directory pathname yields just its own entry.\nBroken symlinks are reported (`target_fi: null`) instead of failing the walk,\nand symlinks to directories are not descended into.\nSee `fs_list` for a shallow listing and `fs_list_deep` for a recursive one\nthat keeps pathnames relative to the input.\n"
         },
         {
             "id": "fs_fopen",
@@ -1000,7 +1000,7 @@
             "file": "src/fs_fopen.js",
             "require": "const fs_fopen = require('@vbarbarosh/node-helpers/src/fs_fopen');",
             "source_code": "const fs = require('fs');\n\nfunction fs_fopen(file, flags = 'r', mode = 0o666)\n{\n    return new Promise(function (resolve, reject) {\n        fs.open(file, flags, mode, function (error, out) {\n            error ? reject(error) : resolve(out);\n        });\n    });\n}\n\nmodule.exports = fs_fopen;\n",
-            "markdown": null
+            "markdown": "Opens a file and resolves with a numeric file descriptor for use with\n`fs_fread`, `fs_fwrite`, `fs_fstat`, `fs_fsize` and `fs_fclose`.\n\n```js\nfs_fopen(file, flags = 'r', mode = 0o666) → Promise<number>\n```\n"
         },
         {
             "id": "fs_fopen_update",
@@ -1016,7 +1016,7 @@
             "file": "src/fs_fread.js",
             "require": "const fs_fread = require('@vbarbarosh/node-helpers/src/fs_fread');",
             "source_code": "const fs = require('fs');\n\n/**\n * The main use case is reading chunks of data from a file.\n */\nasync function fs_fread(fp, buffer, offset = null, size = buffer.length)\n{\n    const bytes_read = await new Promise(function (resolve, reject) {\n        fs.read(fp, buffer, 0, size, offset, function (error, out) {\n            error ? reject(error) : resolve(out);\n        });\n    });\n    return (bytes_read === buffer.length) ? buffer : buffer.subarray(0, bytes_read);\n}\n\nmodule.exports = fs_fread;\n",
-            "markdown": null
+            "markdown": "Reads up to `size` bytes (default: the buffer length) from a file descriptor into the start of `buffer`.\nWith `offset = null` (default) it reads from the current file position and advances it;\nan explicit `offset` reads at that position without moving it.\nResolves with the filled part of the buffer: `buffer` itself when filled exactly,\notherwise `buffer.subarray(0, bytes_read)` — an empty chunk past the end of file.\n\n```js\nconst fp = await fs_fopen(file);                      // file content: 'hello world'\nawait fs_fread(fp, Buffer.alloc(1024), 6, 5);         // <Buffer 'world'>\nawait fs_fread(fp, Buffer.alloc(1024), 100);          // <Buffer > (length 0)\n```\n"
         },
         {
             "id": "fs_fsize",
@@ -1024,7 +1024,7 @@
             "file": "src/fs_fsize.js",
             "require": "const fs_fsize = require('@vbarbarosh/node-helpers/src/fs_fsize');",
             "source_code": "const fs_fstat = require('./fs_fstat');\n\nfunction fs_fsize(fp)\n{\n    return fs_fstat(fp).then(v => v.size);\n}\n\nmodule.exports = fs_fsize;\n",
-            "markdown": null
+            "markdown": "Resolves with the size in bytes of an open file descriptor (`fs_fstat(fp).size`).\nFor a pathname, see `fs_size` / `fs_size_enoent`.\n"
         },
         {
             "id": "fs_fstat",
@@ -1032,7 +1032,7 @@
             "file": "src/fs_fstat.js",
             "require": "const fs_fstat = require('@vbarbarosh/node-helpers/src/fs_fstat');",
             "source_code": "const fs = require('fs');\n\nfunction fs_fstat(fp, options = {})\n{\n    return new Promise(function (resolve, reject) {\n        fs.fstat(fp, options, function (error, out) {\n            error ? reject(error) : resolve(out);\n        });\n    })\n}\n\nmodule.exports = fs_fstat;\n",
-            "markdown": null
+            "markdown": "Promisified `fs.fstat(fp, options)` — resolves with the `Stats` of an open file descriptor.\nFor pathnames, see `fs_stat` (follows symlinks) and `fs_lstat` (does not).\n"
         },
         {
             "id": "fs_fwrite",
@@ -1040,7 +1040,7 @@
             "file": "src/fs_fwrite.js",
             "require": "const fs_fwrite = require('@vbarbarosh/node-helpers/src/fs_fwrite');",
             "source_code": "const fs = require('fs');\n\n/**\n * The main use case is writing chunks of data to a file.\n */\nasync function fs_fwrite(fp, buffer, offset = null)\n{\n    const bytes_written = await new Promise(function (resolve, reject) {\n        fs.write(fp, buffer, 0, buffer.length, offset, function (error, out) {\n            error ? reject(error) : resolve(out);\n        });\n    });\n    return bytes_written;\n}\n\nmodule.exports = fs_fwrite;\n",
-            "markdown": null
+            "markdown": "Writes the whole `buffer` to a file descriptor and resolves with `bytes_written`.\nWith `offset = null` (default) it writes at the current file position;\npass an explicit `offset` to write at that position instead.\n\n```js\nconst fp = await fs_fopen(file, 'w');\nawait fs_fwrite(fp, Buffer.from('hello world'));  // 11\nawait fs_fwrite(fp, Buffer.from('WORLD'), 6);     // 5 — file is now 'hello WORLD'\n```\n"
         },
         {
             "id": "fs_list",
@@ -1048,7 +1048,7 @@
             "file": "src/fs_list.js",
             "require": "const fs_list = require('@vbarbarosh/node-helpers/src/fs_list');",
             "source_code": "const Promise = require('bluebird');\nconst fs_fi = require('./fs_fi');\nconst fs_path_join = require('./fs_path_join');\nconst fs_readdir = require('./fs_readdir');\n\nasync function fs_list(pathname = '.')\n{\n    const fi = await fs_fi(pathname);\n    if (fi.isDirectory()) {\n        const names = await fs_readdir(pathname);\n        return Promise.all(names.map(v => fs_fi(fs_path_join(pathname, v))));\n    }\n    return [fi];\n}\n\nmodule.exports = fs_list;\n",
-            "markdown": null
+            "markdown": "Shallow directory listing: resolves with an array of `fs_fi` info objects for the direct\nentries of `pathname` (the directory itself is not included).\nA non-directory pathname yields `[fi]` of itself.\nEntry pathnames are `pathname` joined with each name, so they stay relative if the input is relative.\nSee `fs_list_deep` and `fs_find` for recursive variants.\n"
         },
         {
             "id": "fs_list_deep",
@@ -1056,7 +1056,7 @@
             "file": "src/fs_list_deep.js",
             "require": "const fs_list_deep = require('@vbarbarosh/node-helpers/src/fs_list_deep');",
             "source_code": "const fs_fi = require('./fs_fi');\nconst fs_path_join = require('./fs_path_join');\nconst fs_readdir = require('./fs_readdir');\n\nasync function fs_list_deep(path = '.')\n{\n    const out = [];\n    const queue = [path];\n    while (queue.length) {\n        const fi = await fs_fi(queue.pop());\n        out.push(fi);\n        if (fi.isDirectory()) {\n            const names = await fs_readdir(fi.pathname);\n            queue.push(...names.map(v => fs_path_join(fi.pathname, v)));\n        }\n    }\n    return out;\n}\n\nmodule.exports = fs_list_deep;\n",
-            "markdown": null
+            "markdown": "Recursively lists `path` as an array of `fs_fi` info objects, including the root entry\nitself and every directory below it.\nTraversal is stack-based: the root comes first, but the rest is in no particular order.\nPathnames are joined from the input, so they stay relative if the input is relative.\nSee `fs_list` (shallow) and `fs_find` (recursive, absolute pathnames, depth-first order).\n"
         },
         {
             "id": "fs_ls",
@@ -1064,7 +1064,7 @@
             "file": "src/fs_ls.js",
             "require": "const fs_ls = require('@vbarbarosh/node-helpers/src/fs_ls');",
             "source_code": "const Promise = require('bluebird');\nconst fs_fi = require('./fs_fi');\nconst fs_path_join = require('./fs_path_join');\nconst fs_readdir = require('./fs_readdir');\n\n/**\n * @deprecated Deprecated in favor or fs_list\n */\nasync function fs_ls(pathname = '.')\n{\n    const fi = await fs_fi(pathname);\n    if (fi.isDirectory()) {\n        const names = await fs_readdir(pathname);\n        return Promise.all(names.map(v => fs_fi(fs_path_join(pathname, v))));\n    }\n    return [fi];\n}\n\nmodule.exports = fs_ls;\n",
-            "markdown": null
+            "markdown": "**Deprecated** in favor of `fs_list` (identical behavior):\na shallow directory listing as an array of `fs_fi` info objects.\n"
         },
         {
             "id": "fs_lsr",
@@ -1072,7 +1072,7 @@
             "file": "src/fs_lsr.js",
             "require": "const fs_lsr = require('@vbarbarosh/node-helpers/src/fs_lsr');",
             "source_code": "const Promise = require('bluebird');\nconst fs_fi = require('./fs_fi');\nconst fs_path_join = require('./fs_path_join');\nconst fs_readdir = require('./fs_readdir');\n\n/**\n * @deprecated Deprecated in favor or fs_walk\n */\nasync function fs_lsr(pathname = '.')\n{\n    const fi = await fs_fi(pathname);\n    const ret = [fi];\n    if (fi.isDirectory()) {\n        fi.content_size = 0;\n        const names = await fs_readdir(pathname);\n        const all = await Promise.all(names.map(v => fs_lsr(fs_path_join(pathname, v))));\n        for (let i = 0, end = all.length; i < end; ++i) {\n            const rows = all[i];\n            ret.push(...rows);\n            fi.content_size += rows[0].content_size;\n        }\n    }\n    else {\n        fi.content_size = fi.isFile() ? fi.size : 0;\n    }\n    return ret;\n}\n\nmodule.exports = fs_lsr;\n",
-            "markdown": null
+            "markdown": "**Deprecated** in favor of `fs_walk`.\nRecursive listing like `fs_find`, but keeps pathnames relative to the input and adds\n`content_size` to every `fs_fi` entry: a file's own `size`, the recursive total of file\nsizes for a directory, and `0` for anything else.\n"
         },
         {
             "id": "fs_lstat",
@@ -1080,7 +1080,7 @@
             "file": "src/fs_lstat.js",
             "require": "const fs_lstat = require('@vbarbarosh/node-helpers/src/fs_lstat');",
             "source_code": "const fs = require('fs');\n\nfunction fs_lstat(path, options)\n{\n    return fs.promises.lstat(path, options);\n}\n\nmodule.exports = fs_lstat;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.promises.lstat(path, options)`: stats the link itself instead of\nfollowing symlinks.\nSee `fs_stat` (follows symlinks) and `fs_fi` (lstat plus pathname/flags/symlink-target info).\n"
         },
         {
             "id": "fs_mkdir",
@@ -1088,7 +1088,7 @@
             "file": "src/fs_mkdir.js",
             "require": "const fs_mkdir = require('@vbarbarosh/node-helpers/src/fs_mkdir');",
             "source_code": "const fs = require('fs');\n\nfunction fs_mkdir(path, options)\n{\n    return fs.promises.mkdir(path, options);\n}\n\nmodule.exports = fs_mkdir;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.promises.mkdir(path, options)`.\nRejects with `EEXIST` if the path exists, and does not create missing parents unless\n`options.recursive` is set — see `fs_mkdirp` for that.\n"
         },
         {
             "id": "fs_mkdirp",
@@ -1096,7 +1096,7 @@
             "file": "src/fs_mkdirp.js",
             "require": "const fs_mkdirp = require('@vbarbarosh/node-helpers/src/fs_mkdirp');",
             "source_code": "const fs = require('fs');\n\nasync function fs_mkdirp(pathname)\n{\n    // Unlike the native call, resolves with `pathname` (handy for chaining).\n    await fs.promises.mkdir(pathname, {recursive: true});\n    return pathname;\n}\n\nmodule.exports = fs_mkdirp;\n",
-            "markdown": null
+            "markdown": "Creates a directory and any missing parents (`mkdir -p`). An already existing directory\nis fine (safe to call in parallel), but a path that exists as a regular file rejects with `EEXIST`.\nUnlike the native call, resolves with `pathname` itself — handy for chaining.\n\n```js\nawait fs_mkdirp('/tmp/a/b/c');    // '/tmp/a/b/c'\n```\n"
         },
         {
             "id": "fs_path_basename",
@@ -1104,7 +1104,7 @@
             "file": "src/fs_path_basename.js",
             "require": "const fs_path_basename = require('@vbarbarosh/node-helpers/src/fs_path_basename');",
             "source_code": "const path = require('path');\n\nfunction fs_path_basename(p)\n{\n    return path.basename(p);\n}\n\nmodule.exports = fs_path_basename;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `path.basename(p)`, kept for the consistent `fs_*`\nnaming.  Returns the last portion of the path.\n"
         },
         {
             "id": "fs_path_dirname",
@@ -1112,7 +1112,7 @@
             "file": "src/fs_path_dirname.js",
             "require": "const fs_path_dirname = require('@vbarbarosh/node-helpers/src/fs_path_dirname');",
             "source_code": "const path = require('path');\n\nfunction fs_path_dirname(p)\n{\n    return path.dirname(p);\n}\n\nmodule.exports = fs_path_dirname;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `path.dirname(p)`, kept for the consistent `fs_*` naming.\nReturns the directory portion of the path.\n"
         },
         {
             "id": "fs_path_extname",
@@ -1120,7 +1120,7 @@
             "file": "src/fs_path_extname.js",
             "require": "const fs_path_extname = require('@vbarbarosh/node-helpers/src/fs_path_extname');",
             "source_code": "const path = require('path');\n\nfunction fs_path_extname(p)\n{\n    return path.extname(p);\n}\n\n// function extname(s)\n// {\n//     const i = s.lastIndexOf('.');\n//     return (i > 0) ? s.slice(i) : null;\n// }\n\nmodule.exports = fs_path_extname;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `path.extname(p)`, kept for the consistent `fs_*` naming.\nReturns the extension including the dot, or `''` when there is none — note node's dotfile rules:\n\n```js\nfs_path_extname('file.js');   // '.js'\nfs_path_extname('.foo');      // ''\nfs_path_extname('..foo');     // '.foo'\nfs_path_extname('/a/b.js/c'); // ''\n```\n"
         },
         {
             "id": "fs_path_join",
@@ -1128,7 +1128,7 @@
             "file": "src/fs_path_join.js",
             "require": "const fs_path_join = require('@vbarbarosh/node-helpers/src/fs_path_join');",
             "source_code": "const path = require('path');\n\nfunction fs_path_join(...parts)\n{\n    return path.join(...parts);\n}\n\nmodule.exports = fs_path_join;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `path.join(...parts)`, kept for the consistent `fs_*` naming.\nJoins and normalizes the given path segments.\n"
         },
         {
             "id": "fs_path_relative",
@@ -1136,7 +1136,7 @@
             "file": "src/fs_path_relative.js",
             "require": "const fs_path_relative = require('@vbarbarosh/node-helpers/src/fs_path_relative');",
             "source_code": "const path = require('path');\n\nfunction fs_path_relative(from, to)\n{\n    return path.relative(from, to);\n}\n\nmodule.exports = fs_path_relative;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `path.relative(from, to)`, kept for the consistent `fs_*` naming.\nReturns the relative path from `from` to `to`.\n"
         },
         {
             "id": "fs_path_resolve",
@@ -1144,7 +1144,7 @@
             "file": "src/fs_path_resolve.js",
             "require": "const fs_path_resolve = require('@vbarbarosh/node-helpers/src/fs_path_resolve');",
             "source_code": "const path = require('path');\n\nfunction fs_path_resolve(...parts)\n{\n    return path.resolve(...parts);\n}\n\nmodule.exports = fs_path_resolve;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `path.resolve(...parts)`, kept for the consistent `fs_*` naming.\nResolves the segments right-to-left into an absolute path (against the current working directory if needed).\n"
         },
         {
             "id": "fs_path_tempdir",
@@ -1152,7 +1152,7 @@
             "file": "src/fs_path_tempdir.js",
             "require": "const fs_path_tempdir = require('@vbarbarosh/node-helpers/src/fs_path_tempdir');",
             "source_code": "const os = require('os');\n\nfunction fs_path_tempdir()\n{\n    return os.tmpdir();\n}\n\nmodule.exports = fs_path_tempdir;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over node's `os.tmpdir()`, kept for the consistent `fs_*` naming.\nReturns the OS default directory for temporary files, e.g. `/tmp`.\n"
         },
         {
             "id": "fs_path_untildify",
@@ -1160,7 +1160,7 @@
             "file": "src/fs_path_untildify.js",
             "require": "const fs_path_untildify = require('@vbarbarosh/node-helpers/src/fs_path_untildify');",
             "source_code": "const os = require('os');\nconst homedir = os.homedir();\n\n/**\n * @link https://github.com/sindresorhus/untildify/blob/a901e25ef782d93df1eba04ed48f56c79d157c74/index.js\n */\nfunction fs_path_untildify(path)\n{\n    return homedir ? path.replace(/^~(?=$|\\/|\\\\)/, homedir) : path;\n}\n\nmodule.exports = fs_path_untildify;\n",
-            "markdown": null
+            "markdown": "Expands a leading `~` in a path to the current user's home directory (ported from sindresorhus/untildify).\nOnly a `~` that is the whole path or is followed by `/` or `\\` is expanded; anything else is returned unchanged.\nIf the home directory cannot be determined, the path is returned as-is.\n\n```js\nfs_path_untildify('~/x');    // '/home/ubuntu/x'\nfs_path_untildify('~foo/x'); // '~foo/x'\n```\n"
         },
         {
             "id": "fs_read",
@@ -1168,7 +1168,7 @@
             "file": "src/fs_read.js",
             "require": "const fs_read = require('@vbarbarosh/node-helpers/src/fs_read');",
             "source_code": "const fs = require('fs');\n\nfunction fs_read(path, options)\n{\n    return fs.promises.readFile(path, options);\n}\n\nmodule.exports = fs_read;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.promises.readFile(path, options)`.\nWithout an `encoding` in `options` it resolves with a `Buffer`; with one, a string.\nPrefer the specialized variants: `fs_read_buffer`, `fs_read_utf8`, `fs_read_json`, `fs_read_lines`.\n"
         },
         {
             "id": "fs_read_buffer",
@@ -1176,7 +1176,7 @@
             "file": "src/fs_read_buffer.js",
             "require": "const fs_read_buffer = require('@vbarbarosh/node-helpers/src/fs_read_buffer');",
             "source_code": "const fs_read = require('./fs_read');\n\n/**\n * Read the entire contents of a file into a buffer.\n */\nfunction fs_read_buffer(file)\n{\n    return fs_read(file);\n}\n\nmodule.exports = fs_read_buffer;\n",
-            "markdown": null
+            "markdown": "Reads the entire contents of a file into a `Buffer` (i.e. `fs_read` with no encoding).\n\n```js\nfs_read_buffer(file) → Promise<Buffer>\n```\n"
         },
         {
             "id": "fs_read_json",
@@ -1184,7 +1184,7 @@
             "file": "src/fs_read_json.js",
             "require": "const fs_read_json = require('@vbarbarosh/node-helpers/src/fs_read_json');",
             "source_code": "const fs_read = require('./fs_read');\n\n// XXX Should support catchReturn, e.g.\n//     fs_read_json(file).catchReturn(default_value)\nfunction fs_read_json(file)\n{\n    return fs_read(file, {encoding: 'utf8'}).then(JSON.parse);\n}\n\nmodule.exports = fs_read_json;\n",
-            "markdown": null
+            "markdown": "Reads a file as UTF-8 and parses it with `JSON.parse`.\nRejects if the file is missing or the content is not valid JSON.\n\n```js\nfs_read_json(file) → Promise<any>\n```\n"
         },
         {
             "id": "fs_read_lines",
@@ -1192,7 +1192,7 @@
             "file": "src/fs_read_lines.js",
             "require": "const fs_read_lines = require('@vbarbarosh/node-helpers/src/fs_read_lines');",
             "source_code": "const fs_read = require('./fs_read');\n\n// XXX Should support catchReturn, e.g.\n//     fs_read_lines(file).catchReturn(default_value)\nfunction fs_read_lines(file)\n{\n    return fs_read(file, {encoding: 'utf8'}).then(v => v.split('\\n'));\n}\n\nmodule.exports = fs_read_lines;\n",
-            "markdown": null
+            "markdown": "Reads a file as UTF-8 and splits it on `'\\n'`.\nThe trailing newline is NOT stripped: a file ending in `\\n` yields a final `''` element.\n\n```js\n// file content: 'one\\ntwo\\n'\nawait fs_read_lines(file); // ['one', 'two', '']\n```\n"
         },
         {
             "id": "fs_read_stream",
@@ -1200,7 +1200,7 @@
             "file": "src/fs_read_stream.js",
             "require": "const fs_read_stream = require('@vbarbarosh/node-helpers/src/fs_read_stream');",
             "source_code": "const fs = require('fs');\n\nfunction fs_read_stream(path, options)\n{\n    return fs.createReadStream(path, options);\n}\n\nmodule.exports = fs_read_stream;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.createReadStream(path, options)`.\nReturns a readable stream synchronously (not a Promise); open errors are emitted as `'error'` events on the stream.\n"
         },
         {
             "id": "fs_read_utf8",
@@ -1208,7 +1208,7 @@
             "file": "src/fs_read_utf8.js",
             "require": "const fs_read_utf8 = require('@vbarbarosh/node-helpers/src/fs_read_utf8');",
             "source_code": "const fs_read = require('./fs_read');\n\n/**\n * Read the entire contents of a file into a UTF-8 encoded string.\n */\nfunction fs_read_utf8(file)\n{\n    return fs_read(file, {encoding: 'utf8'});\n}\n\nmodule.exports = fs_read_utf8;\n",
-            "markdown": null
+            "markdown": "Reads the entire contents of a file into a UTF-8 decoded string.\n\n```js\nfs_read_utf8(file) → Promise<string>\n```\n"
         },
         {
             "id": "fs_readdir",
@@ -1216,7 +1216,7 @@
             "file": "src/fs_readdir.js",
             "require": "const fs_readdir = require('@vbarbarosh/node-helpers/src/fs_readdir');",
             "source_code": "const fs = require('fs');\n\nfunction fs_readdir(path, options)\n{\n    return fs.promises.readdir(path, options);\n}\n\nmodule.exports = fs_readdir;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.promises.readdir(path, options)`.\nResolves with an array of basenames (not full paths); pass `{withFileTypes: true}` for `Dirent` objects.\nRejects if `path` is missing or not a directory.\n"
         },
         {
             "id": "fs_readlink",
@@ -1224,7 +1224,7 @@
             "file": "src/fs_readlink.js",
             "require": "const fs_readlink = require('@vbarbarosh/node-helpers/src/fs_readlink');",
             "source_code": "const fs = require('fs');\nconst util = require('util');\n\n// https://nodejs.org/api/util.html#util_util_promisify_original\nmodule.exports = util.promisify(fs.readlink);\n",
-            "markdown": null
+            "markdown": "Promisified `fs.readlink`: resolves with the target a symbolic link points to.\nRejects if the path is missing or not a symlink (`EINVAL`).\n\n```js\nfs_readlink(path) → Promise<string>\n```\n"
         },
         {
             "id": "fs_rename",
@@ -1232,7 +1232,7 @@
             "file": "src/fs_rename.js",
             "require": "const fs_rename = require('@vbarbarosh/node-helpers/src/fs_rename');",
             "source_code": "const fs = require('fs');\nconst util = require('util');\n\n// https://nodejs.org/api/util.html#util_util_promisify_original\nmodule.exports = util.promisify(fs.rename);\n",
-            "markdown": null
+            "markdown": "Promisified `fs.rename`: moves/renames a file or directory, overwriting an existing file at the destination.\nFails across filesystem boundaries (`EXDEV`) — copy + remove in that case.\n\n```js\nfs_rename(old_path, new_path) → Promise<void>\n```\n"
         },
         {
             "id": "fs_rm",
@@ -1240,7 +1240,7 @@
             "file": "src/fs_rm.js",
             "require": "const fs_rm = require('@vbarbarosh/node-helpers/src/fs_rm');",
             "source_code": "const fs = require('fs');\n\n/**\n * Remove a file\n */\nfunction fs_rm(path)\n{\n    return fs.promises.unlink(path);\n}\n\nmodule.exports = fs_rm;\n",
-            "markdown": null
+            "markdown": "Removes a single file (thin wrapper over `fs.promises.unlink`).\nRejects if the path is missing (`ENOENT`) or is a directory.\n\nSee also: `fs_rmf` (ignore missing), `fs_rmdir` (empty directory), `fs_rmrf` (recursive, never throws on missing).\n"
         },
         {
             "id": "fs_rmdir",
@@ -1248,7 +1248,7 @@
             "file": "src/fs_rmdir.js",
             "require": "const fs_rmdir = require('@vbarbarosh/node-helpers/src/fs_rmdir');",
             "source_code": "const fs = require('fs');\n\nfunction fs_rmdir(path)\n{\n    return fs.promises.rmdir(path);\n}\n\nmodule.exports = fs_rmdir;\n",
-            "markdown": null
+            "markdown": "Removes an **empty** directory (thin wrapper over `fs.promises.rmdir`).\nRejects if the path is missing (`ENOENT`), not empty (`ENOTEMPTY`), or not a directory.\nUse `fs_rmrf` to remove a directory with contents.\n"
         },
         {
             "id": "fs_rmf",
@@ -1256,7 +1256,7 @@
             "file": "src/fs_rmf.js",
             "require": "const fs_rmf = require('@vbarbarosh/node-helpers/src/fs_rmf');",
             "source_code": "const fs_rm = require('./fs_rm');\n\n/**\n * Remove the file if it exists.\n */\nasync function fs_rmf(path)\n{\n    try {\n        await fs_rm(path);\n    }\n    catch (error) {\n        if (error.code !== 'ENOENT') {\n            throw error;\n        }\n    }\n}\n\nmodule.exports = fs_rmf;\n",
-            "markdown": null
+            "markdown": "Removes the file if it exists: `fs_rm` that swallows `ENOENT` (like `rm -f`).\nAny other error (e.g. the path is a directory) is still thrown.\n"
         },
         {
             "id": "fs_rmrf",
@@ -1264,7 +1264,7 @@
             "file": "src/fs_rmrf.js",
             "require": "const fs_rmrf = require('@vbarbarosh/node-helpers/src/fs_rmrf');",
             "source_code": "const Promise = require('bluebird');\nconst fs_lstat = require('./fs_lstat');\nconst fs_path_join = require('./fs_path_join');\nconst fs_readdir = require('./fs_readdir');\nconst fs_rm = require('./fs_rm');\nconst fs_rmdir = require('./fs_rmdir');\nconst ignore = require('./ignore');\n\n/**\n * Remove a file or directory, along with all nested files and directories, recursively.\n */\nasync function fs_rmrf(path, progress = ignore)\n{\n    const lstat = await fs_lstat(path).catch(() => null);\n    if (lstat === null) {\n        return;\n    }\n\n    if (lstat.isDirectory()) {\n        const names = await fs_readdir(path);\n        await Promise.all(names.map(v => fs_rmrf(fs_path_join(path, v), progress)));\n        progress('rmdir', path);\n        await fs_rmdir(path);\n    }\n    else {\n        progress('rm', path);\n        await fs_rm(path);\n    }\n}\n\nmodule.exports = fs_rmrf;\n",
-            "markdown": null
+            "markdown": "Removes a file or directory recursively, like `rm -rf`.\nA missing path is silently ignored; children of a directory are removed in parallel.\nUses `lstat`, so a symlink is removed itself — its target is never followed.\n\n**Signature:** `fs_rmrf(path, progress = ignore) → Promise<void>`\n\nThe optional `progress` callback is called as `progress('rm', path)` before each file\nand `progress('rmdir', path)` before each directory removal.\n"
         },
         {
             "id": "fs_sha256",
@@ -1280,7 +1280,7 @@
             "file": "src/fs_size.js",
             "require": "const fs_size = require('@vbarbarosh/node-helpers/src/fs_size');",
             "source_code": "const fs_stat = require('./fs_stat');\n\nasync function fs_size(path)\n{\n    const stat = await fs_stat(path);\n    return stat.size;\n}\n\nmodule.exports = fs_size;\n",
-            "markdown": null
+            "markdown": "Resolves with the size of a file in bytes (`fs_stat(path)` → `stat.size`).\nRejects if the path is missing; see `fs_size_enoent` for the variant that returns 0 instead.\n\n```js\nfs_size(path) → Promise<number>\n```\n"
         },
         {
             "id": "fs_size_enoent",
@@ -1296,7 +1296,7 @@
             "file": "src/fs_stat.js",
             "require": "const fs_stat = require('@vbarbarosh/node-helpers/src/fs_stat');",
             "source_code": "const fs = require('fs');\n\nfunction fs_stat(path, options = {})\n{\n    return fs.promises.stat(path, options);\n}\n\nmodule.exports = fs_stat;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.promises.stat(path, options)`: resolves with an `fs.Stats` object.\nFollows symlinks (use `fs_lstat` to stat the link itself); rejects with `ENOENT` if the path is missing.\n"
         },
         {
             "id": "fs_tempdir",
@@ -1312,7 +1312,7 @@
             "file": "src/fs_touch.js",
             "require": "const fs_touch = require('@vbarbarosh/node-helpers/src/fs_touch');",
             "source_code": "const fs = require('fs');\n\nfunction fs_touch(file)\n{\n    return new Promise(function (resolve, reject) {\n        fs.open(file, 'a', function (error, fd) {\n            if (error) {\n                if (error.code === 'EISDIR') {\n                    reject(new Error(`Cannot touch a directory: ${file}`));\n                }\n                else {\n                    reject(error);\n                }\n                return;\n            }\n            fs.close(fd, function (error) {\n                if (error) {\n                    reject(error);\n                    return;\n                }\n                const now = new Date();\n                fs.utimes(file, now, now, function (error) {\n                    error ? reject(error) : resolve();\n                });\n            });\n        });\n    });\n}\n\nmodule.exports = fs_touch;\n",
-            "markdown": null
+            "markdown": "Creates the file if it does not exist, then sets its atime and mtime to now — like the `touch` command.\nRejects with `Cannot touch a directory: <file>` when the path is an existing directory.\n\n```js\nfs_touch(file) → Promise<void>\n```\n"
         },
         {
             "id": "fs_walk",
@@ -1320,7 +1320,7 @@
             "file": "src/fs_walk.js",
             "require": "const fs_walk = require('@vbarbarosh/node-helpers/src/fs_walk');",
             "source_code": "const fs_lstat = require('./fs_lstat');\nconst fs_path_join = require('./fs_path_join');\nconst fs_readdir = require('./fs_readdir');\nconst ignore = require('./ignore');\n\nasync function fs_walk({path = '.', user_friendly_status = ignore, error_handler = default_error_handler, signal})\n{\n    const out = [];\n    const queue = [path];\n    while (queue.length) {\n        if (signal) {\n            signal.throwIfAborted();\n        }\n        try {\n            const current_path = queue.pop();\n            user_friendly_status(`Reading ${current_path}`);\n            const lstat = await fs_lstat(current_path);\n            lstat.path = current_path;\n            out.push(lstat);\n            if (lstat.isDirectory()) {\n                if (current_path === '/dev' || current_path === '/proc') {\n                    continue;\n                }\n                const basenames = await fs_readdir(current_path);\n                basenames.forEach(v => queue.push(fs_path_join(current_path, v)));\n            }\n        }\n        catch (error) {\n            error_handler(error);\n        }\n    }\n    return out;\n}\n\nfunction default_error_handler(error)\n{\n    console.log(`⚠️ ${error.message}`);\n}\n\nmodule.exports = fs_walk;\n",
-            "markdown": null
+            "markdown": "Walks a directory tree and resolves with a flat array of `lstat` results,\neach with a `path` property added; the root entry is included. Order is not guaranteed.\n\n**Options:** `fs_walk({path = '.', user_friendly_status, error_handler, signal})`\n- `user_friendly_status(text)` — called with `Reading <path>` per entry\n- `error_handler(error)` — per-entry errors are reported here and the walk continues (default logs to console)\n- `signal` — an `AbortSignal` to cancel the walk\n\nSymlinks are not followed (`lstat`), and the contents of `/dev` and `/proc` are skipped.\n\n```js\nawait fs_walk({path: 'w'});\n// [Stats {path: 'w', ...}, Stats {path: 'w/sub', ...}, Stats {path: 'w/a.txt', ...}, ...]\n```\n"
         },
         {
             "id": "fs_write",
@@ -1328,7 +1328,7 @@
             "file": "src/fs_write.js",
             "require": "const fs_write = require('@vbarbarosh/node-helpers/src/fs_write');",
             "source_code": "const fs = require('fs');\n\nfunction fs_write(file, data, options)\n{\n    return fs.promises.writeFile(file, data, options);\n}\n\nmodule.exports = fs_write;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.promises.writeFile(file, data, options)`.\nCreates or truncates the file; `data` may be a string (written as UTF-8 unless `options` says otherwise), a `Buffer`, or a `TypedArray`.\nFor objects, prefer `fs_write_json`.\n"
         },
         {
             "id": "fs_write_json",
@@ -1336,7 +1336,7 @@
             "file": "src/fs_write_json.js",
             "require": "const fs_write_json = require('@vbarbarosh/node-helpers/src/fs_write_json');",
             "source_code": "const fs = require('fs');\n\nfunction fs_write_json(file, data)\n{\n    return fs.promises.writeFile(file, JSON.stringify(data, null, 4));\n}\n\nmodule.exports = fs_write_json;\n",
-            "markdown": null
+            "markdown": "Serializes `data` with `JSON.stringify(data, null, 4)` and writes it to the file as UTF-8.\nThe output is pretty-printed with 4-space indentation and has no trailing newline.\n\n```js\nawait fs_write_json(file, {name: 'x'});\n// file content: '{\\n    \"name\": \"x\"\\n}'\n```\n"
         },
         {
             "id": "fs_write_stream",
@@ -1344,7 +1344,7 @@
             "file": "src/fs_write_stream.js",
             "require": "const fs_write_stream = require('@vbarbarosh/node-helpers/src/fs_write_stream');",
             "source_code": "const fs = require('fs');\n\nfunction fs_write_stream(path, options)\n{\n    return fs.createWriteStream(path, options);\n}\n\nmodule.exports = fs_write_stream;\n",
-            "markdown": null
+            "markdown": "Thin wrapper over `fs.createWriteStream(path, options)`.\nReturns a writable stream synchronously (not a Promise); open errors are emitted as `'error'` events on the stream.\n"
         },
         {
             "id": "gettype",
@@ -1352,7 +1352,7 @@
             "file": "src/gettype.js",
             "require": "const gettype = require('@vbarbarosh/node-helpers/src/gettype');",
             "source_code": "const const_type = require('./const_type');\n\n/**\n * @similar https://github.com/locutusjs/locutus/tree/master/src/php/var\n */\nfunction gettype(value)\n{\n    if (value === null) {\n        return const_type.null;\n    }\n    if (Array.isArray(value)) {\n        return const_type.array;\n    }\n    if (Number.isNaN(value)) {\n        return const_type.nan;\n    }\n    if (value === Number.NEGATIVE_INFINITY) {\n        return const_type.neg_inf;\n    }\n    if (value === Number.POSITIVE_INFINITY) {\n        return const_type.pos_inf;\n    }\n    return typeof value;\n}\n\nmodule.exports = gettype;\n",
-            "markdown": null
+            "markdown": "Returns the type of a value as a string (see `const_type`). Like `typeof`,\nbut with the usual annoyances fixed: `null` is `'null'` (not `'object'`),\narrays are `'array'`, and the special numbers get their own names — `'nan'`,\n`'-inf'`, `'+inf'`.\n\n```js\ngettype(null)       // 'null'\ngettype([])         // 'array'\ngettype(NaN)        // 'nan'\ngettype(-Infinity)  // '-inf'\ngettype(1n)         // 'bigint'\ngettype({})         // 'object'\n```\n"
         },
         {
             "id": "http_delete",
@@ -1360,7 +1360,7 @@
             "file": "src/http_delete.js",
             "require": "const http_delete = require('@vbarbarosh/node-helpers/src/http_delete');",
             "source_code": "const axios = require('axios');\n\nfunction http_delete(url, options)\n{\n    return axios.delete(url, {responseType: 'json', ...options}).then(v => v.data);\n}\n\nmodule.exports = http_delete;\n",
-            "markdown": null
+            "markdown": "Sends a `DELETE` request via axios with `responseType: 'json'` and resolves\nwith `response.data`. Extra axios options pass through (and may override the\ndefaults).\n\n```js\nawait http_delete('https://api.example.com/items/15')\n// → parsed response body\n```\n\nSibling of `http_get_json`, `http_post_json`, `http_put_json`,\n`http_patch_json`.\n"
         },
         {
             "id": "http_get_blob",
@@ -1368,7 +1368,7 @@
             "file": "src/http_get_blob.js",
             "require": "const http_get_blob = require('@vbarbarosh/node-helpers/src/http_get_blob');",
             "source_code": "const axios = require('axios');\n\nfunction http_get_blob(url, options)\n{\n    return axios.get(url, {responseType: 'blob', ...options}).then(v => v.data);\n}\n\nmodule.exports = http_get_blob;\n",
-            "markdown": null
+            "markdown": "Sends a `GET` request via axios with `responseType: 'blob'` and resolves with\n`response.data` — a `Blob`. Meant for browser code; in Node prefer\n`http_get_buffer` (Buffer) or `http_get_stream` (readable stream). Extra axios\noptions pass through.\n\n```js\nconst blob = await http_get_blob('https://example.com/image.png');\n```\n"
         },
         {
             "id": "http_get_buffer",
@@ -1376,7 +1376,7 @@
             "file": "src/http_get_buffer.js",
             "require": "const http_get_buffer = require('@vbarbarosh/node-helpers/src/http_get_buffer');",
             "source_code": "const axios = require('axios');\n\nfunction http_get_buffer(url, options)\n{\n    return axios.get(url, {responseType: 'arraybuffer', ...options}).then(v => v.data);\n}\n\nmodule.exports = http_get_buffer;\n",
-            "markdown": null
+            "markdown": "Sends a `GET` request via axios with `responseType: 'arraybuffer'` and\nresolves with `response.data` — a `Buffer` in Node, an `ArrayBuffer` in the\nbrowser. Extra axios options pass through.\n\n```js\nconst buf = await http_get_buffer('https://example.com/image.png');\n```\n\nSee also `http_get_utf8` (string), `http_get_json` (parsed JSON),\n`http_get_blob` (browser Blob), `http_get_stream` (readable stream).\n"
         },
         {
             "id": "http_get_file",
@@ -1392,7 +1392,7 @@
             "file": "src/http_get_json.js",
             "require": "const http_get_json = require('@vbarbarosh/node-helpers/src/http_get_json');",
             "source_code": "const axios = require('axios');\n\nfunction http_get_json(url, options)\n{\n    return axios.get(url, {responseType: 'json', ...options}).then(v => v.data);\n}\n\nmodule.exports = http_get_json;\n",
-            "markdown": null
+            "markdown": "Sends a `GET` request via axios with `responseType: 'json'` and resolves with\n`response.data` — the parsed response body. Extra axios options (headers,\nparams, timeout, ...) pass through.\n\n```js\nconst user = await http_get_json('https://api.example.com/users/15');\n```\n\nSee also `http_get_utf8` (raw string), `http_get_buffer`/`http_get_blob`\n(binary), `http_get_stream` (readable stream).\n"
         },
         {
             "id": "http_get_stream",
@@ -1400,7 +1400,7 @@
             "file": "src/http_get_stream.js",
             "require": "const http_get_stream = require('@vbarbarosh/node-helpers/src/http_get_stream');",
             "source_code": "const axios = require('axios');\nconst safe_int = require('@vbarbarosh/type-helpers/src/safe_int');\n\nasync function http_get_stream(url, options)\n{\n    const res = await axios.get(url, {responseType: 'stream', ...options});\n    const out = res.data;\n    out.headers = res.headers;\n    out.total = safe_int(res.headers['content-length'], null, 0);\n    return out;\n}\n\nmodule.exports = http_get_stream;\n",
-            "markdown": null
+            "markdown": "Sends a `GET` request via axios with `responseType: 'stream'` and resolves\nwith the response's readable stream, decorated with two extra properties:\n`headers` (the response headers) and `total` (the `Content-Length` as an\ninteger, or `null` when the header is missing or unparsable). Extra axios\noptions pass through.\n\n```js\nconst stream = await http_get_stream('https://example.com/big.bin');\nstream.total          // 3000000 (or null)\nstream.headers        // response headers\nstream.pipe(dest);\n```\n\nSee also `http_get_buffer` when the whole body fits in memory.\n"
         },
         {
             "id": "http_get_stream_range",
@@ -1416,7 +1416,7 @@
             "file": "src/http_get_utf8.js",
             "require": "const http_get_utf8 = require('@vbarbarosh/node-helpers/src/http_get_utf8');",
             "source_code": "const axios = require('axios');\n\nfunction http_get_utf8(url, options)\n{\n    return axios.get(url, {responseType: 'text', responseEncoding: 'utf8', ...options}).then(v => v.data);\n}\n\nmodule.exports = http_get_utf8;\n",
-            "markdown": null
+            "markdown": "Sends a `GET` request via axios with `responseType: 'text'` and\n`responseEncoding: 'utf8'`, and resolves with `response.data` — the body as a\nUTF-8 string. Extra axios options pass through.\n\n```js\nconst html = await http_get_utf8('https://example.com/');\n```\n\nSee also `http_get_json` (parsed JSON) and `http_get_buffer` (binary).\n"
         },
         {
             "id": "http_head",
@@ -1424,7 +1424,7 @@
             "file": "src/http_head.js",
             "require": "const http_head = require('@vbarbarosh/node-helpers/src/http_head');",
             "source_code": "const axios = require('axios');\n\nfunction http_head(url, options)\n{\n    return axios.head(url, options).then(v => v.request.res.headers);\n}\n\nmodule.exports = http_head;\n",
-            "markdown": null
+            "markdown": "Sends a `HEAD` request via axios and resolves with the raw response headers\n(`response.request.res.headers` — the Node http headers object, keys\nlowercased), not the body. Extra axios options pass through.\n\n```js\nconst headers = await http_head('https://example.com/file.bin');\nheaders['content-length'] // '3000000'\nheaders['content-type']   // 'application/octet-stream'\n```\n"
         },
         {
             "id": "http_patch_json",
@@ -1432,7 +1432,7 @@
             "file": "src/http_patch_json.js",
             "require": "const http_patch_json = require('@vbarbarosh/node-helpers/src/http_patch_json');",
             "source_code": "const axios = require('axios');\n\nfunction http_patch_json(url, body, options)\n{\n    return axios.patch(url, body, options).then(v => v.data);\n}\n\nmodule.exports = http_patch_json;\n",
-            "markdown": null
+            "markdown": "Sends a `PATCH` request via axios with `body` as the request payload (a plain\nobject is serialized as JSON by axios) and resolves with `response.data`.\nExtra axios options pass through.\n\n```js\nawait http_patch_json('https://api.example.com/items/15', {title: 'New title'})\n// → parsed response body\n```\n\nSibling of `http_post_json`, `http_put_json`, `http_delete`.\n"
         },
         {
             "id": "http_post_json",
@@ -1440,7 +1440,7 @@
             "file": "src/http_post_json.js",
             "require": "const http_post_json = require('@vbarbarosh/node-helpers/src/http_post_json');",
             "source_code": "const axios = require('axios');\n\nfunction http_post_json(url, body, options)\n{\n    return axios.post(url, body, options).then(v => v.data);\n}\n\nmodule.exports = http_post_json;\n",
-            "markdown": null
+            "markdown": "Sends a `POST` request via axios with `body` as the request payload (a plain\nobject is serialized as JSON by axios) and resolves with `response.data`.\nExtra axios options pass through.\n\n```js\nawait http_post_json('https://api.example.com/items', {title: 'Hello'})\n// → parsed response body\n```\n\nSee also `http_post_urlencoded` and `http_post_multipart` for other request\nbody encodings.\n"
         },
         {
             "id": "http_post_multipart",
@@ -1448,7 +1448,7 @@
             "file": "src/http_post_multipart.js",
             "require": "const http_post_multipart = require('@vbarbarosh/node-helpers/src/http_post_multipart');",
             "source_code": "const FormData = require('form-data');\nconst axios = require('axios');\n\n// Provide examples for the following common tasks:\n//\n// * send plain text\n// * send json\n// * send image\n// * send attachment\n\n// import fetch from 'node-fetch';\n//\n// async function http_post_multipart(url, rows)\n// {\n//     const form = new FormData();\n//     for (let i = 0, end = rows.length; i < end; ++i) {\n//         const {name, body} = rows[i];\n//         form.append(name, body);\n//     }\n//     return await fetch(url, {method: 'POST', body: form});\n// }\n//\n// Example:\n//\n// const rows = [];\n// rows.push({name: 'from', body: MAILGUN_FROM});\n// rows.push({name: 'to', body: to});\n// rows.push({name: 'subject', body: subject});\n// rows.push({name: 'text', body: text});\n// rows.push({name: 'attachment', body: fs_read_stream(__filename), options: {filename: 'hello.txt'}});\n// return http_post_multipart(`${MAILGUN_BASE}/messages`, rows, options);\n\n// https://github.com/axios/axios/issues/318#issuecomment-344620216\n// https://github.com/axios/axios/issues/1006#issuecomment-320165427\nfunction http_post_multipart(url, items, options)\n{\n    const form = new FormData();\n    for (let i = 0, end = items.length; i < end; ++i) {\n        const item = items[i];\n        // Without this, all string vales (ordinary fields) will\n        // be empty in _Chrome 59.0.3071.86 (Official Build) (64-bit)_\n        if (item.options) {\n            form.append(item.name, item.body, item.options);\n        }\n        else {\n            form.append(item.name, item.body);\n        }\n    }\n    // For Node\n    // import FormData from 'form-data'\n    // noinspection JSUnresolvedVariable\n    if (form.getHeaders) {\n        const options2 = {...options};\n        options2.headers = {...options2.headers, ...form.getHeaders()};\n        return Promise.resolve(axios.post(url, form, options2)).then(v => v.data);\n    }\n    // For Browser\n    // webpack.config.js\n    //   externals: {\"form-data\": \"FormData\"}\n    return Promise.resolve(axios.post(url, form, options)).then(v => v.data);\n}\n\nmodule.exports = http_post_multipart;\n",
-            "markdown": null
+            "markdown": "Sends a `POST` request with a `multipart/form-data` body built from an array\nof `{name, body, options}` items and resolves with `response.data`. `body` may\nbe a string, Buffer, or readable stream; `options` (e.g. `{filename}`) is\npassed to `FormData#append` when present. In Node the `form-data` package is\nused and its boundary headers are merged into `options.headers`; in the\nbrowser (with `form-data` webpack-externed to the native `FormData`) the form\nis posted as-is. Extra axios options pass through.\n\n```js\nconst items = [\n    {name: 'subject', body: 'Hello'},\n    {name: 'attachment', body: fs_read_stream(file), options: {filename: 'hello.txt'}},\n];\nawait http_post_multipart(url, items, {auth});\n```\n"
         },
         {
             "id": "http_post_urlencoded",
@@ -1456,7 +1456,7 @@
             "file": "src/http_post_urlencoded.js",
             "require": "const http_post_urlencoded = require('@vbarbarosh/node-helpers/src/http_post_urlencoded');",
             "source_code": "const axios = require('axios');\nconst qs = require('querystring');\n\nfunction http_post_urlencoded(url, body, options)\n{\n    return axios.post(url, qs.stringify(body), options).then(v => v.data);\n}\n\nmodule.exports = http_post_urlencoded;\n",
-            "markdown": null
+            "markdown": "Sends a `POST` request via axios with `body` serialized by Node's\n`querystring.stringify` into an `application/x-www-form-urlencoded` string,\nand resolves with `response.data`. Extra axios options (e.g. a `Content-Type`\nheader) pass through.\n\n```js\nawait http_post_urlencoded(url, {grant_type: 'refresh_token', refresh_token})\n// body sent as 'grant_type=refresh_token&refresh_token=...'\n```\n\nSee also `http_post_json` and `http_post_multipart`.\n"
         },
         {
             "id": "http_put_buffer",
@@ -1464,7 +1464,7 @@
             "file": "src/http_put_buffer.js",
             "require": "const http_put_buffer = require('@vbarbarosh/node-helpers/src/http_put_buffer');",
             "source_code": "const axios = require('axios');\n\nfunction http_put_buffer(url, body, options)\n{\n    return axios.put(url, body, options).then(v => v.data);\n}\n\nmodule.exports = http_put_buffer;\n",
-            "markdown": null
+            "markdown": "Sends a `PUT` request via axios with `body` (a Buffer, or anything axios\naccepts as a request body) sent as-is, and resolves with `response.data`.\nExtra axios options — e.g. a `Content-Type` header — pass through.\n\n```js\nawait http_put_buffer(upload_url, buf, {headers: {'Content-Type': 'image/png'}});\n```\n\nSibling of `http_put_utf8` (string body) and `http_put_json` (JSON body).\n"
         },
         {
             "id": "http_put_file",
@@ -1480,7 +1480,7 @@
             "file": "src/http_put_json.js",
             "require": "const http_put_json = require('@vbarbarosh/node-helpers/src/http_put_json');",
             "source_code": "const axios = require('axios');\n\nfunction http_put_json(url, body, options)\n{\n    return axios.put(url, body, options).then(v => v.data);\n}\n\nmodule.exports = http_put_json;\n",
-            "markdown": null
+            "markdown": "Sends a `PUT` request via axios with `body` as the request payload (a plain\nobject is serialized as JSON by axios) and resolves with `response.data`.\nExtra axios options pass through.\n\n```js\nawait http_put_json('https://api.example.com/items/15', {title: 'New title'})\n// → parsed response body\n```\n\nSibling of `http_post_json`, `http_patch_json`, `http_put_buffer`,\n`http_put_utf8`.\n"
         },
         {
             "id": "http_put_utf8",
@@ -1488,7 +1488,7 @@
             "file": "src/http_put_utf8.js",
             "require": "const http_put_utf8 = require('@vbarbarosh/node-helpers/src/http_put_utf8');",
             "source_code": "const axios = require('axios');\n\nasync function http_put_utf8(url, utf8, options)\n{\n    return axios.put(url, utf8, options).then(v => v.data);\n}\n\nmodule.exports = http_put_utf8;\n",
-            "markdown": null
+            "markdown": "Sends a `PUT` request via axios with a string body sent as-is and resolves\nwith `response.data`. Extra axios options — e.g. a `Content-Type` header —\npass through.\n\n```js\nawait http_put_utf8(upload_url, csv, {headers: {'Content-Type': 'text/csv'}});\n```\n\nSibling of `http_put_buffer` (binary body) and `http_put_json` (JSON body).\n"
         },
         {
             "id": "http_range_parse",
@@ -1504,7 +1504,7 @@
             "file": "src/http_stream_range.js",
             "require": "const http_stream_range = require('@vbarbarosh/node-helpers/src/http_stream_range');",
             "source_code": "const escape_content_disposition = require('./escape_content_disposition');\nconst fs_fclose = require('./fs_fclose');\nconst fs_fopen = require('./fs_fopen');\nconst fs_fread = require('./fs_fread');\nconst fs_path_basename = require('./fs_path_basename');\nconst fs_size = require('./fs_size');\nconst http_range_parse = require('./http_range_parse');\nconst mime_types = require('mime-types');\n\n// https://stackoverflow.com/questions/63649387/get-vs-head-methods-in-express-example#comment120040338_63649698\n// > Note: the app.get() function is automatically called for the HTTP HEAD\n// > method in addition to the GET method if app.head() was not called for the\n// > path before app.get().\n//\n// https://expressjs.com/en/api.html#router.METHOD\n// > The router.get() function is automatically called for the HTTP HEAD method\n// > in addition to the GET method if router.head() was not called for the path\n// > before router.get().\n//\n// https://www.npmjs.com/package/send\n\nasync function http_stream_range(req, res, file)\n{\n    // req.log(`[http_stream_range_begin] ${JSON.stringify(req.headers)}`);\n\n    const total = await fs_size(file);\n    const mime = mime_types.lookup(file);\n\n    if (req.method === 'HEAD') {\n        res.header('Content-Type', mime);\n        res.header('Content-Length', total);\n        res.header('Content-Disposition', `inline; filename=${escape_content_disposition(fs_path_basename(file))};`);\n        res.status(200);\n        res.end();\n        return;\n    }\n\n    if (req.method !== 'GET') {\n        res.status(405).end();\n        return;\n    }\n\n    const fp = await fs_fopen(file);\n    const buf = Buffer.alloc(2*1024*1024);\n\n    try {\n        let req_close = false;\n        req.once('close', () => req_close = true);\n\n        let first, last;\n\n        // bytes=0-\n        // bytes=-100\n        if (req.headers.range) {\n            const range = http_range_parse(req.headers.range, total);\n            first = range.first;\n            last = range.last;\n            // req.log(`[http_stream_range_range] ${JSON.stringify({range: req.headers.range, first, last, total, orig: req.headers.range})}`);\n            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range\n            res.status(206);\n            res.header('Content-Type', mime);\n            res.header('Content-Range', `bytes ${first}-${last}/${total}`);\n            res.header('Content-Length', last - first + 1);\n        }\n        else {\n            first = 0;\n            last = total - 1;\n            res.header('Content-Type', mime);\n            res.header('Content-Length', last - first + 1);\n        }\n\n        for (let offset = first; offset <= last && !req_close; ) {\n            const chunk = await fs_fread(fp, buf, offset, Math.min(buf.length, last - offset + 1));\n            offset += chunk.length;\n            if (res.write(chunk)) {\n                // req.log(`[http_stream_range_write] ${chunk.length}`);\n                continue;\n            }\n            await new Promise(function (resolve) {\n                res.on('drain', drain);\n                res.on('close', close);\n                function drain() {\n                    // req.log('[http_stream_range_drain]');\n                    res.off('drain', drain);\n                    res.off('close', close);\n                    resolve();\n                }\n                function close() {\n                    // req.log('[http_stream_range_close]');\n                    res.off('drain', drain);\n                    res.off('close', close);\n                    resolve();\n                }\n            });\n        }\n\n        // req.log(`[http_stream_range_end_ok] ${JSON.stringify({req_close})}`);\n        res.end();\n    }\n    finally {\n        await fs_fclose(fp);\n    }\n}\n\nmodule.exports = http_stream_range;\n",
-            "markdown": null
+            "markdown": "Express/Node request handler that streams a file from disk, honoring a single\nHTTP `Range` header (parsed with `http_range_parse`; see its doc for supported\nforms and clamping). `Content-Type` comes from `mime-types` lookup on the file\nname.\n\n## Signature\n\n```\nhttp_stream_range(req, res, file) → Promise\n```\n\n- `HEAD` → 200 with `Content-Type`, `Content-Length`, and an\n  `inline; filename=...` `Content-Disposition` (escaped via\n  `escape_content_disposition`); no body.\n- `GET` with `Range` → 206 with `Content-Range: bytes first-last/total` and a\n  matching `Content-Length`.\n- `GET` without `Range` → the whole file (no explicit status; 200).\n- Any other method → 405.\n\nReads in 2 MiB chunks with an `fs_fread` loop, respecting backpressure\n(`res.write` + `drain`) and stopping early when the client disconnects.\n\n```js\napp.get('/file', (req, res) => http_stream_range(req, res, '/data/movie.mp4'));\n```\n"
         },
         {
             "id": "identity",
@@ -1512,7 +1512,7 @@
             "file": "src/identity.js",
             "require": "const identity = require('@vbarbarosh/node-helpers/src/identity');",
             "source_code": "function identity(value)\n{\n    return value;\n}\n\nmodule.exports = identity;\n",
-            "markdown": null
+            "markdown": "Returns its first argument unchanged (objects by reference). Useful as a\ndefault projection or a no-op transformer.\n"
         },
         {
             "id": "ignore",
@@ -1520,7 +1520,7 @@
             "file": "src/ignore.js",
             "require": "const ignore = require('@vbarbarosh/node-helpers/src/ignore');",
             "source_code": "function ignore()\n{\n}\n\nmodule.exports = ignore;\n",
-            "markdown": null
+            "markdown": "Does nothing and returns `undefined`, whatever the arguments. Useful as a\nno-op callback or for explicitly discarding a promise result.\n"
         },
         {
             "id": "json_stringify_safe",
@@ -1528,7 +1528,7 @@
             "file": "src/json_stringify_safe.js",
             "require": "const json_stringify_safe = require('@vbarbarosh/node-helpers/src/json_stringify_safe');",
             "source_code": "const json_stringify_safe = require('json-stringify-safe');\n\nmodule.exports = json_stringify_safe;\n",
-            "markdown": null
+            "markdown": "Re-export of the [json-stringify-safe](https://www.npmjs.com/package/json-stringify-safe)\npackage: `JSON.stringify` that never throws on circular references — cycles\nare replaced with `'[Circular ~]'`-style markers. Same signature as\n`JSON.stringify(obj, replacer, spaces)` plus an optional 4th `cycleReplacer`.\n\n```js\nconst a = {name: 'x'};\na.self = a;\njson_stringify_safe(a)      // '{\"name\":\"x\",\"self\":\"[Circular ~]\"}'\n```\n"
         },
         {
             "id": "json_stringify_stable",
@@ -1536,7 +1536,7 @@
             "file": "src/json_stringify_stable.js",
             "require": "const json_stringify_stable = require('@vbarbarosh/node-helpers/src/json_stringify_stable');",
             "source_code": "const json_stringify_stable = require('json-stable-stringify');\n\nmodule.exports = json_stringify_stable;\n",
-            "markdown": null
+            "markdown": "Re-export of the [json-stable-stringify](https://www.npmjs.com/package/json-stable-stringify)\npackage: deterministic `JSON.stringify` — object keys are sorted at every\nlevel, so equal objects always produce byte-identical output. Useful for\nhashing, caching keys, and diff-friendly snapshots.\n\n```js\njson_stringify_stable({b: 2, a: 1, c: {z: 1, y: 2}})\n// '{\"a\":1,\"b\":2,\"c\":{\"y\":2,\"z\":1}}'\n```\n"
         },
         {
             "id": "logger",
@@ -1544,7 +1544,7 @@
             "file": "src/logger.js",
             "require": "const logger = require('@vbarbarosh/node-helpers/src/logger');",
             "source_code": "const NotImplemented = require('./errors/NotImplemented');\n\n// grep_cle1grnu10000tu72diepbfet\nconst re = /^((?:\\[\\s*[^\\]]*\\])*)\\s*(.*)$/m;\n\n/**\n * log = logger();\n * log.add('hey')\n * log.add('[tag] heyhey')\n */\nfunction logger(options = {})\n{\n    function out(message) {\n        const v = typeof message === 'string' ? JSON.stringify(message.trim()).slice(1, -1) : JSON.stringify(message);\n        const [, a, m] = v.match(re);\n        console.log(`${a} ${m}`.trim());\n    };\n    out.spawn = function () {\n        throw new NotImplemented();\n    };\n    return out;\n}\n\nmodule.exports = logger;\n",
-            "markdown": null
+            "markdown": "Creates a minimal console logger. The returned function prints one line per\ncall via `console.log`: string messages are trimmed and JSON-escaped (without\nthe surrounding quotes), non-strings are printed as JSON. Leading `[tag]`\nprefixes are split off and the whitespace between the tags and the message is\nnormalized to a single space.\n\n```js\nconst log = logger();\nlog('hey');             // hey\nlog('[tag]   heyhey');  // [tag] heyhey\nlog({a: 1});            // {\"a\":1}\n```\n\n`log.spawn()` is a stub that throws `NotImplemented` — the `redis_poll_*`\nhelpers expect a logger whose `spawn()` returns a child logger.\n"
         },
         {
             "id": "make_progress",
@@ -1552,7 +1552,7 @@
             "file": "src/make_progress.js",
             "require": "const make_progress = require('@vbarbarosh/node-helpers/src/make_progress');",
             "source_code": "// - update progress by delta\n// - update progress by replacing total amount\n// - render eta\n// - render items/second\n// - render percents\n// - time spent\n//\n// https://bramcohen.livejournal.com/24122.html\nfunction make_progress(total)\n{\n    const history = [];\n    const time0 = Date.now();\n    const out = {\n        done: 0,\n        total,\n        eta: null,\n        // `rate` instead of `bps` (bytes per speed) because this function could count any values (e.g.\n        // copied bytes over time, or handled jobs over time, or created object over time, etc.)\n        rate: null,\n        duration: 0,\n        progress: null,\n        percents: null,\n        add: function (delta = 0) {\n            const now_minus_10sec = Date.now() - 10000;\n            history.splice(0, history.findLastIndex(v => v.time < now_minus_10sec) + 1);\n            history.push({time: Date.now(), delta});\n            out.done += delta;\n            out.refresh();\n        },\n        update: function (done) {\n            out.add(done - out.done);\n        },\n        refresh: function () {\n            out.duration = (Date.now() - time0)/1000;\n            // `rate` and `eta` are null while unknown (same as before the\n            // first add): a zero time window would give rate = Infinity,\n            // and a zero rate would give eta = Infinity.\n            if (history.length) {\n                const delta = history.reduce((a,v) => a + v.delta, 0);\n                const time_sec = (Date.now() - history[0].time)/1000;\n                out.rate = time_sec ? delta/time_sec : null;\n            }\n            else {\n                out.rate = out.duration ? out.done/out.duration : null;\n            }\n            out.percents = !out.total ? null : out.done/out.total;\n            out.eta = (!out.total || !out.rate) ? null : (out.total - out.done)/out.rate;\n        },\n    };\n    return out;\n}\n\nmodule.exports = make_progress;\n",
-            "markdown": null
+            "markdown": "Creates a progress tracker for any countable work (bytes copied, jobs done,\nrows created). Pass the snapshot to `format_progress_bytes` /\n`format_progress_kilo` for display.\n\n**Fields:** `done`, `total`, `duration` (seconds since creation), `rate`\n(units/second over a sliding 10-second history window), `eta` (seconds),\n`percents` (a fraction, `done/total`). `rate` and `eta` are `null` while\nunknown — before the first `add`, or when they would be `Infinity` (zero\ntime window, zero rate); `percents` is `null` when `total` is falsy.\n\n**Methods:**\n- `add(delta)` — add `delta` to `done` and recompute\n- `update(done)` — set the absolute `done` value\n- `refresh()` — recompute `duration`/`rate`/`eta`/`percents` without adding\n\n```js\nconst p = make_progress(100);\np.add(10);          // p.done → 10, p.percents → 0.1\np.rate; p.eta;      // numbers once enough history exists, null while unknown\n```\n"
         },
         {
             "id": "math_gcd",
@@ -1576,7 +1576,7 @@
             "file": "src/mongo_stream_upsert.js",
             "require": "const mongo_stream_upsert = require('@vbarbarosh/node-helpers/src/mongo_stream_upsert');",
             "source_code": "const Promise = require('bluebird');\nconst stream = require('stream');\nconst wait_while = require('./wait_while');\n\n/**\n * Returns a writable stream for inserting or replacing documents in mongo collection.\n */\nfunction mongo_stream_upsert({collection, concurrency = 1})\n{\n    const errors = [];\n    return new stream.Writable({\n        objectMode: true,\n        construct(next) {\n            this.running = 0;\n            next();\n        },\n        destroy: async function (error, next) {\n            // Wait for in-flight bulkWrite operations before tearing down.\n            await wait_while(() => this.running > 0);\n            next(error);\n        },\n        write: async function (items, enc, next) {\n            if (errors.length) {\n                next(errors[0]);\n                return;\n            }\n            try {\n                if (!Array.isArray(items)) {\n                    next(new Error('An array of objects is expected.'));\n                    return;\n                }\n                await wait_while(() => this.running >= concurrency);\n                const operations = items.map(function (item) {\n                    return {\n                        replaceOne: {\n                            filter: {_id: item._id},\n                            replacement: item,\n                            upsert: true,\n                        },\n                    };\n                });\n                this.running++;\n                // Promise.try turns a synchronous throw from bulkWrite into a\n                // rejection, so `running` is always decremented; otherwise\n                // destroy/final would wait for it forever.\n                Promise.try(() => collection.bulkWrite(operations)).catch(e => errors.push(e)).finally(() => this.running--);\n                next();\n            }\n            catch (error) {\n                next(error);\n            }\n        },\n        final: async function (next) {\n            // Wait for in-flight bulkWrite operations before checking `errors`,\n            // otherwise an error from the last batch(es) would be silently\n            // dropped and the stream would finish successfully.\n            await wait_while(() => this.running > 0);\n            if (errors.length) {\n                next(errors[0]);\n                return;\n            }\n            next();\n        },\n    });\n}\n\nmodule.exports = mongo_stream_upsert;\n",
-            "markdown": null
+            "markdown": "Object-mode writable that inserts or replaces documents in a mongo collection.\nEvery chunk written to it must be an array of documents; each document becomes\na `replaceOne` upsert keyed by its `_id`, and the batch goes to\n`collection.bulkWrite`.\n\n- Up to `concurrency` (default `1`) `bulkWrite` calls run in flight; further\n  writes wait until a slot frees up.\n- A `bulkWrite` error is reported on the next write or when the stream\n  finishes. `final` and `destroy` wait for all in-flight batches first, so an\n  error from the last batch is never silently dropped.\n- A non-array chunk errors the stream (`An array of objects is expected.`).\n\n## Signature\n\n```\nmongo_stream_upsert({collection, concurrency = 1}) → stream.Writable\n```\n"
         },
         {
             "id": "mongo_stream_write",
@@ -1584,7 +1584,7 @@
             "file": "src/mongo_stream_write.js",
             "require": "const mongo_stream_write = require('@vbarbarosh/node-helpers/src/mongo_stream_write');",
             "source_code": "const Promise = require('bluebird');\nconst stream = require('stream');\nconst wait_while = require('./wait_while');\n\n/**\n * Returns a writable stream for `bulkWrite` operations.\n */\nfunction mongo_stream_write({collection, concurrency = 1})\n{\n    const errors = [];\n    return new stream.Writable({\n        objectMode: true,\n        construct(next) {\n            this.running = 0;\n            next();\n        },\n        destroy: async function (error, next) {\n            // Wait for in-flight bulkWrite operations before tearing down.\n            await wait_while(() => this.running > 0);\n            next(error);\n        },\n        write: async function (operations, enc, next) {\n            if (errors.length) {\n                next(errors[0]);\n                return;\n            }\n            try {\n                if (!Array.isArray(operations)) {\n                    next(new Error('An array of objects is expected.'));\n                    return;\n                }\n                await wait_while(() => this.running >= concurrency);\n                this.running++;\n                // Promise.try turns a synchronous throw from bulkWrite into a\n                // rejection, so `running` is always decremented; otherwise\n                // destroy/final would wait for it forever.\n                Promise.try(() => collection.bulkWrite(operations)).catch(e => errors.push(e)).finally(() => this.running--);\n                next();\n            }\n            catch (error) {\n                next(error);\n            }\n        },\n        final: async function (next) {\n            // Wait for in-flight bulkWrite operations before checking `errors`,\n            // otherwise an error from the last batch(es) would be silently\n            // dropped and the stream would finish successfully.\n            await wait_while(() => this.running > 0);\n            if (errors.length) {\n                next(errors[0]);\n                return;\n            }\n            next();\n        },\n    });\n}\n\nmodule.exports = mongo_stream_write;\n",
-            "markdown": null
+            "markdown": "Object-mode writable that feeds batches of `bulkWrite` operations to a mongo\ncollection. Every chunk written to it must be an array of operations; it is\npassed to `collection.bulkWrite(operations)` as is.\n\n- Up to `concurrency` (default `1`) `bulkWrite` calls run in flight; further\n  writes wait until a slot frees up.\n- A `bulkWrite` error is reported on the next write or when the stream\n  finishes. `final` and `destroy` wait for all in-flight batches first, so an\n  error from the last batch is never silently dropped.\n- A non-array chunk errors the stream (`An array of objects is expected.`).\n\n## Signature\n\n```\nmongo_stream_write({collection, concurrency = 1}) → stream.Writable\n```\n"
         },
         {
             "id": "msval",
@@ -1592,7 +1592,7 @@
             "file": "src/msval.js",
             "require": "const msval = require('@vbarbarosh/node-helpers/src/msval');",
             "source_code": "function msval(h, m, s, ms)\n{\n    return h*3600000 + m*60000 + s*1000 + ms;\n}\n\nmodule.exports = msval;\n",
-            "markdown": null
+            "markdown": "Converts hours, minutes, seconds, and milliseconds to a single millisecond\nvalue: `msval(h, m, s, ms)` → `h*3600000 + m*60000 + s*1000 + ms`. All four\narguments are required. Components are not normalized — `msval(0, 90, 0, 0)`\nis fine — and negative components subtract.\n\n```js\nmsval(1, 30, 15, 500)   // 5415500\nmsval(0, 90, 0, 0)      // 5400000\nmsval(1, 0, 0, -1)      // 3599999\n```\n"
         },
         {
             "id": "now_atom",
@@ -1608,7 +1608,7 @@
             "file": "src/now_fs.js",
             "require": "const now_fs = require('@vbarbarosh/node-helpers/src/now_fs');",
             "source_code": "const format_date_fs = require('./format_date_fs');\n\nfunction now_fs()\n{\n    return format_date_fs(new Date());\n}\n\nmodule.exports = now_fs;\n",
-            "markdown": null
+            "markdown": "Returns the current local time as a filesystem-safe timestamp:\n`YYYYMMDD_HHMMSS` (via `format_date_fs`). Resolution is 1 second — handy for\nnaming files, dumps, and backups.\n\n```js\nnow_fs()    // '20260716_194122'\n```\n"
         },
         {
             "id": "now_human",
@@ -1616,7 +1616,7 @@
             "file": "src/now_human.js",
             "require": "const now_human = require('@vbarbarosh/node-helpers/src/now_human');",
             "source_code": "const format_date_human = require('./format_date_human');\n\nfunction now_human()\n{\n    return format_date_human(new Date());\n}\n\nmodule.exports = now_human;\n",
-            "markdown": null
+            "markdown": "Returns the current local time in a human-readable form:\n`YYYY/MM/DD HH:MM:SS` (via `format_date_human`).\n\n```js\nnow_human()     // '2026/07/16 19:41:22'\n```\n"
         },
         {
             "id": "object_defaults",
@@ -1624,7 +1624,7 @@
             "file": "src/object_defaults.js",
             "require": "const object_defaults = require('@vbarbarosh/node-helpers/src/object_defaults');",
             "source_code": "function object_defaults(obj, defaults)\n{\n    Object.entries(defaults).forEach(function ([key, value]) {\n        if (obj[key] === undefined) {\n            obj[key] = value;\n        }\n    });\n    return obj;\n}\n\nmodule.exports = object_defaults;\n",
-            "markdown": null
+            "markdown": "Fills missing keys of `obj` from `defaults`, mutating and returning `obj`.\nOnly keys whose current value is `undefined` (missing or explicitly set) are\nfilled; falsy values like `0`, `''`, `false`, and `null` are kept. The\n`defaults` object is never modified.\n\n```js\nobject_defaults({a: 1, b: undefined}, {a: 10, b: 20, c: 30})\n// {a: 1, b: 20, c: 30}\nobject_defaults({a: 0, b: null}, {a: 5, b: 5})\n// {a: 0, b: null}\n```\n"
         },
         {
             "id": "object_schema",
@@ -1632,7 +1632,7 @@
             "file": "src/object_schema.js",
             "require": "const object_schema = require('@vbarbarosh/node-helpers/src/object_schema');",
             "source_code": "const const_type = require('./const_type');\nconst gettype = require('./gettype');\nconst json_stringify_stable = require('./json_stringify_stable');\n\nfunction object_schema(obj)\n{\n    const type = gettype(obj);\n    switch (type) {\n    case const_type.array:\n        return obj.map(object_schema).map(v => json_stringify_stable(v)).sort().filter((v,i,a) => a[i-1] !== v).map(v => JSON.parse(v));\n    case const_type.object: {\n        const out = {};\n        Object.keys(obj).forEach(function (key) {\n            out[key] = object_schema(obj[key]);\n        });\n        return out;\n    }\n    default:\n        return type;\n    }\n}\n\nmodule.exports = object_schema;\n",
-            "markdown": null
+            "markdown": "Returns the shape of a value with every leaf replaced by its `gettype` name.\nObjects keep their keys; an array becomes the deduplicated, sorted list of\nits distinct member schemas (compared via `json_stringify_stable`), so\n`[1, 2, 'x']` collapses to `['number', 'string']`. Useful for eyeballing the\nstructure of unknown JSON.\n\n```js\nobject_schema({name: 'Bob', tags: ['a', 1], meta: {ok: true}})\n// {name: 'string', tags: ['number', 'string'], meta: {ok: 'boolean'}}\nobject_schema([{a: 1}, {a: 2}, {a: 'x'}])\n// [{a: 'number'}, {a: 'string'}]\n```\n"
         },
         {
             "id": "object_walk_preorder",
@@ -1640,7 +1640,7 @@
             "file": "src/object_walk_preorder.js",
             "require": "const object_walk_preorder = require('@vbarbarosh/node-helpers/src/object_walk_preorder');",
             "source_code": "function object_walk_preorder(value, fn, path = [])\n{\n    if (path.length) {\n        fn(value, path);\n    }\n    if (value === null) {\n        return;\n    }\n    if (Array.isArray(value)) {\n        for (let i = 0, end = value.length; i < end; ++i) {\n            object_walk_preorder(value[i], fn, path.concat('*'));\n        }\n    }\n    else if (typeof value === 'object') {\n        const keys = Object.keys(value);\n        for (let i = 0, end = keys.length; i < end; ++i) {\n            const key = keys[i];\n            object_walk_preorder(value[key], fn, path.concat(key));\n        }\n    }\n}\n\nmodule.exports = object_walk_preorder;\n",
-            "markdown": null
+            "markdown": "Recursively visits every nested value of an object/array in preorder\n(parents before children), calling `fn(value, path)`. The root itself is not\nvisited (`path` would be empty). `path` is an array of keys from the root;\narray elements contribute `'*'` instead of their index. `null` values are\nvisited but not descended into. Returns nothing.\n\n```js\nobject_walk_preorder({aaa: {foo: 1}, bbb: [10, 20]}, function (value, path) {\n    console.log(path.join('/'), value);\n});\n// aaa {foo: 1}\n// aaa/foo 1\n// bbb [10, 20]\n// bbb/* 10\n// bbb/* 20\n```\n"
         },
         {
             "id": "parallel",
@@ -1656,7 +1656,7 @@
             "file": "src/parse_bytes.js",
             "require": "const parse_bytes = require('@vbarbarosh/node-helpers/src/parse_bytes');",
             "source_code": "function parse_bytes(bytes)\n{\n    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];\n    if (typeof bytes !== 'string') {\n        return Number.NaN;\n    }\n    // Anchored: trailing garbage ('12KB34') is NaN rather than 12KB. A bare\n    // number means bytes; whitespace around and between number and unit is ok\n    const m = bytes.toUpperCase().match(/^\\s*(\\d+(?:[.]\\d+)?)\\s*((?:[KMGTP]I?)?B)?\\s*$/);\n    if (!m) {\n        return Number.NaN;\n    }\n    return Math.floor(m[1]*Math.pow(1024, sizes.indexOf((m[2] || 'B').replace('I', ''))));\n}\n\nmodule.exports = parse_bytes;\n",
-            "markdown": null
+            "markdown": "Parses a human-readable size string into a number of bytes. Units are\n1024-based: `B`, `KB`, `MB`, `GB`, `TB`, `PB`; the `KiB`/`MiB` spellings are\naccepted and mean the same thing. Matching is case-insensitive and anchored:\nwhitespace around and between number and unit is fine, but any other\ntrailing/leading garbage gives `NaN`. A bare number means bytes. The result\nis `Math.floor`ed. Non-strings (including numbers) return `NaN`.\n\n```js\nparse_bytes('10.5MB')   // 11010048\nparse_bytes('1KIB')     // 1024\nparse_bytes('5 mb')     // 5242880\nparse_bytes('123')      // 123 (bare number means bytes)\nparse_bytes('12KB34')   // NaN (trailing garbage, not 12KB)\nparse_bytes(123)        // NaN (not a string)\n```\n"
         },
         {
             "id": "parse_hms",
@@ -1680,7 +1680,7 @@
             "file": "src/perf_end_human.js",
             "require": "const perf_end_human = require('@vbarbarosh/node-helpers/src/perf_end_human');",
             "source_code": "const format_hrtime = require('./format_hrtime');\n\nfunction perf_end_human(time0, digits = 4)\n{\n    return format_hrtime(process.hrtime(time0), digits);\n}\n\nmodule.exports = perf_end_human;\n",
-            "markdown": null
+            "markdown": "Returns the time elapsed since `perf_start()` as a human-readable string of\nseconds: `perf_end_human(time0, digits = 4)`. Uses `process.hrtime(time0)`\nunder the hood, formatted via `format_hrtime`.\n\n```js\nconst time0 = perf_start();\n// ... work ...\nperf_end_human(time0)       // '0.0008s'\nperf_end_human(time0, 2)    // '0.00s'\n```\n"
         },
         {
             "id": "perf_end_ms",
@@ -1688,7 +1688,7 @@
             "file": "src/perf_end_ms.js",
             "require": "const perf_end_ms = require('@vbarbarosh/node-helpers/src/perf_end_ms');",
             "source_code": "function perf_end_ms(time0)\n{\n    const [u, v] = process.hrtime(time0);\n    return Math.round((u + v/1E9)*1000);\n}\n\nmodule.exports = perf_end_ms;\n",
-            "markdown": null
+            "markdown": "Returns the time elapsed since `perf_start()` in milliseconds, rounded to an\ninteger. Uses `process.hrtime(time0)` under the hood.\n\n```js\nconst time0 = perf_start();\n// ... work ...\nperf_end_ms(time0)      // 1\n```\n"
         },
         {
             "id": "perf_measure",
@@ -1696,7 +1696,7 @@
             "file": "src/perf_measure.js",
             "require": "const perf_measure = require('@vbarbarosh/node-helpers/src/perf_measure');",
             "source_code": "const format_hrtime = require('./format_hrtime');\nconst perf_start = require('./perf_start');\n\nasync function perf_measure(fn, digits = 4)\n{\n    const time0 = perf_start();\n    const out = {\n        value: await fn(),\n    };\n    const [u, v] = process.hrtime(time0);\n    out.time_ms = Math.round((u + v/1E9)*1000);\n    out.time_human = format_hrtime([u ,v], digits)\n    return out;\n}\n\nmodule.exports = perf_measure;\n",
-            "markdown": null
+            "markdown": "Runs `fn` (sync or async — the result is awaited) and measures how long it\ntook with `process.hrtime`. `perf_measure(fn, digits = 4)` returns a promise\nof `{value, time_ms, time_human}` where `value` is the resolved result of\n`fn`, `time_ms` is rounded integer milliseconds, and `time_human` is a\nseconds string with `digits` decimal places.\n\n```js\nawait perf_measure(() => 42)\n// {value: 42, time_ms: 1, time_human: '0.0008s'}\n```\n"
         },
         {
             "id": "perf_measure_human",
@@ -1704,7 +1704,7 @@
             "file": "src/perf_measure_human.js",
             "require": "const perf_measure_human = require('@vbarbarosh/node-helpers/src/perf_measure_human');",
             "source_code": "const perf_end_human = require('./perf_end_human');\nconst perf_start = require('./perf_start');\n\nasync function perf_measure_human(fn, digits = 4)\n{\n    const time0 = perf_start();\n    await fn();\n    return perf_end_human(time0, digits);\n}\n\nmodule.exports = perf_measure_human;\n",
-            "markdown": null
+            "markdown": "Runs `fn` (sync or async — the result is awaited) and returns a promise of\njust the elapsed time as a human-readable seconds string:\n`perf_measure_human(fn, digits = 4)`. The return value of `fn` is discarded;\nuse `perf_measure` when you need it too.\n\n```js\nawait perf_measure_human(() => heavy_work())    // '0.0006s'\n```\n"
         },
         {
             "id": "perf_start",
@@ -1712,7 +1712,7 @@
             "file": "src/perf_start.js",
             "require": "const perf_start = require('@vbarbarosh/node-helpers/src/perf_start');",
             "source_code": "function perf_start()\n{\n    return process.hrtime();\n}\n\nmodule.exports = perf_start;\n",
-            "markdown": null
+            "markdown": "Starts a high-resolution timer: returns `process.hrtime()` — a\n`[seconds, nanoseconds]` tuple to be passed later to `perf_end_ms` or\n`perf_end_human`.\n\n```js\nconst time0 = perf_start();\n// ... work ...\nperf_end_ms(time0)      // elapsed integer milliseconds\n```\n"
         },
         {
             "id": "pgid_exists",
@@ -1720,7 +1720,7 @@
             "file": "src/pgid_exists.js",
             "require": "const pgid_exists = require('@vbarbarosh/node-helpers/src/pgid_exists');",
             "source_code": "// group id == leader pid\n// keep in sync with pid_exists\nfunction pgid_exists(pgid)\n{\n    try {\n        process.kill(-pgid, 0);\n        return true;\n    }\n    catch {\n        return false;\n    }\n}\n\nmodule.exports = pgid_exists;\n",
-            "markdown": null
+            "markdown": "Checks whether a process group is alive by sending signal `0` to the group via\n`process.kill(-pgid, 0)`. Returns `true` when the signal can be delivered to\nat least one member, `false` on any error (no such group, or no permission).\nA group id equals the pid of the group leader.\n\nSee `pid_exists` for the single-process variant.\n"
         },
         {
             "id": "pgid_kill_grace",
@@ -1728,7 +1728,7 @@
             "file": "src/pgid_kill_grace.js",
             "require": "const pgid_kill_grace = require('@vbarbarosh/node-helpers/src/pgid_kill_grace');",
             "source_code": "const Promise = require('bluebird');\nconst format_thousands = require('./format_thousands');\nconst ignore = require('./ignore');\nconst pgid_exists = require('./pgid_exists');\n\n// group id == leader pid\n// keep in sync with pid_kill_grace\nasync function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {})\n{\n    log(`Terminating process group ${pgid}: sending SIGTERM`);\n    try {\n        process.kill(-pgid, 'SIGTERM');\n    }\n    catch (error) {\n        throw new Error(`Failed to send SIGTERM to process group ${pgid}: ${error.message}`, {cause: error});\n    }\n\n    const end = Date.now() + grace_timeout_ms;\n    while (true) {\n        if (!pgid_exists(pgid)) {\n            return;\n        }\n        if (Date.now() >= end) {\n            break;\n        }\n        const remain = end - Date.now();\n        log(`Process group ${pgid} still alive; grace time remaining: ${format_thousands(remain)}ms`);\n        await Promise.delay(Math.max(0, Math.min(100, remain)));\n    }\n\n    try {\n        log(`SIGTERM grace period expired for group ${pgid}; sending SIGKILL`);\n        process.kill(-pgid, 'SIGKILL');\n    }\n    catch (error) {\n        if (error.code === 'ESRCH' && error.syscall === 'kill') {\n            log(`Process group ${pgid} already terminated`);\n            return;\n        }\n        throw error;\n    }\n\n    // Wait for kernel to deliver SIGKILL\n    const final_deadline = Date.now() + 200;\n    while (Date.now() < final_deadline) {\n        if (!pgid_exists(pgid)) {\n            return;\n        }\n        await Promise.delay(10);\n    }\n\n    throw new Error(`Process group ${pgid} survived SIGKILL`);\n}\n\nmodule.exports = pgid_kill_grace;\n",
-            "markdown": null
+            "markdown": "Terminates a whole process group gracefully: sends `SIGTERM` to the group\n(`kill(-pgid, ...)`), polls (every ≤100ms) until the group dies or the grace\nperiod expires, then sends `SIGKILL` and waits up to 200ms more for the kernel\nto deliver it. A group id equals the pid of the group leader.\n\n- Options: `grace_timeout_ms` (default `5000`) and `log` (progress callback,\n  default no-op).\n- Throws `Failed to send SIGTERM to process group <pgid>: ...` when the\n  initial signal cannot be sent.\n- A group that dies on its own during the grace period skips the `SIGKILL`;\n  `ESRCH` on the `SIGKILL` itself is treated as already dead.\n- Throws `Process group <pgid> survived SIGKILL` if it is still alive 200ms\n  after the kill.\n\nSee `pid_kill_grace` for the single-process variant.\n"
         },
         {
             "id": "pid_exists",
@@ -1736,7 +1736,7 @@
             "file": "src/pid_exists.js",
             "require": "const pid_exists = require('@vbarbarosh/node-helpers/src/pid_exists');",
             "source_code": "// keep in sync with pgid_exists\nfunction pid_exists(pid)\n{\n    try {\n        process.kill(pid, 0);\n        return true;\n    }\n    catch {\n        return false;\n    }\n}\n\nmodule.exports = pid_exists;\n",
-            "markdown": null
+            "markdown": "Checks whether a process is alive by sending signal `0` via\n`process.kill(pid, 0)`. Returns `true` when the signal can be delivered,\n`false` on any error (no such process, or no permission to signal it).\n\nSee `pgid_exists` for the process-group variant.\n"
         },
         {
             "id": "pid_kill_grace",
@@ -1744,7 +1744,7 @@
             "file": "src/pid_kill_grace.js",
             "require": "const pid_kill_grace = require('@vbarbarosh/node-helpers/src/pid_kill_grace');",
             "source_code": "const Promise = require('bluebird');\nconst format_thousands = require('./format_thousands');\nconst ignore = require('./ignore');\nconst pid_exists = require('./pid_exists');\n\n// keep in sync with pgid_kill_grace\nasync function pid_kill_grace(pid, {grace_timeout_ms = 5000, log = ignore} = {})\n{\n    log(`Terminating process ${pid}: sending SIGTERM`);\n    try {\n        process.kill(pid, 'SIGTERM');\n    }\n    catch (error) {\n        throw new Error(`Failed to send SIGTERM to process ${pid}: ${error.message}`, {cause: error});\n    }\n\n    const end = Date.now() + grace_timeout_ms;\n    while (true) {\n        if (!pid_exists(pid)) {\n            return;\n        }\n        if (Date.now() >= end) {\n            break;\n        }\n        const remain = end - Date.now();\n        log(`Process ${pid} still alive; grace time remaining: ${format_thousands(remain)}ms`);\n        await Promise.delay(Math.max(0, Math.min(100, remain)));\n    }\n\n    try {\n        log(`SIGTERM grace period expired for process ${pid}; sending SIGKILL`);\n        process.kill(pid, 'SIGKILL');\n    }\n    catch (error) {\n        if (error.code === 'ESRCH' && error.syscall === 'kill') {\n            log(`Process ${pid} already terminated`);\n            return;\n        }\n        throw error;\n    }\n\n    // Give kernel a moment to deliver SIGKILL\n    const final_deadline = Date.now() + 200;\n    while (Date.now() < final_deadline) {\n        if (!pid_exists(pid)) {\n            return;\n        }\n        await Promise.delay(10);\n    }\n\n    throw new Error(`Process ${pid} survived SIGKILL`);\n}\n\nmodule.exports = pid_kill_grace;\n",
-            "markdown": null
+            "markdown": "Terminates a single process gracefully: sends `SIGTERM`, polls (every ≤100ms)\nuntil the process dies or the grace period expires, then sends `SIGKILL` and\nwaits up to 200ms more for the kernel to deliver it.\n\n- Options: `grace_timeout_ms` (default `5000`) and `log` (progress callback,\n  default no-op).\n- Throws `Failed to send SIGTERM to process <pid>: ...` when the initial\n  signal cannot be sent (e.g. the process does not exist).\n- A process that dies on its own during the grace period skips the `SIGKILL`\n  entirely; `ESRCH` on the `SIGKILL` itself is treated as already dead.\n- Throws `Process <pid> survived SIGKILL` if it is still alive 200ms after\n  the kill.\n\nSee `pgid_kill_grace` for the process-group variant.\n"
         },
         {
             "id": "ping_socket",
@@ -1760,7 +1760,7 @@
             "file": "src/plural.js",
             "require": "const plural = require('@vbarbarosh/node-helpers/src/plural');",
             "source_code": "function plural(n, singular, plural, zero)\n{\n    if (n === 0 && typeof zero === 'string') {\n        return zero;\n    }\n    if (n % 10 === 1 && n % 100 !== 11) {\n        return singular.split('#').join(n);\n    }\n    return plural.split('#').join(n);\n}\n\nmodule.exports = plural;\n",
-            "markdown": null
+            "markdown": "Slavic-style pluralizer: `plural(n, singular, plural, zero)`. The `singular`\nform is used when `n` ends in 1 but not in 11 (1, 21, 101, ...); everything\nelse gets the `plural` form. Every `#` in the chosen form is replaced with\n`n`. The optional `zero` string is returned as-is when `n === 0`.\n\n```js\nplural(1, '# apple', '# apples')                // '1 apple'\nplural(2, '# apple', '# apples')                // '2 apples'\nplural(11, '# apple', '# apples')               // '11 apples'\nplural(21, '# apple', '# apples')               // '21 apple'\nplural(0, '# apple', '# apples')                // '0 apples'\nplural(0, '# apple', '# apples', 'No apples')   // 'No apples'\n```\n"
         },
         {
             "id": "random_hex",
@@ -1768,7 +1768,7 @@
             "file": "src/random_hex.js",
             "require": "const random_hex = require('@vbarbarosh/node-helpers/src/random_hex');",
             "source_code": "const crypto = require('crypto');\n\n/**\n * Returns random bytes in hexadecimal format.\n */\nfunction random_hex(bytes = 32)\n{\n    return crypto.randomBytes(bytes).toString('hex');\n}\n\nmodule.exports = random_hex;\n",
-            "markdown": null
+            "markdown": "Returns `bytes` cryptographically random bytes (`crypto.randomBytes`) as a\nlowercase hex string — 2 characters per byte. Defaults to 32 bytes (64 hex\ncharacters).\n\n```js\nrandom_hex(4)   // '0566a554'\nrandom_hex()    // 64-character hex string\nrandom_hex(0)   // ''\n```\n"
         },
         {
             "id": "random_int",
@@ -1776,7 +1776,7 @@
             "file": "src/random_int.js",
             "require": "const random_int = require('@vbarbarosh/node-helpers/src/random_int');",
             "source_code": "function random_int(min, max)\n{\n    return Math.floor(Math.random()*(max - min + 1) + min);\n}\n\nmodule.exports = random_int;\n",
-            "markdown": null
+            "markdown": "Returns a random integer between `min` and `max`, both inclusive. Based on\n`Math.random` — not cryptographically secure (use `random_hex` for tokens).\n\n```js\nrandom_int(1, 6)    // 1..6, like a die roll\nrandom_int(-3, 3)   // -3..3\nrandom_int(7, 7)    // 7\n```\n"
         },
         {
             "id": "range",
@@ -1792,7 +1792,7 @@
             "file": "src/redis_connect.js",
             "require": "const redis_connect = require('@vbarbarosh/node-helpers/src/redis_connect');",
             "source_code": "const redis = require('redis');\n\n// tcp://127.0.0.1:6379\n// tls://11.11.11.11:6378?password=xxx\n// tls://11.11.11.11:6378?password=xx-xx-xx&ssl[verify_peer]=0&ssl[verify_peer_name]=0\nasync function redis_connect(url)\n{\n    const tmp = new URL(url);\n    const password = tmp.password ? decodeURIComponent(tmp.password) : tmp.searchParams.get('password');\n\n    if (url.match(/^tls:/)) {\n        const out = redis.createClient({\n            url: url.replace(/^tls:/, 'rediss:'),\n            password,\n            tls: {rejectUnauthorized: false},\n            socket: {tls: true, rejectUnauthorized: false},\n        });\n        await out.connect();\n        return out;\n    }\n    const out = await redis.createClient({\n        url: url.replace(/^tcp:/, 'redis:'),\n        password,\n    });\n    await out.connect();\n    return out;\n}\n\nmodule.exports = redis_connect;\n",
-            "markdown": null
+            "markdown": "Connects to redis from a URL and returns a connected `redis` (node-redis v4+\nstyle) client. `tcp://` is rewritten to `redis://`; `tls://` is rewritten to\n`rediss://` with peer certificate verification disabled\n(`rejectUnauthorized: false`). The password comes from the URL userinfo\n(URL-decoded) or, failing that, from a `?password=` query parameter.\n\n```js\nawait redis_connect('tcp://127.0.0.1:6379');\nawait redis_connect('tls://11.11.11.11:6378?password=xxx');\n```\n"
         },
         {
             "id": "redis_lshift",
@@ -1800,7 +1800,7 @@
             "file": "src/redis_lshift.js",
             "require": "const redis_lshift = require('@vbarbarosh/node-helpers/src/redis_lshift');",
             "source_code": "async function redis_lshift(redis, queue, limit = 1)\n{\n    const last = limit - 1;\n    if (redis.lrange) {\n        const [items] = await new Promise(function (resolve, reject) {\n            redis.multi().lrange(queue, 0, last).ltrim(queue, limit, -1).exec(function (error, out) {\n                error ? reject(error) : resolve(out);\n            });\n        });\n        return items;\n    }\n    // redis@4\n    const [items] = await redis.multi().LRANGE(queue, 0, last).LTRIM(queue, limit, -1).exec();\n    return items;\n}\n\nmodule.exports = redis_lshift;\n",
-            "markdown": null
+            "markdown": "Atomically pops up to `limit` items (default `1`) from the head of a redis\nlist: a `MULTI` transaction of `LRANGE queue 0 limit-1` plus\n`LTRIM queue limit -1`. Returns the array of popped items — empty when the\nlist is empty.\n\nWorks with both legacy callback clients (redis@1–3, detected by the presence\nof a lowercase `lrange` method) and promise clients (redis@4–6); the tests run\nagainst all six major versions.\n\n## Signature\n\n```\nredis_lshift(redis, queue, limit = 1) → Promise<string[]>\n```\n"
         },
         {
             "id": "redis_poll",
@@ -1808,7 +1808,7 @@
             "file": "src/redis_poll.js",
             "require": "const redis_poll = require('@vbarbarosh/node-helpers/src/redis_poll');",
             "source_code": "/* eslint-disable no-unused-vars -- destructured option lists document the full options contract */\nconst Promise = require('bluebird');\nconst random_int = require('./random_int');\nconst redis_zshift = require('./redis_zshift');\n\nasync function redis_poll(options)\n{\n    const {log, version} = options;\n    const {\n        poll_message,\n        push_response,\n        process_message,\n        log_waiter_begin,\n        log_waiter_end,\n        log_waiter_sleep,\n        log_waiter_rpush,\n        log_waiter_error,\n        log_waiter_error_parse,\n        log_waiter_error_no_uid,\n    } = options;\n\n    log(`[${log_waiter_begin}] v${version}`);\n    try {\n        for (let iter = 1; iter <= 24*60*60; ++iter) {\n\n            // const message_string = await redis.lpop_p(redis_input_queue);\n            const message = await poll_message();\n            if (!message) {\n                const ms = random_int(500, 1500);\n                log(`[${log_waiter_sleep}] ${ms}ms`);\n                await Promise.delay(ms);\n                continue;\n            }\n\n            try {\n                const uid = message.uid;\n\n                if (!uid) {\n                    log(`[${log_waiter_error_no_uid}] uid is missed; skipped`);\n                    continue;\n                }\n                if (!message.expires_at) {\n                    throw new Error('expires_at is missed');\n                }\n\n                // This is necessary because we use signed urls which has limited lifetime.\n                // Basically, `expires_at` tell when signed url will be expired.\n                if (new Date(message.expires_at).getTime() <= new Date().getTime()) {\n                    throw new Error('Expired');\n                }\n\n                const value = await worker(log.spawn(), message, options);\n                await push_response({uid: message.uid, version, type: 'resolve', value});\n\n                log(`[${log_waiter_rpush}]`);\n            }\n            catch (error) {\n                const response = {uid: message.uid, version, type: 'reject', value: `${(error && (error.stack || error.message)) || 'Error N/A'}`};\n                log(`[${log_waiter_error}] ${JSON.stringify({response})}`);\n                await push_response(response);\n            }\n        }\n    }\n    finally {\n        log(`[${log_waiter_end}]`);\n    }\n}\n\nasync function worker(log, message, options)\n{\n    const {redis, redis_output_queue, spawn_command, version} = options;\n    const {\n        callback,\n        log_worker_begin,\n        log_worker_end_ok,\n        log_worker_end_error,\n        log_worker_stdout,\n        log_worker_stderr,\n        log_worker_user_friendly_status,\n    } = options;\n\n    log(`[${log_worker_begin}] ${message.uid}`);\n\n    const uid = message.uid;\n\n    try {\n        // GOTCHA\n        // Promise won't update its status until at least one message would\n        // be taken from output queue. Pushing generic \"Started....\" message\n        // will tell the promise to refresh its status.\n        await user_friendly_status('Started...');\n        const out = await callback({message, log: log.spawn(), user_friendly_status});\n        log(`[${log_worker_end_ok}]`);\n        return out;\n    }\n    catch (error) {\n        log(`[${log_worker_end_error}] ${error.message}`);\n        throw error;\n    }\n\n    async function user_friendly_status(value) {\n        log(`[${log_worker_user_friendly_status}] ${value}`);\n        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value}));\n    }\n}\n\nmodule.exports = redis_poll;\n",
-            "markdown": null
+            "markdown": "Generic worker poll loop with pluggable queue I/O: repeatedly calls\n`options.poll_message()` for the next message object, runs `options.callback`\non it, and reports the result via `options.push_response({uid, version, type,\nvalue})` with `type: 'resolve'` on success or `'reject'` (stack/message\nstring) on failure. An empty poll sleeps a random 500–1500ms; the loop runs\nat most 86400 iterations.\n\n- Messages without `uid` are skipped; a missing or past `expires_at` rejects\n  the message (payloads carry signed urls with limited lifetime).\n- The callback receives `{message, log, user_friendly_status}`;\n  `user_friendly_status(value)` still rpushes\n  `{uid, version, type: 'user_friendly_status', value}` JSON directly to\n  `options.redis`/`options.redis_output_queue`, starting with `'Started...'`.\n- `options.log` must provide `spawn()`; the many `log_waiter_*`/`log_worker_*`\n  options are the tag names used in log lines.\n\nSee `redis_poll_zshift_callback_rpush` for the concrete zshift/rpush variant.\n"
         },
         {
             "id": "redis_poll_zshift_callback_rpush",
@@ -1816,7 +1816,7 @@
             "file": "src/redis_poll_zshift_callback_rpush.js",
             "require": "const redis_poll_zshift_callback_rpush = require('@vbarbarosh/node-helpers/src/redis_poll_zshift_callback_rpush');",
             "source_code": "/* eslint-disable no-unused-vars -- destructured option lists document the full options contract */\nconst Promise = require('bluebird');\nconst random_int = require('./random_int');\nconst redis_zshift = require('./redis_zshift');\n\n/**\n * Poll redis for input messages, await for callback, rpush results and user friendly statuses.\n * @param options\n * @returns {Promise<void>}\n *\n *     const options = {\n *         log: logger_create(),\n *         redis: redis_connect2('redis://127.0.0.1'),\n *         redis_input_queue: 'mp4gif_input',\n *         redis_output_queue: 'mp4gif_output',\n *         callback: function (message) { ... },\n *         log_waiter_begin: 'mp4gif_waiter_begin',\n *         log_waiter_end: 'mp4gif_waiter_end',\n *         log_waiter_sleep: 'mp4gif_waiter_sleep',\n *         log_waiter_rpush: 'mp4gif_waiter_rpush',\n *         log_waiter_error: 'mp4gif_waiter_error',\n *         log_waiter_error_parse: 'mp4gif_waiter_error_parse',\n *         log_waiter_error_no_uid: 'mp4gif_waiter_error_no_uid',\n *         log_worker_begin: 'mp4gif_worker_begin',\n *         log_worker_end_ok: 'mp4gif_worker_end_ok',\n *         log_worker_end_error: 'mp4gif_worker_end_error',\n *         log_worker_stdout: 'mp4gif_worker_stdout',\n *         log_worker_stderr: 'mp4gif_worker_stderr',\n *         log_worker_user_friendly_status: 'mp4gif_worker_user_friendly_status',\n *     };\n *     await redis_poll_zshift_callback_rpush(options);\n */\nasync function redis_poll_zshift_callback_rpush(options)\n{\n    const {log, redis, redis_input_queue, redis_output_queue, version} = options;\n    const {\n        log_waiter_begin,\n        log_waiter_end,\n        log_waiter_sleep,\n        log_waiter_rpush,\n        log_waiter_error,\n        log_waiter_error_parse,\n        log_waiter_error_no_uid,\n    } = options;\n\n    log(`[${log_waiter_begin}] v${version}`);\n    try {\n        for (let iter = 1; iter <= 24*60*60; ++iter) {\n\n            // const message_string = await redis.lpop_p(redis_input_queue);\n            const [message_string] = await redis_zshift(redis, redis_input_queue);\n            if (!message_string) {\n                const ms = random_int(500, 1500);\n                log(`[${log_waiter_sleep}] ${ms}ms`);\n                await Promise.delay(ms);\n                continue;\n            }\n            console.log(message_string);\n\n            let message = null;\n            try {\n                message = JSON.parse(message_string);\n            }\n            catch (error) {\n                log(`[${log_waiter_error_parse}] ${error.message}`);\n                continue;\n            }\n\n            try {\n                const uid = message.uid;\n\n                if (!uid) {\n                    log(`[${log_waiter_error_no_uid}] uid is missed; skipped`);\n                    continue;\n                }\n                if (!message.expires_at) {\n                    throw new Error('expires_at is missed');\n                }\n\n                // This is necessary because we use signed urls which has limited lifetime.\n                // Basically, `expires_at` tell when signed url will be expired.\n                if (new Date(message.expires_at).getTime() <= new Date().getTime()) {\n                    throw new Error('Expired');\n                }\n\n                const value = await worker(log.spawn(), message, options);\n                const response = JSON.stringify({uid: message.uid, version, type: 'resolve', value});\n                await redis.rpush_p(redis_output_queue, response);\n\n                log(`[${log_waiter_rpush}]`);\n            }\n            catch (error) {\n                const response = JSON.stringify({uid: message.uid, version, type: 'reject', value: `${(error && (error.stack || error.message)) || 'Error N/A'}`});\n                log(`[${log_waiter_error}] ${response}`);\n                await redis.rpush_p(redis_output_queue, response);\n            }\n        }\n    }\n    finally {\n        log(`[${log_waiter_end}]`);\n    }\n}\n\nasync function worker(log, message, options)\n{\n    const {redis, redis_output_queue, spawn_command, version} = options;\n    const {\n        callback,\n        log_worker_begin,\n        log_worker_end_ok,\n        log_worker_end_error,\n        log_worker_stdout,\n        log_worker_stderr,\n        log_worker_user_friendly_status,\n    } = options;\n\n    log(`[${log_worker_begin}] ${message.uid}`);\n\n    const uid = message.uid;\n\n    try {\n        // GOTCHA\n        // Promise won't update its status until at least one message would\n        // be taken from output queue. Pushing generic \"Started....\" message\n        // will tell the promise to refresh its status.\n        await user_friendly_status('Started...');\n        const out = await callback({message, log: log.spawn(), user_friendly_status});\n        log(`[${log_worker_end_ok}]`);\n        return out;\n    }\n    catch (error) {\n        log(`[${log_worker_end_error}] ${error.message}`);\n        throw error;\n    }\n\n    async function user_friendly_status(value) {\n        log(`[${log_worker_user_friendly_status}] ${value}`);\n        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value}));\n    }\n}\n\nmodule.exports = redis_poll_zshift_callback_rpush;\n",
-            "markdown": null
+            "markdown": "Worker poll loop over redis queues: repeatedly `redis_zshift`s one message\nfrom `redis_input_queue`, JSON-parses it, runs `options.callback({message,\nlog, user_friendly_status})`, and rpushes a JSON response `{uid, version,\ntype, value}` to `redis_output_queue` — `type: 'resolve'` with the callback's\nreturn value, or `'reject'` with the error stack/message. An empty poll\nsleeps a random 500–1500ms; the loop runs at most 86400 iterations.\n\n- Unparseable messages and messages without `uid` are skipped; a missing or\n  past `expires_at` rejects the message (payloads carry signed urls with\n  limited lifetime).\n- `user_friendly_status(value)` rpushes `{uid, version, type:\n  'user_friendly_status', value}` to the output queue; a generic\n  `'Started...'` status is always pushed first so the consumer starts\n  refreshing.\n- `options.log` must provide `spawn()`; the `log_waiter_*`/`log_worker_*`\n  options are the tag names used in log lines. The redis client must provide\n  `rpush_p`.\n"
         },
         {
             "id": "redis_poll_zshift_spawn_rpush",
@@ -1824,7 +1824,7 @@
             "file": "src/redis_poll_zshift_spawn_rpush.js",
             "require": "const redis_poll_zshift_spawn_rpush = require('@vbarbarosh/node-helpers/src/redis_poll_zshift_spawn_rpush');",
             "source_code": "const Promise = require('bluebird');\nconst child_process = require('child_process');\nconst fs_path_resolve = require('./fs_path_resolve');\nconst fs_tempdir = require('./fs_tempdir');\nconst fs_write_json = require('./fs_write_json');\nconst random_int = require('./random_int');\nconst redis_zshift = require('./redis_zshift');\nconst stream_data_ln = require('./stream_data_ln');\n\n/**\n * Constantly monitors redis queue for incoming messages. After an incoming message was hit,\n * dumps it into `request.json` and executes `spawn_command`. The current directory will be set\n * to a new directory with just `request.json` inside. Result (`null`) and user-friendly\n * statuses will be `rpush`ed to the output queue.\n *\n * @param options\n * @returns {Promise<void>}\n *\n *     const options = {\n *         log: logger_create(),\n *         redis: redis_connect2('redis://127.0.0.1'),\n *         redis_input_queue: 'mp4gif_input',\n *         redis_output_queue: 'mp4gif_output',\n *         spawn_command: 'banner-export-mp4gif',\n *         log_waiter_begin: 'mp4gif_waiter_begin',\n *         log_waiter_end: 'mp4gif_waiter_end',\n *         log_waiter_sleep: 'mp4gif_waiter_sleep',\n *         log_waiter_rpush: 'mp4gif_waiter_rpush',\n *         log_waiter_error: 'mp4gif_waiter_error',\n *         log_waiter_error_parse: 'mp4gif_waiter_error_parse',\n *         log_waiter_error_no_uid: 'mp4gif_waiter_error_no_uid',\n *         log_worker_begin: 'mp4gif_worker_begin',\n *         log_worker_end_ok: 'mp4gif_worker_end_ok',\n *         log_worker_end_error: 'mp4gif_worker_end_error',\n *         log_worker_stdout: 'mp4gif_worker_stdout',\n *         log_worker_stderr: 'mp4gif_worker_stderr',\n *         log_worker_user_friendly_status: 'mp4gif_worker_user_friendly_status',\n *     };\n *     await redis_poll_zshift_spawn_rpush(options);\n */\nasync function redis_poll_zshift_spawn_rpush(options)\n{\n    const {log, redis, redis_input_queue, redis_output_queue, version} = options;\n    const {\n        log_waiter_begin,\n        log_waiter_end,\n        log_waiter_sleep,\n        log_waiter_rpush,\n        log_waiter_error,\n        log_waiter_error_parse,\n        log_waiter_error_no_uid,\n    } = options;\n\n    log(`[${log_waiter_begin}] v${version}`);\n    try {\n        for (let iter = 1; iter <= 24*60*60; ++iter) {\n\n            // const message_string = await redis.lpop_p(redis_input_queue);\n            const [message_string] = await redis_zshift(redis, redis_input_queue);\n            if (!message_string) {\n                const ms = random_int(500, 1500);\n                log(`[${log_waiter_sleep}] ${ms}ms`);\n                await Promise.delay(ms);\n                continue;\n            }\n\n            let message = null;\n            try {\n                message = JSON.parse(message_string);\n            }\n            catch (error) {\n                log(`[${log_waiter_error_parse}] ${error.message}`);\n                continue;\n            }\n\n            try {\n                const uid = message.uid;\n\n                if (!uid) {\n                    log(`[${log_waiter_error_no_uid}] uid is missed; skipped`);\n                    continue;\n                }\n                if (!message.expires_at) {\n                    throw new Error('expires_at is missed');\n                }\n\n                // This is necessary because we use signed urls which has limited lifetime.\n                // Basically, `expires_at` tell when signed url will be expired.\n                if (new Date(message.expires_at).getTime() <= new Date().getTime()) {\n                    throw new Error('Expired');\n                }\n\n                await worker(log.spawn(), message, options);\n                const response = JSON.stringify({uid: message.uid, version, type: 'resolve', value: null});\n                await redis.rpush_p(redis_output_queue, response);\n\n                log(`[${log_waiter_rpush}]`);\n            }\n            catch (error) {\n                const response = JSON.stringify({uid: message.uid, version, type: 'error', value: `${(error && (error.stack || error.message)) || 'Error N/A'}`});\n                log(`[${log_waiter_error}] ${response}`);\n                await redis.rpush_p(redis_output_queue, response);\n            }\n        }\n    }\n    finally {\n        log(`[${log_waiter_end}]`);\n    }\n}\n\nasync function worker(log, request, options)\n{\n    const {redis, redis_output_queue, spawn_command, version} = options;\n    const {\n        log_worker_begin,\n        log_worker_end_ok,\n        log_worker_end_error,\n        log_worker_stdout,\n        log_worker_stderr,\n        log_worker_user_friendly_status,\n    } = options;\n\n    log(`[${log_worker_begin}] ${request.uid}`);\n\n    try {\n        const uid = request.uid;\n        // GOTCHA\n        // Promise won't update its status until at least one request would\n        // be taken from the output queue. Pushing generic \"Started...\" request\n        // will tell the promise to refresh its status.\n        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: 'Started...'}));\n        await fs_tempdir(async function (d) {\n            await fs_write_json(fs_path_resolve(d, 'request.json'), request);\n            const proc = child_process.spawn(spawn_command, [], {cwd: d, stdio: ['pipe', 'pipe', 'pipe', 'pipe']});\n            let end_stdout = function () {};\n            let end_stderr = function () {};\n            let end_user_friendly_status = function () {};\n            try {\n                await new Promise(function (resolve, reject) {\n                    proc.once('error', reject);\n                    // A signal-killed process exits with code = null: only 0 is a success\n                    proc.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Process terminated with code ${code} and signal ${signal}`)));\n                    end_stdout = stream_data_ln(proc.stdout, line => log(`[${log_worker_stdout}] ${line}`));\n                    end_stderr = stream_data_ln(proc.stderr, line => log(`[${log_worker_stderr}] ${line}`));\n                    end_user_friendly_status = stream_data_ln(proc.stdio[3], function (line) {\n                        log(`[${log_worker_user_friendly_status}] ${line}`);\n                        redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: line}));\n                    });\n                });\n            }\n            finally {\n                end_stdout();\n                end_stderr();\n                end_user_friendly_status();\n            }\n        });\n    }\n    catch (error) {\n        log(`[${log_worker_end_error}] ${error.message}`);\n        throw error;\n    }\n    log(`[${log_worker_end_ok}]`);\n}\n\nmodule.exports = redis_poll_zshift_spawn_rpush;\n",
-            "markdown": null
+            "markdown": "Worker poll loop over redis queues that delegates the actual work to an\nexternal executable. Repeatedly `redis_zshift`s one message from\n`redis_input_queue`, JSON-parses it, dumps it as `request.json` into a fresh\ntemp directory, and spawns `spawn_command` with that directory as `cwd`. On\nexit code 0 it rpushes `{uid, version, type: 'resolve', value: null}` to\n`redis_output_queue`; any failure rpushes `type: 'error'` with the stack.\nAn empty poll sleeps a random 500–1500ms; the loop runs at most 86400\niterations.\n\n- The child gets an extra pipe on fd 3: each line written there is rpushed as\n  a `{uid, version, type: 'user_friendly_status', value}` message; a generic\n  `'Started...'` status is always pushed first. stdout/stderr are logged\n  line by line under the `log_worker_stdout`/`log_worker_stderr` tags.\n- Only exit code 0 is a success — a signal-killed child (code `null`) fails.\n- Unparseable messages and messages without `uid` are skipped; a missing or\n  past `expires_at` fails the message (payloads carry signed urls with\n  limited lifetime).\n- `options.log` must provide `spawn()`; the redis client must provide\n  `rpush_p`. See `redis_poll_zshift_callback_rpush` for the in-process\n  callback variant (which reports failures as `type: 'reject'`).\n"
         },
         {
             "id": "redis_zshift",
@@ -1832,7 +1832,7 @@
             "file": "src/redis_zshift.js",
             "require": "const redis_zshift = require('@vbarbarosh/node-helpers/src/redis_zshift');",
             "source_code": "async function redis_zshift(redis, queue, limit = 1)\n{\n    const last = limit - 1;\n    if (redis.zrange) {\n        const [items] = await new Promise(function (resolve, reject) {\n            redis.multi().zrange(queue, 0, last).zremrangebyrank(queue, 0, last).exec(function (error, out) {\n                error ? reject(error) : resolve(out);\n            });\n        });\n        return items;\n    }\n    // redis@4\n    const [items] = await redis.multi().ZRANGE(queue, 0, last).ZREMRANGEBYRANK(queue, 0, last).exec();\n    return items;\n}\n\nmodule.exports = redis_zshift;\n",
-            "markdown": null
+            "markdown": "Atomically pops up to `limit` (default `1`) lowest-scored members from a redis\nsorted set: a `MULTI` transaction of `ZRANGE queue 0 limit-1` plus\n`ZREMRANGEBYRANK queue 0 limit-1`. Returns the array of popped members —\nempty when the set is empty.\n\nWorks with both legacy callback clients (redis@1–3, detected by the presence\nof a lowercase `zrange` method) and promise clients (redis@4–6); the tests run\nagainst all six major versions.\n\n## Signature\n\n```\nredis_zshift(redis, queue, limit = 1) → Promise<string[]>\n```\n"
         },
         {
             "id": "round",
@@ -1840,7 +1840,7 @@
             "file": "src/round.js",
             "require": "const round = require('@vbarbarosh/node-helpers/src/round');",
             "source_code": "function round(value, precision = 1)\n{\n    if (precision === 0) {\n        return value;\n    }\n\n    const factor = 1 / precision;\n    const sign = Math.sign(value);\n\n    // Count decimal places for the cleanup (toFixed)\n    const exponent = get_decimal_places(precision);\n\n    // Small epsilon helps fix most floating point edge cases involving ties\n    const epsilon = 1e-12*sign;\n\n    // Scale → Nudge → Round → Unscale\n    const final = (Math.round(value*factor + epsilon) / factor);\n\n    // Cleanup trailing garbage such as: 34.038000000000004 → 34.038\n    return Number(final.toFixed(exponent));\n}\n\nfunction get_decimal_places(precision)\n{\n    if (Math.floor(precision) === precision) {\n        return 0;\n    }\n\n    // toExponential gives MANTISSAe±EXP; decimal places = mantissa fraction\n    // digits minus the exponent. Counting the exponent alone is not enough:\n    // 0.25 → \"2.5e-1\" → 1 - (-1) = 2 (not 1, which would re-round 1.25 → 1.3)\n    // 0.001 → \"1e-3\" → 0 - (-3) = 3\n    const [mantissa, exp] = precision.toExponential().split('e');\n    const digits = (mantissa.split('.')[1] || '').length;\n    return Math.max(0, digits - parseInt(exp, 10));\n}\n\n// // round(34.037531, 0.001) -> 34.038000000000004\n// function round(value, precision = 1)\n// {\n//     return Math.round(value / precision) * precision;\n// }\n\n// // round(1.005, 0.01) -> 1\n// function round(value, precision = 1)\n// {\n//     const p = 1 / precision;\n//     return Math.round(value * p) / p;\n// }\n\n// function round(value, precision = 1)\n// {\n//     if (precision === 0) {\n//         return value;\n//     }\n//     const factor = 1 / precision;\n//     const epsilon = 1e-12 * Math.sign(value);\n//     return Number((Math.round((value * factor) + epsilon) / factor).toPrecision(15));\n// }\n\n// function round(value, precision = 1)\n// {\n//     if (precision === 0) {\n//         return value;\n//     }\n//\n//     const factor = 1 / precision;\n//\n//     // The exponent is critical for defining the precision of the cleanup\n//     const exponent = Math.max(0, String(precision).length - 2);\n//\n//     // 1. Calculate the scaled value.\n//     let scaled = value * factor;\n//\n//     // 2. Strategic Nudge: Add a tiny, signed epsilon (1e-12) to correct floating-point\n//     //    representation errors and force symmetric rounding (as Math.abs failed).\n//     const epsilon = 1e-12 * Math.sign(value);\n//\n//     // 3. Round the nudged value.\n//     const roundedScaled = Math.round(scaled + epsilon);\n//\n//     // 4. Unscale the value.\n//     const result = roundedScaled / factor;\n//\n//     // 5. CRITICAL FINAL STEP: Use .toFixed() with the required decimal places for cleanup.\n//     // This stabilizes the result against the strict equality checks, including\n//     // the safe integer boundary errors caused by the final division.\n//     return Number(result.toFixed(exponent));\n// }\n\n// 💎 The most precise solution, but - extra dependency.\n//\n// const Decimal = require('decimal.js');\n//\n// function round(value, precision = 1)\n// {\n//     return new Decimal(value).div(precision).round().times(precision).toNumber();\n// }\n\nmodule.exports = round;\n",
-            "markdown": null
+            "markdown": "Rounds `value` to the nearest multiple of `precision` (default `1`).\nPrecision can be fractional (`0.01`), coarse (`25`, `1000`), or a non-power\nof 10 (`0.25`). A tiny signed epsilon fixes floating-point tie cases\n(`1.005` at `0.01` correctly gives `1.01`, `-1.005` gives `-1.01`), and a\nfinal `toFixed` cleanup strips artifacts like `34.038000000000004`.\n`precision = 0` returns the value unchanged.\n\n```js\nround(2.7)                  // 3\nround(34.037531, 0.001)     // 34.038\nround(1.005, 0.01)          // 1.01\nround(123.456, 10)          // 120\nround(37.5, 25)             // 50\nround(1.13, 0.25)           // 1.25\n```\n"
         },
         {
             "id": "sanitize_dash_name",
@@ -1848,7 +1848,7 @@
             "file": "src/sanitize_dash_name.js",
             "require": "const sanitize_dash_name = require('@vbarbarosh/node-helpers/src/sanitize_dash_name');",
             "source_code": "function sanitize_dash_name(s)\n{\n    // https://stackoverflow.com/a/37511463\n    return s.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();\n}\n\nmodule.exports = sanitize_dash_name;\n",
-            "markdown": null
+            "markdown": "Converts a string to a lowercase dash-name (slug): accents are stripped via\nNFD normalization, every other non-ASCII-alphanumeric character becomes a\ndash, runs of dashes collapse, and leading/trailing dashes are trimmed.\nCharacters with no ASCII base letter (e.g. Cyrillic) are dropped, so the\nresult can be an empty string.\n\n```js\nsanitize_dash_name('1000 Stories')      // '1000-stories'\nsanitize_dash_name('Ópera Prima')       // 'opera-prima'\nsanitize_dash_name('Black & Decker')    // 'black-decker'\nsanitize_dash_name('M&M\\'s')            // 'm-m-s'\nsanitize_dash_name('привет')            // ''\n```\n"
         },
         {
             "id": "sanitize_filename",
@@ -1856,7 +1856,7 @@
             "file": "src/sanitize_filename.js",
             "require": "const sanitize_filename = require('@vbarbarosh/node-helpers/src/sanitize_filename');",
             "source_code": "const lib = require('sanitize-filename');\n\nfunction sanitize_filename(filename)\n{\n    return lib(filename);\n}\n\nmodule.exports = sanitize_filename;\n",
-            "markdown": null
+            "markdown": "Thin wrapper around the [sanitize-filename](https://www.npmjs.com/package/sanitize-filename)\npackage: makes a string safe to use as a single filename by removing path\nseparators, reserved/control characters, and Windows-reserved names. It does\nnot slugify — spaces, dots, and unicode are kept.\n\n```js\nsanitize_filename('../some/file*name?.txt')     // '..somefilename.txt'\nsanitize_filename('report: 2024/Q1.pdf')        // 'report 2024Q1.pdf'\n```\n"
         },
         {
             "id": "sanitize_var_name",
@@ -1864,7 +1864,7 @@
             "file": "src/sanitize_var_name.js",
             "require": "const sanitize_var_name = require('@vbarbarosh/node-helpers/src/sanitize_var_name');",
             "source_code": "const sanitize_dash_name = require('./sanitize_dash_name');\nconst str_camel_to_snake = require('./str_camel_to_snake');\n\nfunction sanitize_var_name(var_name)\n{\n    const out = sanitize_dash_name(str_camel_to_snake(var_name)).replace(/[^a-z0-9]+/g, '_');\n    if (out.length === 0) {\n        return '_';\n    }\n    if (out[0].match(/[0-9]/)) {\n        return '_' + out;\n    }\n    return out;\n}\n\nmodule.exports = sanitize_var_name;\n",
-            "markdown": null
+            "markdown": "Converts an arbitrary string (a spreadsheet header, an API field name) into\na safe snake_case identifier: camelCase is split first\n(`str_camel_to_snake`), accents and symbols are handled by\n`sanitize_dash_name`, and the dashes become underscores. The result always\nmatches `[a-z0-9_]+`: an empty result becomes `'_'`, and a leading digit is\nprefixed with `'_'`.\n\n```js\nsanitize_var_name('Image URL')          // 'image_url'\nsanitize_var_name('ItemInternalId')     // 'item_internal_id'\nsanitize_var_name('@odata.etag')        // 'odata_etag'\nsanitize_var_name('1000-stories')       // '_1000_stories'\nsanitize_var_name('')                   // '_'\n```\n"
         },
         {
             "id": "sftp_get_file_info",
@@ -1896,7 +1896,7 @@
             "file": "src/shell_curl_progress.js",
             "require": "const shell_curl_progress = require('@vbarbarosh/node-helpers/src/shell_curl_progress');",
             "source_code": "const Promise = require('bluebird');\nconst child_process = require('child_process');\nconst stream = require('stream');\nconst stream_curl_progress = require('./stream_curl_progress');\nconst stream_each = require('./stream_each');\n\n// 🦋 TODO ...options\nasync function shell_curl_progress(args, {options, user_friendly_status})\n{\n    // $ man curl\n    // > If you want a progress meter for HTTP POST or PUT requests,\n    // > you need to redirect the response output to a file, using\n    // > shell redirect (>), -o, --output or similar.\n\n    const tmp = ['--no-silent', '--progress-meter'];\n    if (!args.includes('-o')) {\n        tmp.push('-o', '/dev/null');\n    }\n    const proc = child_process.spawn(args[0], args.slice(1).concat(tmp), {...options, stdio: ['inherit', 'inherit', 'pipe']});\n\n    const promises = [];\n    promises.push(new Promise(function (resolve, reject) {\n        proc.once('error', reject);\n        // A signal-killed process exits with code = null: only 0 is a success\n        proc.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Process terminated with code ${code} and signal ${signal}`)));\n    }));\n    promises.push(stream.promises.pipeline(proc.stderr, stream_curl_progress(), stream_each(progress_fn)));\n\n    await Promise.all(promises);\n\n    function progress_fn(v) {\n        const speed = v.speed === '0' ? '~' : `${v.speed}/s`;\n        user_friendly_status(`${v.perc}% | ${v.done} of ${v.total} at ${speed} ETA ${v.eta} duration=${v.duration}`);\n    }\n}\n\nmodule.exports = shell_curl_progress;\n",
-            "markdown": null
+            "markdown": "Runs a curl command and turns its progress meter into user-friendly status\nlines. `args` is the full command including the binary (`['curl', url, ...]`);\n`--no-silent --progress-meter` are appended, plus `-o /dev/null` when the args\ncontain no `-o` (curl only prints a progress meter when the response body is\nredirected). stderr is parsed via `stream_curl_progress` and each row is\nreported as `user_friendly_status('42% | 587M of 3217M at 18.5M/s ETA 0:02:22\nduration=0:00:31')`; zero speed shows as `~`.\n\nRejects when the process exits with a non-zero code or is killed by a signal\n(only exit code 0 is a success). Extra spawn options go under the `options`\nkey of the second argument.\n\n## Signature\n\n```\nshell_curl_progress(args, {options, user_friendly_status}) → Promise<void>\n```\n"
         },
         {
             "id": "shell_json",
@@ -1944,7 +1944,7 @@
             "file": "src/shell_ytdlp_progress.js",
             "require": "const shell_ytdlp_progress = require('@vbarbarosh/node-helpers/src/shell_ytdlp_progress');",
             "source_code": "const child_process = require('child_process');\nconst format_seconds = require('./format_seconds');\nconst stream = require('stream');\nconst stream_each = require('./stream_each');\nconst stream_ytdlp_progress = require('./stream_ytdlp_progress');\n\nasync function shell_ytdlp_progress(args, {user_friendly_status, ...options})\n{\n    const proc = child_process.spawn('yt-dlp', ['--progress', ...args], {...options, stdio: 'pipe'});\n    const time0 = Date.now();\n\n    const promises = [];\n    promises.push(new Promise(function (resolve, reject) {\n        proc.once('error', reject);\n        // A signal-killed process exits with code = null: only 0 is a success\n        proc.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Process terminated with code ${code} and signal ${signal}`)));\n    }));\n    promises.push(stream.promises.pipeline(proc.stdout, stream_ytdlp_progress(), stream_each(progress_fn)));\n    promises.push(stream.promises.pipeline(proc.stderr, stream_each(v => console.log(`[stderr] ${v}`))));\n\n    await Promise.all(promises);\n\n    function progress_fn(v) {\n        const duration = format_seconds((Date.now() - time0)/1000);\n        if (v.merging) {\n            user_friendly_status(`Merging... duration=${duration}`);\n        }\n        else {\n            user_friendly_status(`${v.perc} | [${v.current_part}/${v.total_parts}] ${v.done} of ${v.total} at ${v.speed} ETA ${v.eta} duration=${duration}`);\n        }\n    }\n}\n\nmodule.exports = shell_ytdlp_progress;\n",
-            "markdown": null
+            "markdown": "Runs the `yt-dlp` binary (hardcoded name, resolved via `PATH`) with\n`--progress` prepended to `args`, and turns its stdout progress lines into\nuser-friendly status lines. Each parsed row (see `stream_ytdlp_progress`)\nis reported as `user_friendly_status('50.90% | [1/2] 8.0MB of 15.71MB at\n33.83MB/s ETA 00:01 duration=31s')`; the merging stage reports\n`'Merging... duration=...'`. `duration` is wall time since the spawn. stderr\nlines are echoed to the console with a `[stderr]` prefix.\n\nRejects when the process exits with a non-zero code or is killed by a signal\n(only exit code 0 is a success). Extra properties of the second argument are\npassed through as spawn options.\n\n## Signature\n\n```\nshell_ytdlp_progress(args, {user_friendly_status, ...options}) → Promise<void>\n```\n"
         },
         {
             "id": "str_camel_to_snake",
@@ -1952,7 +1952,7 @@
             "file": "src/str_camel_to_snake.js",
             "require": "const str_camel_to_snake = require('@vbarbarosh/node-helpers/src/str_camel_to_snake');",
             "source_code": "function str_camel_to_snake(s)\n{\n    return s\n        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')  // Insert underscore between lowercase/number and uppercase\n        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2') // Separate acronyms from regular CamelCase words\n        .toLowerCase();\n}\n\nmodule.exports = str_camel_to_snake;\n",
-            "markdown": null
+            "markdown": "Converts camelCase/PascalCase to snake_case and lowercases the result.\nAcronyms are kept together as one word (`SomeUPCCode` → `some_upc_code`),\nthough an acronym at the end of the string has nothing to split it from the\nprevious word (`thisISNT` → `this_isnt`).\n\n```js\nstr_camel_to_snake('CamelCase')         // 'camel_case'\nstr_camel_to_snake('SomeUPCCode')       // 'some_upc_code'\nstr_camel_to_snake('thisISDifficult')   // 'this_is_difficult'\nstr_camel_to_snake('UPC')               // 'upc'\n```\n"
         },
         {
             "id": "str_parse_kv",
@@ -1960,7 +1960,7 @@
             "file": "src/str_parse_kv.js",
             "require": "const str_parse_kv = require('@vbarbarosh/node-helpers/src/str_parse_kv');",
             "source_code": "function str_parse_kv(str)\n{\n    const i = str.indexOf(':');\n    if (i === -1) {\n        return [str.trim(), ''];\n    }\n    return [str.slice(0, i).trim(), str.slice(i + 1).trim()];\n}\n\nmodule.exports = str_parse_kv;\n",
-            "markdown": null
+            "markdown": "Splits a `key: value` string on the first colon and returns a trimmed\n`[key, value]` pair. Only the first colon splits — the rest stays in the\nvalue — so URLs survive. Without a colon, the whole string is the key and\nthe value is `''`.\n\n```js\nstr_parse_kv('key: value')                  // ['key', 'value']\nstr_parse_kv('url: http://example.com')     // ['url', 'http://example.com']\nstr_parse_kv('key')                         // ['key', '']\nstr_parse_kv(':value')                      // ['', 'value']\n```\n"
         },
         {
             "id": "stream_chunk",
@@ -1976,7 +1976,7 @@
             "file": "src/stream_curl_progress.js",
             "require": "const stream_curl_progress = require('@vbarbarosh/node-helpers/src/stream_curl_progress');",
             "source_code": "const stream = require('stream');\nconst stream_filter = require('./stream_filter');\nconst stream_lines = require('./stream_lines');\nconst stream_map = require('./stream_map');\nconst stream_skip = require('./stream_skip');\n\nfunction stream_curl_progress()\n{\n    return stream.compose(\n        stream_lines(),\n        stream_skip(2),\n        stream_map(function (v) {\n            // curl: (22) The requested URL returned error: 500\n            if (v.startsWith('curl:')) {\n                process.stderr.write(`${v}\\n`);\n                return null;\n            }\n\n            // % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n            //                                Dload  Upload   Total   Spent    Left  Speed\n            // 0 3217M    0     0    0  128k      0   205k  4:27:16 --:--:--  4:27:16  205k\n            // 0 3217M    0     0    0 6016k      0  3751k  0:14:38  0:00:01  0:14:37 3750k\n            // ...\n            // 18 3217M    0     0   18  587M      0  18.5M  0:02:53  0:00:31  0:02:22 19.0M\n            const [perc, total, perc2, recv, perc3, transferred, speed_down, speed_up, time_total, duration, eta, speed] = v.trim().split(/\\s+/);\n            return {\n                perc,\n                done: recv === '0' ? transferred : recv,\n                total,\n                perc2,\n                recv,\n                perc3,\n                transferred,\n                speed_down,\n                speed_up,\n                time_total: time_total === '--:--:--' ? '~' : time_total,\n                duration: duration === '--:--:--' ? '~' : duration,\n                eta: eta === '--:--:--' ? '~' : eta,\n                speed\n            };\n        }),\n        stream_filter(v => v),\n    );\n}\n\nmodule.exports = stream_curl_progress;\n",
-            "markdown": null
+            "markdown": "Transform that parses curl's stderr progress meter (the `--progress-meter`\ntable) into objects. The two header lines are skipped; every following line\nbecomes `{perc, done, total, speed, eta, duration, time_total, ...}` with the\nraw columns (`recv`, `transferred`, `speed_down`, `speed_up`, ...) included.\n`done` is the received column, falling back to the transferred column while\nreceived is `'0'` (uploads). `--:--:--` times are reported as `'~'`.\n\nLines starting with `curl:` (error messages) are written to\n`process.stderr` and dropped from the output.\n\n```js\nstream.compose(proc.stderr, stream_curl_progress())\n// {perc: '18', done: '587M', total: '3217M', speed: '19.0M', eta: '0:02:22', ...}\n```\n"
         },
         {
             "id": "stream_data_ln",
@@ -1992,7 +1992,7 @@
             "file": "src/stream_discard.js",
             "require": "const stream_discard = require('@vbarbarosh/node-helpers/src/stream_discard');",
             "source_code": "const stream = require('stream');\n\nfunction stream_discard({objectMode = false} = {})\n{\n    return new stream.Writable({\n        objectMode,\n        write: function (buffer, encoding, callback) {\n            callback();\n        },\n    });\n}\n\nmodule.exports = stream_discard;\n",
-            "markdown": null
+            "markdown": "A writable sink that accepts and discards every chunk — useful to drain a\npipeline whose output is irrelevant. Byte mode by default; pass\n`{objectMode: true}` for object streams. Consumes empty streams fine.\n\n```js\nawait stream.promises.pipeline(source, stream_discard());\nawait stream.promises.pipeline(objects, stream_discard({objectMode: true}));\n```\n"
         },
         {
             "id": "stream_each",
@@ -2016,7 +2016,7 @@
             "file": "src/stream_group.js",
             "require": "const stream_group = require('@vbarbarosh/node-helpers/src/stream_group');",
             "source_code": "const stream_chunk = require('./stream_chunk');\n\n/**\n * Split a stream into chunks of objects.\n *\n * @deprecated Deprecated in favor of `stream_chunk`\n */\nfunction stream_group(chunk_size)\n{\n    return stream_chunk(chunk_size);\n}\n\nmodule.exports = stream_group;\n",
-            "markdown": null
+            "markdown": "Deprecated alias of `stream_chunk` — splits an object stream into arrays of\nup to `chunk_size` items. Calls `stream_chunk(chunk_size)` directly; use\n`stream_chunk` in new code.\n"
         },
         {
             "id": "stream_gunzip",
@@ -2024,7 +2024,7 @@
             "file": "src/stream_gunzip.js",
             "require": "const stream_gunzip = require('@vbarbarosh/node-helpers/src/stream_gunzip');",
             "source_code": "const zlib  = require('zlib');\n\nfunction stream_gunzip(options)\n{\n    return zlib.createGunzip(options);\n}\n\nmodule.exports = stream_gunzip;\n",
-            "markdown": null
+            "markdown": "Thin wrapper around `zlib.createGunzip(options)`: a transform that\ndecompresses a gzipped byte stream. Corrupt input errors the stream\n(`incorrect header check`).\n\n```js\nawait stream.promises.pipeline(gzipped_source, stream_gunzip(), destination);\n```\n"
         },
         {
             "id": "stream_hash",
@@ -2032,7 +2032,7 @@
             "file": "src/stream_hash.js",
             "require": "const stream_hash = require('@vbarbarosh/node-helpers/src/stream_hash');",
             "source_code": "const crypto = require('crypto');\nconst stream = require('stream');\n\nfunction stream_hash(algorithm = 'md5', options)\n{\n    const hash = crypto.createHash(algorithm, options);\n    return new stream.Transform({\n        transform: function (chunk, encoding, callback) {\n            hash.update(chunk);\n            callback();\n        },\n        flush: function (callback) {\n            this.push(hash.digest('hex'));\n            callback();\n        },\n    });\n}\n\nmodule.exports = stream_hash;\n",
-            "markdown": null
+            "markdown": "Transform that consumes all input chunks and emits a single output chunk at\nflush: the hex digest of the whole stream. `algorithm` defaults to `'md5'`;\nany `crypto.createHash` algorithm name works, and `options` is passed\nthrough to it. An empty stream still emits the digest of empty input.\n\n```js\nconst chunks = await stream.Readable.from(['aaa', 'bbb']).pipe(stream_hash('sha256')).toArray();\nBuffer.concat(chunks).toString('utf8');\n// '2ce109e9d0faf820b2434e166297934e6177b65ab9951dbc3e204cad4689b39c'\n```\n"
         },
         {
             "id": "stream_lines",
@@ -2072,7 +2072,7 @@
             "file": "src/stream_md5.js",
             "require": "const stream_md5 = require('@vbarbarosh/node-helpers/src/stream_md5');",
             "source_code": "const crypto = require('crypto');\nconst stream = require('stream');\n\n/**\n * TODO Rename to stream_hash_md5\n */\nfunction stream_md5()\n{\n    const md5 = crypto.createHash('md5');\n    return new stream.Transform({\n        transform: function (chunk, encoding, callback) {\n            md5.update(chunk, encoding);\n            callback();\n        },\n        flush: function (callback) {\n            this.push(md5.digest('hex'));\n            callback();\n        },\n    });\n}\n\nmodule.exports = stream_md5;\n",
-            "markdown": null
+            "markdown": "Transform that consumes all input chunks and emits a single output chunk at\nflush: the md5 hex digest of the whole stream. An empty stream still emits\n`'d41d8cd98f00b204e9800998ecf8427e'`. Equivalent to `stream_hash('md5')`;\nthe source carries a TODO to rename this to `stream_hash_md5`.\n\n```js\nconst chunks = await stream.Readable.from(['aaa', 'bbb']).pipe(stream_md5()).toArray();\nBuffer.concat(chunks).toString('utf8');    // '6547436690a26a399603a7096e876a2d'\n```\n"
         },
         {
             "id": "stream_multiplex",
@@ -2128,7 +2128,7 @@
             "file": "src/stream_through.js",
             "require": "const stream_through = require('@vbarbarosh/node-helpers/src/stream_through');",
             "source_code": "const stream_tap = require('./stream_tap');\n\n/**\n * Call `fn` on each item.\n *\n * @deprecated Deprecated in favor of `stream_tap`.\n */\nfunction stream_through(fn)\n{\n    return stream_tap(fn);\n}\n\nmodule.exports = stream_through;\n",
-            "markdown": null
+            "markdown": "Deprecated alias of `stream_tap` — calls `fn` on each item and passes the\nitem through unchanged. Calls `stream_tap(fn)` directly; use `stream_tap`\nin new code.\n"
         },
         {
             "id": "stream_transform",
@@ -2136,7 +2136,7 @@
             "file": "src/stream_transform.js",
             "require": "const stream_transform = require('@vbarbarosh/node-helpers/src/stream_transform');",
             "source_code": "const stream_map = require('./stream_map');\n\n/**\n * @deprecated Deprecated in favor of `stream_map`\n */\nfunction stream_transform(fn)\n{\n    return stream_map(fn);\n}\n\nmodule.exports = stream_transform;\n",
-            "markdown": null
+            "markdown": "Deprecated alias of `stream_map` — maps each item through `fn`. Calls\n`stream_map(fn)` directly; use `stream_map` in new code.\n"
         },
         {
             "id": "stream_xml_analyze",
@@ -2160,7 +2160,7 @@
             "file": "src/stream_ytdlp_progress.js",
             "require": "const stream_ytdlp_progress = require('@vbarbarosh/node-helpers/src/stream_ytdlp_progress');",
             "source_code": "const format_bytes = require('./format_bytes');\nconst format_percents = require('./format_percents');\nconst parse_bytes = require('./parse_bytes');\nconst stream = require('stream');\nconst stream_filter = require('./stream_filter');\nconst stream_lines = require('./stream_lines');\nconst stream_map = require('./stream_map');\n\n// [download]   0.0% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.0% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.0% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.1% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]   0.2% of   15.71MiB at   21.76MiB/s ETA 00:00\n// [download]   0.4% of   15.71MiB at   16.48MiB/s ETA 00:00\n// [download]   0.8% of   15.71MiB at   25.54MiB/s ETA 00:00\n// [download]   1.6% of   15.71MiB at   30.65MiB/s ETA 00:00\n// [download]   3.2% of   15.71MiB at   42.99MiB/s ETA 00:00\n// [download]   6.4% of   15.71MiB at   66.25MiB/s ETA 00:00\n// [download]  12.7% of   15.71MiB at   81.24MiB/s ETA 00:00\n// [download]  25.5% of   15.71MiB at   55.11MiB/s ETA 00:00\n// [download]  50.9% of   15.71MiB at   33.83MiB/s ETA 00:00\n// [download]  61.7% of   15.71MiB at   33.98MiB/s ETA 00:00\n// [download]  61.7% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.7% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.7% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.8% of   15.71MiB at  Unknown B/s ETA Unknown\n// [download]  61.9% of   15.71MiB at   12.32MiB/s ETA 00:00\n// [download]  62.1% of   15.71MiB at   14.26MiB/s ETA 00:00\n// [download]  62.5% of   15.71MiB at   25.10MiB/s ETA 00:00\n// [download]  63.3% of   15.71MiB at   34.18MiB/s ETA 00:00\n// [download]  64.9% of   15.71MiB at    8.95MiB/s ETA 00:00\n// [download]  68.1% of   15.71MiB at   16.75MiB/s ETA 00:00\n// [download]  74.4% of   15.71MiB at   29.10MiB/s ETA 00:00\n// [download]  87.2% of   15.71MiB at   40.45MiB/s ETA 00:00\n// [download] 100.0% of   15.71MiB at   47.64MiB/s ETA 00:00\n// [download] 100% of   15.71MiB in 00:00:00 at 29.07MiB/s\n// [Merger] Merging formats into \"xxxxxxxxxxxxxxx.webm\"\n// Deleting original file xxxxxxxxxxxxxxx.f251.webm (pass -k to keep)\n// Deleting original file xxxxxxxxxxxxxxx.f248.webm (pass -k to keep)\n\nfunction stream_ytdlp_progress()\n{\n    let last = {};\n    let current_part = 1;\n    const downloading_formats = [];\n    return stream.compose(\n        stream_lines(),\n        stream_map(function (line) {\n            let m;\n            if (m = line.match(/^\\[info] \\S+: Downloading \\d+ format\\(s\\): (.+)$/)) {\n                downloading_formats.push(...m[1].split('+'));\n                return false;\n            }\n            if (m = line.match(/^\\[download] Destination: .*f(\\d+)\\.[^.]+/)) {\n                current_part = downloading_formats.indexOf(m[1]) + 1;\n                return false;\n            }\n            if (line.match(/^\\[Merger]/i)) {\n                last.merging = true;\n                return last;\n            }\n            if (m = line.match(/^\\[download] (.*) of (.*) at (.*) ETA (.*)$/)) {\n                const percentage = parseFloat(m[1].trim())/100;\n                const total = parse_bytes(m[2].trim());\n                const speed = m[3].trim().replace('i', '');\n                const eta = m[4].trim();\n                return last = {\n                    current_part,\n                    total_parts: downloading_formats.length,\n                    perc: format_percents(percentage),\n                    done: format_bytes(percentage*total),\n                    total: format_bytes(total),\n                    speed: speed.toLowerCase().includes('unknown') ? '~' : speed,\n                    eta: eta.toLowerCase().includes('unknown') ? '~' : eta,\n                    merging: false,\n                };\n            }\n            return false;\n        }),\n        stream_filter(v => v),\n    );\n}\n\nmodule.exports = stream_ytdlp_progress;\n",
-            "markdown": null
+            "markdown": "Transform that parses yt-dlp `--progress` output (stdout) into objects:\n`{current_part, total_parts, perc, done, total, speed, eta, merging}`. Sizes\nare re-formatted via `parse_bytes`/`format_bytes` (`15.71MiB` → `'15.71MB'`,\n`done` computed from the percentage), `Unknown` speed/ETA become `'~'`, and\nnon-progress lines are dropped.\n\n- `[info] ...: Downloading N format(s): 251+248` plus the per-part\n  `[download] Destination: ....fNNN.ext` lines drive\n  `current_part`/`total_parts` for multi-format downloads (otherwise\n  `1`/`0`).\n- A `[Merger]` line re-emits the last row with `merging: true`. The last row\n  is mutated in place, so copy rows if you collect them.\n\n```js\nstream.Readable.from(lines).pipe(stream_ytdlp_progress())\n// {current_part: 1, total_parts: 0, perc: '50.90%', done: '8.0MB',\n//  total: '15.71MB', speed: '33.83MB/s', eta: '00:01', merging: false}\n```\n"
         },
         {
             "id": "strtr",
@@ -2168,7 +2168,7 @@
             "file": "src/strtr.js",
             "require": "const strtr = require('@vbarbarosh/node-helpers/src/strtr');",
             "source_code": "// PHP’s strtr tries the longest possible key first when multiple keys overlap.\n// echo strtr(\"hello\", [\"he\" => \"X\", \"hell\" => \"Y\"]);\nfunction strtr(subject, map)\n{\n    // Single pass, like PHP: replaced text is never scanned again\n    const keys = Object.keys(map).filter(v => v.length).sort(fcmp);\n    let out = '';\n    for (let i = 0; i < subject.length; ) {\n        const key = keys.find(v => subject.startsWith(v, i));\n        if (key) {\n            out += map[key];\n            i += key.length;\n        }\n        else {\n            out += subject[i];\n            i++;\n        }\n    }\n    return out;\n    function fcmp(b, a) {\n        return a.length - b.length;\n    }\n}\n\nmodule.exports = strtr;\n",
-            "markdown": null
+            "markdown": "Replaces substrings in `subject` using a `{from: to}` map, like PHP's\n`strtr`. Single pass: replaced text is never scanned again, so maps like\n`{a: 'b', b: 'c'}` cannot cascade. When keys overlap, the longest matching\nkey wins regardless of map order. Empty keys are ignored.\n\n```js\nstrtr('hello world', {world: 'there'})  // 'hello there'\nstrtr('hello', {he: 'X', hell: 'Y'})    // 'Yo' (longest key wins)\nstrtr('ab', {a: 'b', b: 'c'})           // 'bc' (single pass, no cascade)\nstrtr('hello', {l: ''})                 // 'heo'\n```\n"
         },
         {
             "id": "throttle",
@@ -2200,7 +2200,7 @@
             "file": "src/urlparts.js",
             "require": "const urlparts = require('@vbarbarosh/node-helpers/src/urlparts');",
             "source_code": "function urlparts(url)\n{\n    const tmp = url instanceof URL\n        ? url\n        : new URL((typeof url === 'string' ? url : ''), 'fake://fake/');\n    return {\n        href: tmp.href,\n        protocol: tmp.protocol,\n        hostname: tmp.hostname,\n        username: tmp.username,\n        password: tmp.password,\n        host: tmp.host,\n        port: tmp.port,\n        path: tmp.pathname,\n        search: tmp.search,\n        hash: tmp.hash,\n    };\n}\n\nmodule.exports = urlparts;\n",
-            "markdown": null
+            "markdown": "Splits a URL into a fixed-shape plain object. Accepts a `URL` instance or a\nstring; strings are parsed against the base `fake://fake/`, so relative paths\nwork (and non-string input degrades to the bare base instead of throwing).\nThe keys mirror the `URL` properties, except `pathname` is exposed as `path`.\n\n```js\nurlparts('https://john:secret@example.com:8080/users/15?page=2#top')\n// {\n//     href: 'https://john:secret@example.com:8080/users/15?page=2#top',\n//     protocol: 'https:', hostname: 'example.com',\n//     username: 'john', password: 'secret',\n//     host: 'example.com:8080', port: '8080',\n//     path: '/users/15', search: '?page=2', hash: '#top',\n// }\nurlparts('/users?page=5').path      // '/users'\nurlparts('/users?page=5').protocol  // 'fake:'\n```\n"
         },
         {
             "id": "user_friendly_status",
