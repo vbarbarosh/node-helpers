@@ -2,7 +2,9 @@ const assert = require('assert');
 const fs_exists = require('./fs_exists');
 const fs_path_resolve = require('./fs_path_resolve');
 const fs_read_utf8 = require('./fs_read_utf8');
+const fs_readdir = require('./fs_readdir');
 const fs_tempdir = require('./fs_tempdir');
+const fs_write = require('./fs_write');
 const http = require('http');
 const http_get_file = require('./http_get_file');
 
@@ -39,13 +41,27 @@ describe('http_get_file', function () {
     it('should download a file', async function () {
         await fs_tempdir(async function (d) {
             const out_file = fs_path_resolve(d, 'out.bin');
+            await fs_write(out_file, 'ORIGINAL');
             await http_get_file(`${base}/ok`, out_file);
             assert.strictEqual(await fs_read_utf8(out_file), 'hello world');
+            assert.deepStrictEqual(await fs_readdir(d), ['out.bin']);
         });
     });
-    it('should reject when the server aborts the download', async function () {
+    it('should preserve an existing file when the server aborts the download', async function () {
         await fs_tempdir(async function (d) {
-            await assert.rejects(http_get_file(`${base}/abort`, fs_path_resolve(d, 'out.bin')));
+            const out_file = fs_path_resolve(d, 'out.bin');
+            await fs_write(out_file, 'ORIGINAL');
+            await assert.rejects(http_get_file(`${base}/abort`, out_file));
+            assert.strictEqual(await fs_read_utf8(out_file), 'ORIGINAL');
+            assert.deepStrictEqual(await fs_readdir(d), ['out.bin']);
+        });
+    });
+    it('should remove temporary files when the server aborts the download', async function () {
+        await fs_tempdir(async function (d) {
+            const out_file = fs_path_resolve(d, 'out.bin');
+            await assert.rejects(http_get_file(`${base}/abort`, out_file));
+            assert.strictEqual(await fs_exists(out_file), false);
+            assert.deepStrictEqual(await fs_readdir(d), []);
         });
     });
     it('should reject when out_file is not writable', async function () {
@@ -56,6 +72,7 @@ describe('http_get_file', function () {
             const out_file = fs_path_resolve(d, 'out.bin');
             await assert.rejects(http_get_file(`${base}/missing`, out_file), /404/);
             assert.strictEqual(await fs_exists(out_file), false);
+            assert.deepStrictEqual(await fs_readdir(d), []);
         });
     });
 });

@@ -1,9 +1,13 @@
 Downloads `url` into `out_file`.
 
-- An HTTP error status (e.g. 404) rejects and does not create `out_file` —
-  the file is only created after a successful response.
+- The response is written to a unique temporary file in the destination
+  directory, flushed, closed, and atomically renamed to `out_file` only after
+  the complete download succeeds.
+- An HTTP error status (e.g. 404) rejects without creating `out_file`.
 - Rejects when the server aborts the download mid-stream (no hanging) and
-  when `out_file` is not writable; both streams are destroyed on any failure.
+  when `out_file` is not writable; both streams are destroyed and the
+  temporary file is removed on failure. An existing `out_file` remains
+  unchanged.
 - `options` are passed through to `axios.get` (after
   `responseType: 'stream'`).
 
