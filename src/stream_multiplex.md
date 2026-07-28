@@ -7,6 +7,8 @@ completes only after every target accepted the chunk.
 - Ending the multiplex ends all targets; destroying it destroys all targets.
 - An error in any target destroys the multiplex (and, through it, the other
   targets) with that error — the first error wins.
+- Destroying the multiplex with an error preserves that error after all targets
+  finish cleanup.
 
 ```js
 await stream.promises.pipeline(

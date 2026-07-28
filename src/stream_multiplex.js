@@ -25,12 +25,14 @@ function stream_multiplex(...streams)
             streams.forEach(s => s.once('error', e => this.destroy(e)));
             callback();
         },
-        destroy: async function (error, callback) {
+        destroy: function (error, callback) {
             let done = 0;
+            let final_error = error;
             streams.forEach(function (stream) {
-                stream.destroy(error, function () {
+                stream.destroy(error, function (error2) {
+                    final_error = final_error || error2;
                     if (++done === streams.length) {
-                        callback();
+                        callback(final_error);
                     }
                 });
             });
