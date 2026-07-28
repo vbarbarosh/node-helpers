@@ -47,19 +47,32 @@ const items = [
     ['//[::1]:8080/x', {a: 1}, '//[::1]:8080/x?a=1'],
     ['//cdn.example.com/app.js', {v: 2}, '//cdn.example.com/app.js?v=2'],
     ['//cdn.example.com/app.js?v=1#x', {v: 2}, '//cdn.example.com/app.js?v=2#x'],
+    ['//example.com/path#section', {a: 1}, '//example.com/path?a=1#section'],
 
     // Absolute and relative URLs
     ['http://www.example.com/some/path?a=1#ex', {b: 2}, 'http://www.example.com/some/path?a=1&b=2#ex'],
     ['http://localhost:3000/auth/sign-in', {return: '/auth/profile'}, 'http://localhost:3000/auth/sign-in?return=%2Fauth%2Fprofile'],
+    ['HTTP://EXAMPLE.COM:80/a/../b', {x: 1}, 'HTTP://EXAMPLE.COM:80/a/../b?x=1'],
+    ['../images/logo.png', {v: 2}, '../images/logo.png?v=2'],
+    ['./foo', {a: 1}, './foo?a=1'],
+    ['a/../b', {a: 1}, 'a/../b?a=1'],
+    ['/foo/../bar', {a: 1}, '/foo/../bar?a=1'],
     ['../api?old=1', {old: 2}, '../api?old=2'],
     ['../../api#frag', {x: 1}, '../../api?x=1#frag'],
 
     // Inputs which the old URL-sentinel implementation could not preserve
     ['\t//cdn.example/api', {x: 1}, '\t//cdn.example/api?x=1'],
+    ['xxx://___base___/file', {a: 1}, 'xxx://___base___/file?a=1'],
     ['xxx://___base___/api?x=1', {y: 2}, 'xxx://___base___/api?x=1&y=2'],
+
+    // Existing query encoding is normalized when params change
+    ['?x=%20', {a: 1}, '?x=+&a=1'],
+    ['?x=~', {a: 1}, '?x=%7E&a=1'],
+    ['?x=%2f', {a: 1}, '?x=%2F&a=1'],
 
     // Empty params preserve the input byte-for-byte
     ['?x=a%20b', {}, '?x=a%20b'],
+    ['HTTP://EXAMPLE.COM:80/a/../b', {}, 'HTTP://EXAMPLE.COM:80/a/../b'],
 ];
 
 describe('urlmod', function () {
