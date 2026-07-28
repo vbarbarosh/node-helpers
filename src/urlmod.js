@@ -7,34 +7,40 @@
  */
 function urlmod(url, params)
 {
-    const tmp_url = new URL(url||'', 'xxx://___base___/');
-    const tmp_search = tmp_url.searchParams;
-    Object.entries(params || {}).forEach(function ([key, value]) {
+    const input_url = String(url || '');
+    const entries = Object.entries(params || {});
+    if (!entries.length) {
+        return input_url;
+    }
+
+    const hash_pos = input_url.indexOf('#');
+    const hash = hash_pos === -1 ? '' : input_url.slice(hash_pos);
+    const before_hash = hash_pos === -1 ? input_url : input_url.slice(0, hash_pos);
+    const query_pos = before_hash.indexOf('?');
+    const before_query = query_pos === -1 ? before_hash : before_hash.slice(0, query_pos);
+    const query = query_pos === -1 ? '' : before_hash.slice(query_pos + 1);
+    const search = new URLSearchParams(query);
+
+    entries.forEach(function ([key, value]) {
         switch (value) {
         case null:
         case undefined:
-            tmp_search.delete(key);
+            search.delete(key);
             break;
         case true:
-            tmp_search.set(key, 1);
+            search.set(key, '1');
             break;
         case false:
-            tmp_search.set(key, 0);
+            search.set(key, '0');
             break;
         default:
-            tmp_search.set(key, value);
+            search.set(key, String(value));
             break;
         }
     });
-    if (url && url[0] === '/' && url[1] === '/') {
-        // Protocol-relative url: the fake base host was replaced by the
-        // real one, only the fake scheme is left to strip.
-        return tmp_url.toString().replace(/^xxx:/, '');
-    }
-    if (url && url[0] === '/') {
-        return tmp_url.toString().replace(/^xxx:\/\/___base___/, '');
-    }
-    return tmp_url.toString().replace(/^xxx:\/\/___base___\//, '');
+
+    const output_query = search.toString();
+    return before_query + (output_query ? `?${output_query}` : '') + hash;
 }
 
 module.exports = urlmod;
