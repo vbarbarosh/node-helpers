@@ -30,6 +30,7 @@ jobs:
     # Trusted Publishing requires npm >= 11.5.1; node 22 bundles npm 10
     - run: npm install -g npm@latest
     - run: npm ci
+    - run: npm run check:cdn
     - run: npm run lint
     - run: npm run build
     - name: Check committed dist is up to date with src
