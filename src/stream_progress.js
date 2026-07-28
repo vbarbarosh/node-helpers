@@ -16,15 +16,22 @@ function stream_progress({objectMode = false, interval = 1000, total, user_frien
 {
     let done = 0;
     const timer = setInterval(tick, interval);
+    const timeout = setTimeout(tick, 0);
     const progress = make_progress(total);
     const format_progress = objectMode ? format_progress_kilo : format_progress_bytes;
-    setTimeout(tick, 0);
     return new stream.Transform({
         objectMode,
         destroy: function (error, callback) {
-            tick();
             clearInterval(timer);
-            callback();
+            clearTimeout(timeout);
+            try {
+                tick();
+            }
+            catch (error2) {
+                callback(error || error2);
+                return;
+            }
+            callback(error);
         },
         transform: function (buffer, encoding, callback) {
             if (objectMode) {

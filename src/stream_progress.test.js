@@ -26,4 +26,35 @@ describe('stream_progress', function () {
         assert.ok(statuses.length >= 1, 'no early status message');
         progress.destroy();
     });
+    it('should emit an error when destroyed with one', async function () {
+        const error = new Error('boom');
+        const events = [];
+        const progress = stream_progress({interval: 60000, user_friendly_status: function () {}});
+        progress.on('error', v => events.push(v));
+        const closed = new Promise(resolve => progress.on('close', resolve));
+        progress.destroy(error);
+        await closed;
+        assert.deepStrictEqual(events, [error]);
+    });
+    it('should reject a pipeline when destroyed with an error', async function () {
+        const error = new Error('boom');
+        const input = new stream.PassThrough();
+        const progress = stream_progress({interval: 60000, user_friendly_status: function () {}});
+        const output = new stream.PassThrough();
+        const promise = stream.promises.pipeline(input, progress, output);
+        progress.destroy(error);
+        await assert.rejects(promise, error);
+    });
+    it('should preserve a destroy error when the final status callback throws', async function () {
+        const error = new Error('boom');
+        const progress = stream_progress({
+            interval: 60000,
+            user_friendly_status: function () {
+                throw new Error('status failed');
+            },
+        });
+        const promise = stream.promises.finished(progress);
+        progress.destroy(error);
+        await assert.rejects(promise, error);
+    });
 });
