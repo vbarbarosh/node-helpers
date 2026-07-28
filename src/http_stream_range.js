@@ -86,6 +86,11 @@ async function http_stream_range(req, res, file)
 
         for (let offset = first; offset <= last && !req_close; ) {
             const chunk = await fs_fread(fp, buf, offset, Math.min(buf.length, last - offset + 1));
+            if (chunk.length === 0) {
+                const error = new Error(`File ended at byte ${offset} before the requested range ended at byte ${last}`);
+                error.code = 'ERR_HTTP_STREAM_RANGE_SHORT_READ';
+                throw error;
+            }
             offset += chunk.length;
             if (res.write(chunk)) {
                 // req.log(`[http_stream_range_write] ${chunk.length}`);

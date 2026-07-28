@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const assert = require('assert');
 const axios = require('axios');
 const express = require('express');
@@ -86,5 +87,31 @@ describe('http_stream_range', function () {
         const res = await axios.get(`${base}/file`, {headers: {Range: 'bytes=99999999-'}, validateStatus: () => true});
         assert.strictEqual(res.status, 416);
         assert.strictEqual(res.headers['content-range'], `bytes */${content.length}`);
+    });
+    it('should reject if the file is truncated while streaming', async function () {
+        const file = fs_path_resolve(dir, 'truncated.bin');
+        fs.writeFileSync(file, content);
+
+        const req = Object.assign(new EventEmitter(), {
+            headers: {},
+            method: 'GET',
+        });
+        const res = Object.assign(new EventEmitter(), {
+            end: function () {
+                assert.fail('The response should not end successfully');
+            },
+            header: function () {},
+            status: function () {},
+            write: function () {
+                fs.truncateSync(file, 0);
+                return true;
+            },
+        });
+
+        await assert.rejects(http_stream_range(req, res, file), function (error) {
+            assert.strictEqual(error.code, 'ERR_HTTP_STREAM_RANGE_SHORT_READ');
+            assert.match(error.message, /File ended at byte 2097152/);
+            return true;
+        });
     });
 });
