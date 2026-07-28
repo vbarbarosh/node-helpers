@@ -1,4 +1,5 @@
 const UserFriendlyError = require('./errors/UserFriendlyError');
+const assert_positive_integer = require('./assert_positive_integer');
 const format_bytes = require('./format_bytes');
 const format_progress_bytes = require('./format_progress_bytes');
 const format_thousands = require('./format_thousands');
@@ -23,6 +24,7 @@ const stream = require('stream');
  */
 async function fastdl({file, read_stream_with_range, concurrency = 60, user_friendly_status = v => console.log(v)})
 {
+    assert_positive_integer(concurrency, 'concurrency');
     const tmp_file = `${file}.${process.pid}.${random_hex(8)}.tmp`;
     try {
         user_friendly_status(`Preparing destination file [${fs_path_basename(file)}]...`);

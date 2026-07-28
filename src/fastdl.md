@@ -1,5 +1,7 @@
 Download a file in several connections in parallel.
 
+`concurrency` defaults to `60` and must be a positive integer.
+
 All ranges are written to a unique temporary file beside `file`. After every
 range completes and the final byte count is validated, the temporary file is
 flushed, closed, and atomically renamed over `file`. A failed request, exhausted

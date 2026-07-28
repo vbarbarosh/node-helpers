@@ -31,10 +31,10 @@ describe('parallel', function () {
         }
     });
     it('should reject when [spawn] is async function', function () {
-        return assert.rejects(parallel({spawn: async function () {}}));
+        return assert.rejects(parallel({concurrency: 2, spawn: async function () {}}), /\[spawn]/);
     });
     it('should reject when [spawn] is async generator', function () {
-        return assert.rejects(parallel({spawn: async function* () {}}));
+        return assert.rejects(parallel({concurrency: 2, spawn: async function* () {}}), /\[spawn]/);
     });
     it('should reject when [spawn] throws synchronously on the first call', async function () {
         await assert.rejects(parallel({concurrency: 2, spawn: () => { throw new Error('boom'); }}), /boom/);
@@ -52,5 +52,10 @@ describe('parallel', function () {
             }
             throw new Error('boom');
         }
+    });
+    [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {
+        it(`should reject invalid concurrency [${concurrency}]`, async function () {
+            await assert.rejects(parallel({concurrency, spawn: function () {}}), /\[concurrency] should be a positive integer/);
+        });
     });
 });

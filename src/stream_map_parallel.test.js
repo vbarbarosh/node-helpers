@@ -52,4 +52,14 @@ describe('stream_map_parallel', function () {
             stream_each(function () {}),
         ), /boom/);
     });
+    [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {
+        it(`should reject invalid concurrency [${concurrency}]`, function () {
+            assert.throws(() => stream_map_parallel({
+                concurrency,
+                handler: function (v) {
+                    return v;
+                },
+            }), /\[concurrency] should be a positive integer/);
+        });
+    });
 });

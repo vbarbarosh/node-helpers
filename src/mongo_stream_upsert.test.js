@@ -42,4 +42,12 @@ describe('mongo_stream_upsert', function () {
             mongo_stream_upsert({collection}),
         ), /An array of objects is expected/);
     });
+    [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {
+        it(`should reject invalid concurrency [${concurrency}]`, function () {
+            assert.throws(() => mongo_stream_upsert({
+                collection: {bulkWrite: async function () {}},
+                concurrency,
+            }), /\[concurrency] should be a positive integer/);
+        });
+    });
 });

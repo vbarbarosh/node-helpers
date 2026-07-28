@@ -1,4 +1,5 @@
 const Promise = require('bluebird');
+const assert_positive_integer = require('./assert_positive_integer');
 const stream = require('stream');
 
 /**
@@ -10,6 +11,7 @@ const stream = require('stream');
  */
 function stream_map_parallel({handler, concurrency})
 {
+    assert_positive_integer(concurrency, 'concurrency');
     let running = 0;
     let callback_next = null;
     let callback_flush = null;

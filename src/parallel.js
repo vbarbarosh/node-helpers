@@ -1,5 +1,6 @@
 const NotImplemented = require('./errors/NotImplemented');
 const Promise = require('bluebird');
+const assert_positive_integer = require('./assert_positive_integer');
 const is_fn_async = require('@vbarbarosh/type-helpers/src/is_fn_async');
 const is_fn_gen_async = require('@vbarbarosh/type-helpers/src/is_fn_gen_async');
 
@@ -12,6 +13,7 @@ const is_fn_gen_async = require('@vbarbarosh/type-helpers/src/is_fn_gen_async');
  */
 async function parallel({concurrency, spawn, progress})
 {
+    assert_positive_integer(concurrency, 'concurrency');
     if (is_fn_async(spawn) || is_fn_gen_async(spawn)) {
         throw new Error('[spawn] should not be async function. Instead, it should be a simple function returning either [null] or a [promise].');
     }

@@ -5,6 +5,7 @@ a `replaceOne` upsert keyed by its `_id`, and the batch goes to
 
 - Up to `concurrency` (default `1`) `bulkWrite` calls run in flight; further
   writes wait until a slot frees up.
+- `concurrency` must be a positive integer.
 - A `bulkWrite` error is reported on the next write or when the stream
   finishes. `final` and `destroy` wait for all in-flight batches first, so an
   error from the last batch is never silently dropped.

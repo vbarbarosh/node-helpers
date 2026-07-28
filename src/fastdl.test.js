@@ -6,6 +6,7 @@ const fs_read_utf8 = require('./fs_read_utf8');
 const fs_readdir = require('./fs_readdir');
 const fs_tempdir = require('./fs_tempdir');
 const fs_write = require('./fs_write');
+const ignore = require('./ignore');
 const stream = require('stream');
 
 describe('fastdl', function () {
@@ -20,7 +21,7 @@ describe('fastdl', function () {
                 concurrency: 2,
                 file,
                 read_stream_with_range: make_reader(content),
-                user_friendly_status: function () {},
+                user_friendly_status: ignore,
             });
 
             assert(content.equals(await fs_read_buffer(file)));
@@ -38,11 +39,24 @@ describe('fastdl', function () {
                 read_stream_with_range: async function () {
                     throw new Error('download failed');
                 },
-                user_friendly_status: function () {},
+                user_friendly_status: ignore,
             }), /download failed/);
 
             assert.strictEqual(await fs_read_utf8(file), 'ORIGINAL');
             assert.deepStrictEqual(await fs_readdir(d), ['out.bin']);
+        });
+    });
+    [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {
+        it(`should reject invalid concurrency [${concurrency}] before creating a file`, async function () {
+            await fs_tempdir(async function (d) {
+                await assert.rejects(fastdl({
+                    concurrency,
+                    file: fs_path_resolve(d, 'out.bin'),
+                    read_stream_with_range: make_reader(content),
+                    user_friendly_status: ignore,
+                }), /\[concurrency] should be a positive integer/);
+                assert.deepStrictEqual(await fs_readdir(d), []);
+            });
         });
     });
 });

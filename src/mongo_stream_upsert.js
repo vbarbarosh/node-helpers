@@ -1,4 +1,5 @@
 const Promise = require('bluebird');
+const assert_positive_integer = require('./assert_positive_integer');
 const stream = require('stream');
 const wait_while = require('./wait_while');
 
@@ -7,6 +8,7 @@ const wait_while = require('./wait_while');
  */
 function mongo_stream_upsert({collection, concurrency = 1})
 {
+    assert_positive_integer(concurrency, 'concurrency');
     const errors = [];
     return new stream.Writable({
         objectMode: true,
