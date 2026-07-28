@@ -4,9 +4,13 @@ const format_progress_bytes = require('./format_progress_bytes');
 const format_thousands = require('./format_thousands');
 const fs = require('fs');
 const fs_path_basename = require('./fs_path_basename');
+const fs_rename = require('./fs_rename');
+const fs_rmf = require('./fs_rmf');
+const fs_write = require('./fs_write');
 const ignore = require('./ignore');
 const make_progress = require('./make_progress');
 const parallel = require('./parallel');
+const random_hex = require('./random_hex');
 const stream = require('stream');
 
 /**
@@ -19,12 +23,30 @@ const stream = require('stream');
  */
 async function fastdl({file, read_stream_with_range, concurrency = 60, user_friendly_status = v => console.log(v)})
 {
+    const tmp_file = `${file}.${process.pid}.${random_hex(8)}.tmp`;
+    try {
+        user_friendly_status(`Preparing destination file [${fs_path_basename(file)}]...`);
+        await fs_write(tmp_file, '', {flag: 'wx'});
+        await download({
+            concurrency,
+            file: tmp_file,
+            read_stream_with_range,
+            user_friendly_status,
+        });
+        await fs_rename(tmp_file, file);
+    }
+    finally {
+        await fs_rmf(tmp_file);
+    }
+}
+
+async function download({file, read_stream_with_range, concurrency, user_friendly_status})
+{
     const M = 1024*1024;
     const chunk_min_bytes = M;
     const chunk_max_bytes = 50*M;
-
-    user_friendly_status(`Truncating destination file [${fs_path_basename(file)}]...`);
-    await fs.promises.writeFile(file, '');
+    const active_streams = new Set();
+    const writers = new Set();
 
     user_friendly_status('Requesting first chunk to determine total size...');
     const rs0 = await read_stream_with_range(0, chunk_min_bytes);
@@ -49,6 +71,11 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
     try {
         await parallel({concurrency, spawn});
     }
+    catch (error) {
+        active_streams.forEach(v => v.destroy(error));
+        await Promise.all([...writers].map(v => v.catch(ignore)));
+        throw error;
+    }
     finally {
         tick();
         clearInterval(timer);
@@ -66,7 +93,12 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
         const last = Math.min(total - 1, first + (first === 0 ? rs0.content_range.last : chunk_size));
         next_first = last + 1;
         connections++;
-        return Promise.resolve(run()).catch(run).catch(run).finally(() => connections--);
+        const writer = Promise.resolve(run()).catch(run).catch(run).finally(function () {
+            connections--;
+            writers.delete(writer);
+        });
+        writers.add(writer);
+        return writer;
         async function run() {
             if (first > last) {
                 return;
@@ -89,8 +121,11 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
             });
             const ws = fs.createWriteStream(file, {
                 flags: fs.constants.O_WRONLY, // |fs.constants.O_CREAT,
+                flush: true,
                 start: first,
             });
+            active_streams.add(rs);
+            active_streams.add(ws);
             try {
                 await stream.promises.pipeline(rs, acc, ws);
             }
@@ -99,6 +134,10 @@ async function fastdl({file, read_stream_with_range, concurrency = 60, user_frie
                 total_written -= counted;
                 progress.add(-counted);
                 throw error;
+            }
+            finally {
+                active_streams.delete(rs);
+                active_streams.delete(ws);
             }
         }
     }
