@@ -6,31 +6,33 @@ const http_range_parse = require('./http_range_parse');
 const BODY = Buffer.from('0123456789'.repeat(100)); // 1000 bytes
 
 describe('http_get_stream_range', function () {
-    let base, server;
+    let base, request_headers, server;
 
     before(function (done) {
         server = http.createServer(function (request, response) {
+            request_headers = request.headers;
             switch (request.url) {
             case '/range': {
-                let range = null;
-                try {
-                    range = http_range_parse(request.headers.range || '', BODY.length);
-                }
-                catch (error) {
-                    // no or unparsable Range header → plain 200 response
-                }
-                if (range === null) {
+                if (!request.headers.range) {
                     response.writeHead(200, {'Content-Length': BODY.length});
                     response.end(BODY);
+                    break;
                 }
-                else {
-                    const {first, last} = range;
-                    response.writeHead(206, {
-                        'Content-Range': `bytes ${first}-${last}/${BODY.length}`,
-                        'Content-Length': last - first + 1,
-                    });
-                    response.end(BODY.subarray(first, last + 1));
+                let range;
+                try {
+                    range = http_range_parse(request.headers.range, BODY.length);
                 }
+                catch (error) {
+                    response.writeHead(416, {'Content-Range': `bytes */${BODY.length}`});
+                    response.end();
+                    break;
+                }
+                const {first, last} = range;
+                response.writeHead(206, {
+                    'Content-Range': `bytes ${first}-${last}/${BODY.length}`,
+                    'Content-Length': last - first + 1,
+                });
+                response.end(BODY.subarray(first, last + 1));
                 break;
             }
             case '/chunked':
@@ -62,14 +64,42 @@ describe('http_get_stream_range', function () {
 
     it('should return the requested range', async function () {
         const rs = await http_get_stream_range(`${base}/range`, 100, 199);
+        assert.strictEqual(request_headers.range, 'bytes=100-199');
         assert.deepStrictEqual(rs.content_range, {type: 'bytes', first: 100, last: 199, total: 1000});
         assert.strictEqual(rs.total, 1000);
         assert.deepStrictEqual(await read_all(rs), BODY.subarray(100, 200));
     });
     it('should synthesize content_range from Content-Length when no range was requested', async function () {
         const rs = await http_get_stream_range(`${base}/range`);
+        assert.strictEqual(request_headers.range, undefined);
         assert.deepStrictEqual(rs.content_range, {type: 'bytes', first: 0, last: 999, total: 1000});
         assert.deepStrictEqual(await read_all(rs), BODY);
+    });
+    it('should return an open-ended range', async function () {
+        const rs = await http_get_stream_range(`${base}/range`, 500);
+        assert.strictEqual(request_headers.range, 'bytes=500-');
+        assert.deepStrictEqual(rs.content_range, {type: 'bytes', first: 500, last: 999, total: 1000});
+        assert.deepStrictEqual(await read_all(rs), BODY.subarray(500));
+    });
+    it('should return a suffix range', async function () {
+        const rs = await http_get_stream_range(`${base}/range`, undefined, 99);
+        assert.strictEqual(request_headers.range, 'bytes=-99');
+        assert.deepStrictEqual(rs.content_range, {type: 'bytes', first: 901, last: 999, total: 1000});
+        assert.deepStrictEqual(await read_all(rs), BODY.subarray(901));
+    });
+    it('should merge options and preserve the computed Range header', async function () {
+        const rs = await http_get_stream_range(`${base}/range`, 100, 199, {
+            headers: {
+                Range: 'bytes=0-0',
+                'X-Test': 'yes',
+            },
+        });
+        assert.strictEqual(request_headers.range, 'bytes=100-199');
+        assert.strictEqual(request_headers['x-test'], 'yes');
+        await read_all(rs);
+    });
+    it('should reject an unsatisfiable range', async function () {
+        await assert.rejects(http_get_stream_range(`${base}/range`, 1000), /416/);
     });
     it('should accept a chunked 200 response with an unknown total', async function () {
         const rs = await http_get_stream_range(`${base}/chunked`);
