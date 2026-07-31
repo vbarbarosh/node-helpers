@@ -82,13 +82,13 @@ async function redis_poll_zshift_callback_rpush(options)
                 }
 
                 const value = await worker(log.spawn(), message, options);
-                const response = JSON.stringify({uid: message.uid, version, type: 'resolve', value});
+                const response = JSON.stringify({uid: message.uid, version, type: 'resolve', time: new Date().toJSON(), value});
                 await redis.rpush_p(redis_output_queue, response);
 
                 log(`[${log_waiter_rpush}]`);
             }
             catch (error) {
-                const response = JSON.stringify({uid: message.uid, version, type: 'reject', value: `${(error && (error.stack || error.message)) || 'Error N/A'}`});
+                const response = JSON.stringify({uid: message.uid, version, type: 'reject', time: new Date().toJSON(), value: `${(error && (error.stack || error.message)) || 'Error N/A'}`});
                 log(`[${log_waiter_error}] ${response}`);
                 await redis.rpush_p(redis_output_queue, response);
             }
@@ -133,7 +133,7 @@ async function worker(log, message, options)
 
     async function user_friendly_status(value) {
         log(`[${log_worker_user_friendly_status}] ${value}`);
-        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value}));
+        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', time: new Date().toJSON(), value}));
     }
 }
 
