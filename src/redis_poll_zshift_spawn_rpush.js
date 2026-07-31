@@ -4,6 +4,7 @@ const fs_path_resolve = require('./fs_path_resolve');
 const fs_tempdir = require('./fs_tempdir');
 const fs_write_json = require('./fs_write_json');
 const random_int = require('./random_int');
+const redis_rpush = require('./redis_rpush');
 const redis_zshift = require('./redis_zshift');
 const stream_data_ln = require('./stream_data_ln');
 
@@ -92,14 +93,14 @@ async function redis_poll_zshift_spawn_rpush(options)
 
                 await worker(log.spawn(), message, options);
                 const response = JSON.stringify({uid: message.uid, version, type: 'resolve', value: null});
-                await redis.rpush_p(redis_output_queue, response);
+                await redis_rpush(redis, redis_output_queue, response);
 
                 log(`[${log_waiter_rpush}]`);
             }
             catch (error) {
                 const response = JSON.stringify({uid: message.uid, version, type: 'error', value: `${(error && (error.stack || error.message)) || 'Error N/A'}`});
                 log(`[${log_waiter_error}] ${response}`);
-                await redis.rpush_p(redis_output_queue, response);
+                await redis_rpush(redis, redis_output_queue, response);
             }
         }
     }
@@ -128,7 +129,7 @@ async function worker(log, request, options)
         // Promise won't update its status until at least one request would
         // be taken from the output queue. Pushing generic "Started..." request
         // will tell the promise to refresh its status.
-        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: 'Started...'}));
+        await redis_rpush(redis, redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: 'Started...'}));
         await fs_tempdir(async function (d) {
             await fs_write_json(fs_path_resolve(d, 'request.json'), request);
             const proc = child_process.spawn(spawn_command, [], {cwd: d, stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
@@ -144,7 +145,7 @@ async function worker(log, request, options)
                     end_stderr = stream_data_ln(proc.stderr, line => log(`[${log_worker_stderr}] ${line}`));
                     end_user_friendly_status = stream_data_ln(proc.stdio[3], function (line) {
                         log(`[${log_worker_user_friendly_status}] ${line}`);
-                        redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: line}));
+                        redis_rpush(redis, redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value: line}));
                     });
                 });
             }

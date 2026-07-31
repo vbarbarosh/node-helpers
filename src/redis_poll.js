@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars -- destructured option lists document the full options contract */
 const Promise = require('bluebird');
 const random_int = require('./random_int');
+const redis_rpush = require('./redis_rpush');
 const redis_zshift = require('./redis_zshift');
 
 async function redis_poll(options)
@@ -100,7 +101,7 @@ async function worker(log, message, options)
 
     async function user_friendly_status(value) {
         log(`[${log_worker_user_friendly_status}] ${value}`);
-        await redis.rpush_p(redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value}));
+        await redis_rpush(redis, redis_output_queue, JSON.stringify({uid, version, type: 'user_friendly_status', value}));
     }
 }
 

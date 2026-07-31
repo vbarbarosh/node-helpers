@@ -13,5 +13,6 @@ sleeps a random 500–1500ms; the loop runs at most 86400 iterations.
   `'Started...'` status is always pushed first so the consumer starts
   refreshing.
 - `options.log` must provide `spawn()`; the `log_waiter_*`/`log_worker_*`
-  options are the tag names used in log lines. The redis client must provide
-  `rpush_p`.
+  options are the tag names used in log lines. Queue access goes through
+  `redis_zshift`/`redis_rpush`, so any redis client from redis@1 to redis@6
+  works.

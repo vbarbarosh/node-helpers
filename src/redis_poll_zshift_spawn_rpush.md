@@ -15,6 +15,7 @@ iterations.
 - Unparseable messages and messages without `uid` are skipped; a missing or
   past `expires_at` fails the message (payloads carry signed urls with
   limited lifetime).
-- `options.log` must provide `spawn()`; the redis client must provide
-  `rpush_p`. See `redis_poll_zshift_callback_rpush` for the in-process
+- `options.log` must provide `spawn()`; queue access goes through
+  `redis_zshift`/`redis_rpush`, so any redis client from redis@1 to redis@6
+  works. See `redis_poll_zshift_callback_rpush` for the in-process
   callback variant (which reports failures as `type: 'reject'`).
