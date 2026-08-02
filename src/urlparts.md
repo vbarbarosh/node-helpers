@@ -1,17 +1,43 @@
-Splits a URL into a fixed-shape plain object. Accepts a `URL` instance or a
-string; strings are parsed against the base `fake://fake/`, so relative paths
-work (and non-string input degrades to the bare base instead of throwing).
-The keys mirror the `URL` properties, except `pathname` is exposed as `path`.
+Parses an absolute or relative URL-like string into a stable object shape.
+Missing scalar components are `null`. `search` and `hash` preserve their
+delimiters, while `query` and `fragment` are always parsed plain objects.
+
+Malformed URL text is accepted and parsed on a best-effort basis. A non-string
+argument returns the empty stable shape instead of throwing.
 
 ```js
-urlparts('https://john:secret@example.com:8080/users/15?page=2#top')
+urlparts('/users?a=1#top')
 // {
-//     href: 'https://john:secret@example.com:8080/users/15?page=2#top',
-//     protocol: 'https:', hostname: 'example.com',
-//     username: 'john', password: 'secret',
-//     host: 'example.com:8080', port: '8080',
-//     path: '/users/15', search: '?page=2', hash: '#top',
+//     protocol: null,
+//     username: null,
+//     password: null,
+//     host: null,
+//     port: null,
+//     path: '/users',
+//     search: '?a=1',
+//     hash: '#top',
+//     query: {a: '1'},
+//     fragment: {top: ''},
 // }
-urlparts('/users?page=5').path      // '/users'
-urlparts('/users?page=5').protocol  // 'fake:'
+
+urlparts('https://john:secret@example.com:8080/users?page=2')
+// {
+//     protocol: 'https',
+//     username: 'john',
+//     password: 'secret',
+//     host: 'example.com',
+//     port: '8080',
+//     path: '/users',
+//     search: '?page=2',
+//     hash: null,
+//     query: {page: '2'},
+//     fragment: {},
+// }
 ```
+
+Duplicate query or fragment parameters use the last value. Parameter values
+without `=` are normalized to `''`, matching explicitly empty values. Missing
+`search` and `hash` values are `null`; present-but-empty delimiters are `'?'`
+and `'#'`. Their parsed `query` and `fragment` objects remain `{}` when empty or
+absent. Special parameter names such as `__proto__` are preserved as ordinary
+own properties without changing the object prototype. An empty path is `null`.

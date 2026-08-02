@@ -87,208 +87,299 @@ const extra_edge_values = [
 
 const happy_paths = [
     {
-        label: 'parses full https url',
+        label: 'full https url',
         input: 'https://john:secret@example.com:8080/users/15?page=2#top',
-        expected: {
-            href: 'https://john:secret@example.com:8080/users/15?page=2#top',
-            protocol: 'https:',
-            hostname: 'example.com',
+        expected: parts({
+            protocol: 'https',
             username: 'john',
             password: 'secret',
-            host: 'example.com:8080',
+            host: 'example.com',
             port: '8080',
             path: '/users/15',
             search: '?page=2',
             hash: '#top',
-        },
+            query: {page: '2'},
+            fragment: {top: ''},
+        }),
     },
     {
-        label: 'parses https url without auth',
+        label: 'https url without auth',
         input: 'https://example.com/users',
-        expected: {
-            href: 'https://example.com/users',
-            protocol: 'https:',
-            hostname: 'example.com',
-            username: '',
-            password: '',
-            host: 'example.com',
-            port: '',
-            path: '/users',
-            search: '',
-            hash: '',
-        },
+        expected: parts({protocol: 'https', host: 'example.com', path: '/users'}),
     },
     {
-        label: 'parses root url',
-        input: 'https://example.com',
-        expected: {
-            href: 'https://example.com/',
-            protocol: 'https:',
-            hostname: 'example.com',
-            username: '',
-            password: '',
-            host: 'example.com',
-            port: '',
-            path: '/',
-            search: '',
-            hash: '',
-        },
+        label: 'root url',
+        input: 'https://example.com/',
+        expected: parts({protocol: 'https', host: 'example.com', path: '/'}),
     },
     {
-        label: 'parses relative path',
+        label: 'relative path',
         input: '/users?page=5',
-        expected: {
-            href: 'fake://fake/users?page=5',
-            protocol: 'fake:',
-            hostname: 'fake',
-            username: '',
-            password: '',
-            host: 'fake',
-            port: '',
-            path: '/users',
-            search: '?page=5',
-            hash: '',
-        },
+        expected: parts({path: '/users', search: '?page=5', query: {page: '5'}}),
     },
     {
-        label: 'parses hash',
+        label: 'hash',
         input: 'https://example.com/docs#intro',
-        expected: {
-            href: 'https://example.com/docs#intro',
-            protocol: 'https:',
-            hostname: 'example.com',
-            username: '',
-            password: '',
+        expected: parts({
+            protocol: 'https',
             host: 'example.com',
-            port: '',
             path: '/docs',
-            search: '',
             hash: '#intro',
-        },
+            fragment: {intro: ''},
+        }),
     },
     {
-        label: 'parses query string',
+        label: 'query string',
         input: 'https://example.com?a=1&b=2',
-        expected: {
-            href: 'https://example.com/?a=1&b=2',
-            protocol: 'https:',
-            hostname: 'example.com',
-            username: '',
-            password: '',
+        expected: parts({
+            protocol: 'https',
             host: 'example.com',
-            port: '',
-            path: '/',
             search: '?a=1&b=2',
-            hash: '',
-        },
+            query: {a: '1', b: '2'},
+        }),
     },
     {
-        label: 'parses localhost with port',
+        label: 'localhost with port',
         input: 'http://localhost:3000/foo',
-        expected: {
-            href: 'http://localhost:3000/foo',
-            protocol: 'http:',
-            hostname: 'localhost',
-            username: '',
-            password: '',
-            host: 'localhost:3000',
-            port: '3000',
-            path: '/foo',
-            search: '',
-            hash: '',
-        },
+        expected: parts({protocol: 'http', host: 'localhost', port: '3000', path: '/foo'}),
     },
     {
-        label: 'parses ftp url',
+        label: 'ftp url',
         input: 'ftp://example.com/file.txt',
-        expected: {
-            href: 'ftp://example.com/file.txt',
-            protocol: 'ftp:',
-            hostname: 'example.com',
-            username: '',
-            password: '',
-            host: 'example.com',
-            port: '',
-            path: '/file.txt',
-            search: '',
-            hash: '',
-        },
+        expected: parts({protocol: 'ftp', host: 'example.com', path: '/file.txt'}),
+    },
+    {
+        label: 'protocol-relative url',
+        input: '//cdn.example.com/app.js?v=2',
+        expected: parts({
+            host: 'cdn.example.com',
+            path: '/app.js',
+            search: '?v=2',
+            query: {v: '2'},
+        }),
+    },
+    {
+        label: 'bracketed ipv6 host',
+        input: '//[::1]:8080/x',
+        expected: parts({host: '[::1]', port: '8080', path: '/x'}),
     },
 ];
 
+const urlmod_cases = [
+    ['foo', parts({path: 'foo'})],
+    ['?a=1#x', parts({search: '?a=1', hash: '#x', query: {a: '1'}, fragment: {x: ''}})],
+    ['?a=1&a=2', parts({search: '?a=1&a=2', query: {a: '2'}})],
+    ['#ex', parts({hash: '#ex', fragment: {ex: ''}})],
+    ['#ex?a=1#ex', parts({hash: '#ex?a=1#ex', fragment: {'ex?a': '1#ex'}})],
+    ['/#ex', parts({path: '/', hash: '#ex', fragment: {ex: ''}})],
+    ['//', parts()],
+    ['//foo', parts({host: 'foo'})],
+    ['//[', parts({host: '['})],
+    ['//]', parts({host: ']'})],
+    ['//:', parts({port: ''})],
+    ['//?', parts({search: '?'})],
+    ['//#x', parts({hash: '#x', fragment: {x: ''}})],
+    ['///', parts({path: '/'})],
+    ['//cdn.example.com/app.js', parts({host: 'cdn.example.com', path: '/app.js'})],
+    ['//cdn.example.com/app.js?v=1#x', parts({host: 'cdn.example.com', path: '/app.js', search: '?v=1', hash: '#x', query: {v: '1'}, fragment: {x: ''}})],
+    ['//example.com/path#section', parts({host: 'example.com', path: '/path', hash: '#section', fragment: {section: ''}})],
+    ['http://www.example.com/some/path?a=1#ex', parts({protocol: 'http', host: 'www.example.com', path: '/some/path', search: '?a=1', hash: '#ex', query: {a: '1'}, fragment: {ex: ''}})],
+    ['http://localhost:3000/auth/sign-in', parts({protocol: 'http', host: 'localhost', port: '3000', path: '/auth/sign-in'})],
+    ['HTTP://EXAMPLE.COM:80/a/../b', parts({protocol: 'http', host: 'EXAMPLE.COM', port: '80', path: '/a/../b'})],
+    ['../images/logo.png', parts({path: '../images/logo.png'})],
+    ['./foo', parts({path: './foo'})],
+    ['a/../b', parts({path: 'a/../b'})],
+    ['/foo/../bar', parts({path: '/foo/../bar'})],
+    ['../api?old=1', parts({path: '../api', search: '?old=1', query: {old: '1'}})],
+    ['../../api#frag', parts({path: '../../api', hash: '#frag', fragment: {frag: ''}})],
+    ['\t//cdn.example/api', parts({path: '\t//cdn.example/api'})],
+    ['xxx://___base___/file', parts({protocol: 'xxx', host: '___base___', path: '/file'})],
+    ['xxx://___base___/api?x=1', parts({protocol: 'xxx', host: '___base___', path: '/api', search: '?x=1', query: {x: '1'}})],
+    ['?x=%20', parts({search: '?x=%20', query: {x: ' '}})],
+    ['?x=~', parts({search: '?x=~', query: {x: '~'}})],
+    ['?x=%2f', parts({search: '?x=%2f', query: {x: '/'}})],
+    ['?x=a%20b', parts({search: '?x=a%20b', query: {x: 'a b'}})],
+];
+
+// Malformed URLs should still be parsed on a best-effort basis.
+const malformed_urls = [
+    '',
+    'http://[',
+    'https://exa mple.com:invalid/path?bad=%',
+    '://not-a-url?#',
+    '//[',
+    '//]',
+    '//:',
+    'http://example.com:99999/path',
+    'https://user::password@@example.com/path',
+    '?bad=%E0%A4%A',
+    '\0://\0?\0#\0',
+];
+
 describe('urlparts', function () {
-    it('no args', function () {
-        assert.deepStrictEqual(urlparts(), {
-            href: 'fake://fake/',
-            protocol: 'fake:',
-            hostname: 'fake',
-            username: '',
-            password: '',
-            host: 'fake',
-            port: '',
-            path: '/',
-            search: '',
-            hash: '',
-        });
-    });
 
     describe('happy paths', function () {
         for (const item of happy_paths) {
             it(item.label, function () {
-                const actual = urlparts(item.input);
-                assert.deepStrictEqual(actual, item.expected);
+                assert.deepStrictEqual(urlparts(item.input), item.expected);
             });
         }
+    });
+
+    describe('url forms covered by urlmod', function () {
+        for (const [input, expected] of urlmod_cases) {
+            it(JSON.stringify(input), function () {
+                assert.deepStrictEqual(urlparts(input), expected);
+            });
+        }
+    });
+
+    it('parses query-only, hash-only, and relative forms', function () {
+        assert.deepStrictEqual(urlparts('?a=1'), parts({search: '?a=1', query: {a: '1'}}));
+        assert.deepStrictEqual(urlparts('#top'), parts({hash: '#top', fragment: {top: ''}}));
+        assert.deepStrictEqual(urlparts('users?a=1'), parts({path: 'users', search: '?a=1', query: {a: '1'}}));
+    });
+
+    it('returns null for every missing component', function () {
+        assert.deepStrictEqual(urlparts(''), parts());
+    });
+
+    it('extracts usable components from malformed url text', function () {
+        assert.deepStrictEqual(urlparts('http://['), parts({protocol: 'http', host: '['}));
+        assert.deepStrictEqual(
+            urlparts('https://example.com:invalid/path?bad=%'),
+            parts({
+                protocol: 'https',
+                host: 'example.com',
+                port: 'invalid',
+                path: '/path',
+                search: '?bad=%',
+                query: {bad: '%'},
+            }),
+        );
+    });
+
+    describe('malformed url text', function () {
+        for (const input of malformed_urls) {
+            it(JSON.stringify(input), function () {
+                const parts = urlparts(input);
+                assert.deepStrictEqual(Object.keys(parts), [
+                    'protocol',
+                    'username',
+                    'password',
+                    'host',
+                    'port',
+                    'path',
+                    'search',
+                    'hash',
+                    'query',
+                    'fragment',
+                ]);
+            });
+        }
+    });
+
+    it('uses the last duplicate query value', function () {
+        assert.deepStrictEqual(urlparts('?a=1&a=2').query, {a: '2'});
+        assert.deepStrictEqual(urlparts('?a=1&a').query, {a: ''});
+    });
+
+    it('normalizes absent query parameter values to empty strings', function () {
+        assert.deepStrictEqual(urlparts('?flag&empty=&value=1').query, {
+            flag: '',
+            empty: '',
+            value: '1',
+        });
+    });
+
+    it('parses fragment parameters', function () {
+        assert.deepStrictEqual(urlparts('#flag&empty=&value=1'), parts({
+            hash: '#flag&empty=&value=1',
+            fragment: {
+                flag: '',
+                empty: '',
+                value: '1',
+            },
+        }));
+    });
+
+    describe('special parameter keys', function () {
+        const input = '__proto__=a&constructor=b&prototype=c&toString=d&hasOwnProperty=e';
+
+        it('preserves special query keys as own properties', function () {
+            assert_special_params(urlparts(`?${input}`).query);
+        });
+
+        it('preserves special fragment keys as own properties', function () {
+            assert_special_params(urlparts(`#${input}`).fragment);
+        });
+
+        it('uses the last __proto__ value without changing the object prototype', function () {
+            const query = urlparts('?__proto__=first&__proto__=last').query;
+            assert.strictEqual(query.__proto__, 'last');
+            assert.strictEqual(Object.getPrototypeOf(query), Object.prototype);
+        });
+    });
+
+    it('distinguishes empty query and fragment delimiters from missing ones', function () {
+        assert.deepStrictEqual(urlparts('?#'), parts({search: '?', hash: '#'}));
     });
 
     describe('edge values', function () {
         for (const item of [...edge_values, ...extra_edge_values]) {
             it(item.label, function () {
-                if (typeof item.value === 'string') {
-                    const tmp = new URL(item.value, 'fake://fake/');
-                    assert.deepStrictEqual(urlparts(item.value), {
-                        href: tmp.href,
-                        protocol: tmp.protocol,
-                        hostname: tmp.hostname,
-                        username: tmp.username,
-                        password: tmp.password,
-                        host: tmp.host,
-                        port: tmp.port,
-                        path: tmp.pathname,
-                        search: tmp.search,
-                        hash: tmp.hash,
-                    });
-                }
-                else if (item.value instanceof URL) {
-                    const tmp = item.value;
-                    assert.deepStrictEqual(urlparts(item.value), {
-                        href: tmp.href,
-                        protocol: tmp.protocol,
-                        hostname: tmp.hostname,
-                        username: tmp.username,
-                        password: tmp.password,
-                        host: tmp.host,
-                        port: tmp.port,
-                        path: tmp.pathname,
-                        search: tmp.search,
-                        hash: tmp.hash,
-                    });
+                if (typeof item.value !== 'string') {
+                    assert.deepStrictEqual(urlparts(item.value), parts());
                 }
                 else {
-                    assert.deepStrictEqual(urlparts(item.value), {
-                        href: 'fake://fake/',
-                        protocol: 'fake:',
-                        hostname: 'fake',
-                        username: '',
-                        password: '',
-                        host: 'fake',
-                        port: '',
-                        path: '/',
-                        search: '',
-                        hash: '',
-                    });
+                    const parts = urlparts(item.value);
+                    assert.deepStrictEqual(Object.keys(parts), [
+                        'protocol',
+                        'username',
+                        'password',
+                        'host',
+                        'port',
+                        'path',
+                        'search',
+                        'hash',
+                        'query',
+                        'fragment',
+                    ]);
                 }
             });
         }
     });
 });
+
+function parts(overrides = {})
+{
+    return Object.assign({
+        protocol: null,
+        username: null,
+        password: null,
+        host: null,
+        port: null,
+        path: null,
+        search: null,
+        hash: null,
+        query: {},
+        fragment: {},
+    }, overrides);
+}
+
+function assert_special_params(actual)
+{
+    assert.deepStrictEqual(Object.keys(actual), [
+        '__proto__',
+        'constructor',
+        'prototype',
+        'toString',
+        'hasOwnProperty',
+    ]);
+    assert.strictEqual(actual.__proto__, 'a');
+    assert.strictEqual(actual.constructor, 'b');
+    assert.strictEqual(actual.prototype, 'c');
+    assert.strictEqual(actual.toString, 'd');
+    assert.strictEqual(actual.hasOwnProperty, 'e');
+    assert.strictEqual(Object.getPrototypeOf(actual), Object.prototype);
+}
