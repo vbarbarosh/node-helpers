@@ -81,4 +81,45 @@ describe('urlmod', function () {
             assert.strictEqual(urlmod(input_url, params), expected_url);
         });
     });
+
+    describe('special parameter keys', function () {
+        const names = [
+            '__proto__',
+            'constructor',
+            'prototype',
+            'toString',
+            'hasOwnProperty',
+        ];
+
+        it('adds special keys', function () {
+            const params = Object.fromEntries(names.map((name, i) => [name, i + 1]));
+            assert.strictEqual(
+                urlmod('', params),
+                '?__proto__=1&constructor=2&prototype=3&toString=4&hasOwnProperty=5',
+            );
+        });
+
+        it('updates special keys', function () {
+            const params = Object.fromEntries(names.map(name => [name, 'new']));
+            assert.strictEqual(
+                urlmod('?__proto__=old&constructor=old&prototype=old&toString=old&hasOwnProperty=old', params),
+                '?__proto__=new&constructor=new&prototype=new&toString=new&hasOwnProperty=new',
+            );
+        });
+
+        it('removes special keys', function () {
+            const params = Object.fromEntries(names.map(name => [name, null]));
+            assert.strictEqual(
+                urlmod('?__proto__=a&constructor=b&prototype=c&toString=d&hasOwnProperty=e&keep=1', params),
+                '?keep=1',
+            );
+        });
+
+        it('preserves special keys when modifying another parameter', function () {
+            assert.strictEqual(
+                urlmod('?__proto__=a&constructor=b&prototype=c&toString=d&hasOwnProperty=e', {x: 1}),
+                '?__proto__=a&constructor=b&prototype=c&toString=d&hasOwnProperty=e&x=1',
+            );
+        });
+    });
 });

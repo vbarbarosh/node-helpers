@@ -7,7 +7,9 @@ parameters, or an empty parameters object, returns the input unchanged.
 
 `null` and `undefined` remove a parameter. Boolean values are encoded as `1`
 and `0`; other values use the standard `URLSearchParams` conversion and
-encoding rules.
+encoding rules. Special names such as `__proto__`, `constructor`, and
+`hasOwnProperty` are handled as ordinary query parameter keys when provided as
+enumerable own properties.
 
 ```js
 urlmod('', {a: 1})                      // '?a=1'
