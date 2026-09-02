@@ -8,6 +8,11 @@ flushed, closed, and atomically renamed over `file`. A failed request, exhausted
 retry, size mismatch, or write error removes the temporary file and preserves
 an existing destination.
 
+The first range response must carry an integer `content_range.total`. When the
+server ignores `Range` and answers with an unknown size (for example a chunked
+200), the stream is destroyed and the call rejects with a `UserFriendlyError`
+without leaving a progress timer behind.
+
 ```js
 await fastdl({
     file: fs_path_basename(new URL(url).pathname),

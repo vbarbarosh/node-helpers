@@ -1,3 +1,4 @@
+const UserFriendlyError = require('./errors/UserFriendlyError');
 const assert = require('assert');
 const fastdl = require('./fastdl');
 const fs_path_resolve = require('./fs_path_resolve');
@@ -46,6 +47,32 @@ describe('fastdl', function () {
             assert.deepStrictEqual(await fs_readdir(d), ['out.bin']);
         });
     });
+    it('should reject with a UserFriendlyError and leave no timer when the server ignores Range', async function () {
+        await fs_tempdir(async function (d) {
+            const file = fs_path_resolve(d, 'out.bin');
+            const timers_before = count_timers();
+            let rs0 = null;
+
+            await assert.rejects(fastdl({
+                concurrency: 2,
+                file,
+                read_stream_with_range: async function () {
+                    rs0 = stream.Readable.from([content]);
+                    rs0.content_range = {first: 0, last: null, total: null, type: 'bytes'};
+                    return rs0;
+                },
+                user_friendly_status: ignore,
+            }), function (error) {
+                assert(error instanceof UserFriendlyError);
+                assert.match(error.message, /did not return the resource size/);
+                return true;
+            });
+
+            assert.strictEqual(rs0.destroyed, true);
+            assert.strictEqual(count_timers(), timers_before);
+            assert.deepStrictEqual(await fs_readdir(d), []);
+        });
+    });
     [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {
         it(`should reject invalid concurrency [${concurrency}] before creating a file`, async function () {
             await fs_tempdir(async function (d) {
@@ -60,6 +87,11 @@ describe('fastdl', function () {
         });
     });
 });
+
+function count_timers()
+{
+    return process.getActiveResourcesInfo().filter(v => v === 'Timeout').length;
+}
 
 function make_reader(content)
 {

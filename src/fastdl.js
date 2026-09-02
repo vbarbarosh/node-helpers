@@ -54,6 +54,11 @@ async function download({file, read_stream_with_range, concurrency, user_friendl
     const rs0 = await read_stream_with_range(0, chunk_min_bytes);
 
     const total = rs0.content_range.total;
+    if (!Number.isInteger(total)) {
+        rs0.once('error', ignore);
+        rs0.destroy();
+        throw new UserFriendlyError('Server did not return the resource size (it may have ignored the Range header)');
+    }
     const chunk_size = Math.max(chunk_min_bytes, Math.min(chunk_max_bytes, Math.trunc(total/concurrency)));
     const progress = make_progress(total);
 
@@ -62,7 +67,7 @@ async function download({file, read_stream_with_range, concurrency, user_friendl
     let total_written = 0;
     let rs0_used = false;
 
-    const timer = setInterval(tick, 1000);
+    let timer = null;
     function tick() {
         progress.refresh();
         user_friendly_status(`${format_progress_bytes(progress)} connections=${connections}`);
@@ -71,6 +76,7 @@ async function download({file, read_stream_with_range, concurrency, user_friendl
     user_friendly_status(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
 
     try {
+        timer = setInterval(tick, 1000);
         await parallel({concurrency, spawn});
     }
     catch (error) {
