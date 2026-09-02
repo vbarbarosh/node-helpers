@@ -28,4 +28,20 @@ describe('stream_xml_analyze', function () {
         );
         assert.deepStrictEqual(out, [{'root': 1, 'root > wörld': 1}]);
     });
+    ['__proto__', 'constructor', 'toString', 'hasOwnProperty'].forEach(function (name) {
+        it(`should count a root element named <${name}> as an own data property`, async function () {
+            const out = [];
+            const xml = `<${name}><${name}/><${name}/></${name}>`;
+            await stream.promises.pipeline(
+                stream.Readable.from([xml]),
+                stream_xml_analyze(),
+                stream_each(v => out.push(v)),
+            );
+            assert.strictEqual(out.length, 1);
+            assert.strictEqual(Object.getPrototypeOf(out[0]), Object.prototype);
+            assert.deepStrictEqual(Object.keys(out[0]), [name, `${name} > ${name}`]);
+            assert.strictEqual(Object.getOwnPropertyDescriptor(out[0], name).value, 1);
+            assert.strictEqual(out[0][`${name} > ${name}`], 2);
+        });
+    });
 });

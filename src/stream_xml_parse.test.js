@@ -28,4 +28,23 @@ describe('stream_xml_parse', function () {
         );
         assert.deepStrictEqual(out, [{name: 'héllo wörld'}]);
     });
+    describe('reserved element names', function () {
+        [
+            // [name, xml, expected own properties as [key, value] pairs]
+            ['__proto__', '<root><item><__proto__>z</__proto__><a>1</a></item></root>', [['__proto__', 'z'], ['a', '1']]],
+            ['constructor', '<root><item><constructor>x</constructor><a>1</a></item></root>', [['constructor', 'x'], ['a', '1']]],
+            ['toString', '<root><item><a>1</a><toString>x</toString><toString>y</toString></item></root>', [['a', '1'], ['toString', ['x', 'y']]]],
+            ['hasOwnProperty', '<root><item><hasOwnProperty>x</hasOwnProperty><a>1</a></item></root>', [['hasOwnProperty', 'x'], ['a', '1']]],
+        ].forEach(function ([name, xml, expected]) {
+            it(`should keep <${name}> as an own data property`, async function () {
+                const out = await stream.Readable.from([xml]).pipe(stream_xml_parse(['root', 'item'])).toArray();
+                assert.strictEqual(out.length, 1);
+                assert.strictEqual(Object.getPrototypeOf(out[0]), Object.prototype);
+                assert.deepStrictEqual(Object.keys(out[0]), expected.map(v => v[0]));
+                expected.forEach(function ([key, value]) {
+                    assert.deepStrictEqual(Object.getOwnPropertyDescriptor(out[0], key).value, value);
+                });
+            });
+        });
+    });
 });

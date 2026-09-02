@@ -99,20 +99,28 @@ function guess(node)
 
     node.children.forEach(function (child) {
         const tmp = stream_xml_parse.guess(child);
-        if (child.name in out) {
+        // Element names come from the outside world: `in` and plain
+        // assignment would let `__proto__`, `constructor`, `toString`...
+        // hit Object.prototype instead of becoming own data properties.
+        if (Object.hasOwn(out, child.name)) {
             if (Array.isArray(out[child.name])) {
                 out[child.name].push(tmp);
             }
             else {
-                out[child.name] = [out[child.name], tmp];
+                define(out, child.name, [out[child.name], tmp]);
             }
         }
         else  {
-            out[child.name] = tmp;
+            define(out, child.name, tmp);
         }
     });
 
     return out;
+}
+
+function define(obj, name, value)
+{
+    Object.defineProperty(obj, name, {value, enumerable: true, writable: true, configurable: true});
 }
 
 function ashtml(node)

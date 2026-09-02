@@ -17,7 +17,12 @@ function stream_xml_analyze()
         onopentag: function (name, attrs) {
             path.push(name);
             path_str = path.join(' > ');
-            analytics[path_str] ??= 0;
+            // Element names come from the outside world: `??=` on a plain
+            // object would see Object.prototype.constructor and produce NaN
+            // for a root element named `constructor`.
+            if (!Object.hasOwn(analytics, path_str)) {
+                Object.defineProperty(analytics, path_str, {value: 0, enumerable: true, writable: true, configurable: true});
+            }
             analytics[path_str]++;
         },
         onclosetag: function (name) {
