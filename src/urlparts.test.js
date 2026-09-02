@@ -199,6 +199,9 @@ const urlmod_cases = [
     ['?x=~', parts({search: '?x=~', query: {x: '~'}})],
     ['?x=%2f', parts({search: '?x=%2f', query: {x: '/'}})],
     ['?x=a%20b', parts({search: '?x=a%20b', query: {x: 'a b'}})],
+    // A backslash ends the authority, matching the host WHATWG clients connect to.
+    ['https://evil.com\\@good.com/x', parts({protocol: 'https', host: 'evil.com', path: '\\@good.com/x'})],
+    ['https://good.com\\evil.com/x', parts({protocol: 'https', host: 'good.com', path: '\\evil.com/x'})],
 ];
 
 // Malformed URLs should still be parsed on a best-effort basis.

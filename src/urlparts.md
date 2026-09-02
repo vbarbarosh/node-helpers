@@ -5,6 +5,12 @@ delimiters, while `query` and `fragment` are always parsed plain objects.
 Malformed URL text is accepted and parsed on a best-effort basis. A non-string
 argument returns the empty stable shape instead of throwing.
 
+**Warning:** `host` (like every other component) is a tolerant best-effort
+value intended for display and lenient parsing. It is not guaranteed to match
+the host a WHATWG client (browsers, Node's `URL`, Axios) would connect to for
+malformed input, so it must not be used for allow-lists, redirect-target
+validation, or SSRF decisions. Use `new URL(input)` for security checks.
+
 ```js
 urlparts('/users?a=1#top')
 // {

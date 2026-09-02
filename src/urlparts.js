@@ -43,7 +43,10 @@ function urlparts(input)
     }
 
     if (resource.startsWith('//')) {
-        const slash_pos = resource.indexOf('/', 2);
+        // WHATWG parsers treat `\` as `/` for special schemes, so the
+        // authority ends at the first of either.
+        const slash_offset = resource.slice(2).search(/[/\\]/);
+        const slash_pos = slash_offset === -1 ? -1 : slash_offset + 2;
         const authority = slash_pos === -1
             ? resource.slice(2)
             : resource.slice(2, slash_pos);
