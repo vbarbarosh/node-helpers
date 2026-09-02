@@ -125,6 +125,11 @@ describe('http_get_stream_range', function () {
         const rs = await http_get_stream_range(`${base}/chunked`, 100, 199);
         await assert.rejects(read_all(rs), /First byte/);
     });
+    it('should reject when the server ignores a suffix range with a chunked 200', async function () {
+        const rs = await http_get_stream_range(`${base}/chunked`, undefined, 99);
+        assert.strictEqual(request_headers.range, 'bytes=-99');
+        await assert.rejects(read_all(rs), /ignored the requested suffix range/);
+    });
 });
 
 async function read_all(rs)

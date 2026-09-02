@@ -46,7 +46,11 @@ async function http_get_stream_range(url, first, last, options)
     else if (b !== '') {
         const actual_length = out.content_range.last - out.content_range.first + 1;
         const expected_length = out.content_range.total === null ? Math.min(actual_length, b) : Math.min(out.content_range.total, b);
-        if (actual_length !== expected_length) {
+        if (out.content_range.last === null) {
+            // Chunked 200 with no Content-Range: the server ignored the suffix range
+            out.destroy(new Error(`Server ignored the requested suffix range of ${fmt(b)} bytes and returned a response of unknown length`));
+        }
+        else if (actual_length !== expected_length) {
             out.destroy(new Error(`Length of a returned range (${fmt(actual_length)}) is not as expected: [${fmt(expected_length)}]`));
         }
         else if (out.content_range.total !== null && out.content_range.last !== out.content_range.total - 1) {

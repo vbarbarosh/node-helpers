@@ -14,7 +14,8 @@ chunked 200 response (neither header) is accepted as
 The returned range is validated according to the requested form. Closed ranges
 accept a `last` clamped to the end of the resource; open-ended ranges must end
 at the resource end when its size is known; suffix ranges validate their
-length and resource end. A server that ignores a range and replies 200 is
+length and resource end, and a chunked 200 (unknown length) in reply to a
+suffix request is rejected. A server that ignores a range and replies 200 is
 rejected.
 
 ```js
