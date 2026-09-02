@@ -1,4 +1,5 @@
 const escape_content_disposition = require('./escape_content_disposition');
+const escape_content_disposition_utf8 = require('./escape_content_disposition_utf8');
 const fs_fclose = require('./fs_fclose');
 const fs_fopen = require('./fs_fopen');
 const fs_fread = require('./fs_fread');
@@ -30,7 +31,7 @@ async function http_stream_range(req, res, file)
         res.header('Accept-Ranges', 'bytes');
         res.header('Content-Type', mime);
         res.header('Content-Length', total);
-        res.header('Content-Disposition', `inline; filename=${escape_content_disposition(fs_path_basename(file))};`);
+        res.header('Content-Disposition', content_disposition(fs_path_basename(file)));
         res.status(200);
         res.end();
         return;
@@ -120,6 +121,18 @@ async function http_stream_range(req, res, file)
     finally {
         await fs_fclose(fp);
     }
+}
+
+function content_disposition(name)
+{
+    // The quoted `filename` degrades anything outside ISO-8859-1 to '?', so a
+    // non-ASCII name also gets the RFC 5987 `filename*` that browsers prefer.
+    let out = `inline; filename=${escape_content_disposition(name)}`;
+    // eslint-disable-next-line no-control-regex
+    if (/[^\x00-\x7f]/.test(name)) {
+        out += `; filename*=${escape_content_disposition_utf8(name)}`;
+    }
+    return out + ';';
 }
 
 module.exports = http_stream_range;

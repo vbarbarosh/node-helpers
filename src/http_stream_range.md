@@ -11,7 +11,9 @@ http_stream_range(req, res, file) → Promise
 
 - `HEAD` → 200 with `Content-Type`, `Content-Length`, and an
   `inline; filename=...` `Content-Disposition` (escaped via
-  `escape_content_disposition`); no body.
+  `escape_content_disposition`, so control characters are encoded and a
+  non-ASCII basename is also sent as an RFC 5987 `filename*=UTF-8''...`
+  parameter); no body.
 - `GET` with `Range` → 206 with `Content-Range: bytes first-last/total` and a
   matching `Content-Length`.
 - `GET` without `Range` → 200 with the whole file.

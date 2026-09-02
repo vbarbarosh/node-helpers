@@ -72,6 +72,36 @@ describe('http_stream_range', function () {
         assert.strictEqual(res.status, 200);
         assert.strictEqual(res.headers['content-length'], String(content.length));
     });
+    it('should send a Content-Disposition with filename* for a non-ASCII basename', async function () {
+        const file = fs_path_resolve(dir, 'файл.bin');
+        fs.writeFileSync(file, 'abc');
+        const app = express();
+        app.get('/file', (req, res) => http_stream_range(req, res, file));
+        const server2 = app.listen(0);
+        try {
+            const res = await axios.head(`http://127.0.0.1:${server2.address().port}/file`);
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.headers['content-disposition'], `inline; filename="????.bin"; filename*=UTF-8''%D1%84%D0%B0%D0%B9%D0%BB.bin;`);
+        }
+        finally {
+            await new Promise(resolve => server2.close(resolve));
+        }
+    });
+    it('should send a Content-Disposition with control characters encoded', async function () {
+        const file = fs_path_resolve(dir, 'a\rb\x01c.bin');
+        fs.writeFileSync(file, 'abc');
+        const app = express();
+        app.get('/file', (req, res) => http_stream_range(req, res, file));
+        const server2 = app.listen(0);
+        try {
+            const res = await axios.head(`http://127.0.0.1:${server2.address().port}/file`);
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.headers['content-disposition'], 'inline; filename="a%x0Db%x01c.bin";');
+        }
+        finally {
+            await new Promise(resolve => server2.close(resolve));
+        }
+    });
     it('should advertise Accept-Ranges on GET and HEAD', async function () {
         const get = await axios.get(`${base}/file`, {responseType: 'arraybuffer'});
         const head = await axios.head(`${base}/file`);
