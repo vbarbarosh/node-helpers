@@ -4,6 +4,9 @@ waits up to 200ms more for the kernel to deliver it.
 
 - Options: `grace_timeout_ms` (default `5000`) and `log` (progress callback,
   default no-op).
+- Throws `TypeError` before sending anything when `pid` is not an integer
+  greater than `1` (`0` would signal the caller's own group, `-1` every
+  process the user may signal).
 - Throws `Failed to send SIGTERM to process <pid>: ...` when the initial
   signal cannot be sent (e.g. the process does not exist).
 - A process that dies on its own during the grace period skips the `SIGKILL`

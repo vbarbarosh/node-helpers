@@ -24,6 +24,16 @@ describe('pid_kill_grace', function() {
         await assert.rejects(pid_kill_grace(pid), /Failed to send SIGTERM to process \d+:/);
     });
 
+    // kill(0, SIGTERM) would terminate the caller's own group and
+    // kill(-1, SIGTERM) every process of the user: reject before signalling
+    [0, 1, -1, NaN, 1.5, undefined, null, '123'].forEach(function (pid) {
+        it(`should throw TypeError for ${String(pid)} without sending a signal`, async function () {
+            const logs = [];
+            await assert.rejects(pid_kill_grace(pid, {log: s => logs.push(s)}), TypeError);
+            assert.deepStrictEqual(logs, []);
+        });
+    });
+
     it.skip('should throw "Process 123 survived SIGKILL"', async function () {
         // How to implement this behavior?
     });

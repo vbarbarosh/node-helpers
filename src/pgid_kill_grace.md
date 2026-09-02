@@ -5,6 +5,9 @@ to deliver it. A group id equals the pid of the group leader.
 
 - Options: `grace_timeout_ms` (default `5000`) and `log` (progress callback,
   default no-op).
+- Throws `TypeError` before sending anything when `pgid` is not an integer
+  greater than `1` (`0` would signal the caller's own group, `1` every
+  process the user may signal via `kill(-1, ...)`).
 - Throws `Failed to send SIGTERM to process group <pgid>: ...` when the
   initial signal cannot be sent.
 - A group that dies on its own during the grace period skips the `SIGKILL`;

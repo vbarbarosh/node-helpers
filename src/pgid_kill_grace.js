@@ -7,6 +7,11 @@ const pgid_exists = require('./pgid_exists');
 // keep in sync with pid_kill_grace
 async function pgid_kill_grace(pgid, {grace_timeout_ms = 5000, log = ignore} = {})
 {
+    // kill(-0, ...) targets the caller's own group and kill(-1, ...) every
+    // process the user may signal: never let such ids reach the kernel
+    if (!Number.isInteger(pgid) || pgid <= 1) {
+        throw new TypeError(`pgid_kill_grace: invalid pgid: ${pgid}`);
+    }
     log(`Terminating process group ${pgid}: sending SIGTERM`);
     try {
         process.kill(-pgid, 'SIGTERM');
