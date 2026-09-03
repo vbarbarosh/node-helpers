@@ -25,6 +25,24 @@ describe('make_progress', function () {
         assert(Number.isFinite(p.eta) && p.eta > 0, `eta=${p.eta}`);
         assert.strictEqual(p.percents, 0.2);
     });
+    it('should report unknown rate and eta after a single sample', async function () {
+        const p = make_progress(100);
+        p.add(10);
+        await Promise.delay(20);
+        p.refresh();
+        assert.strictEqual(p.rate, null);
+        assert.strictEqual(p.eta, null);
+    });
+    it('should measure the rate between samples, not counting the first delta', async function () {
+        // 10 units 300ms apart is ~33/s; the old code counted the first
+        // delta too and reported ~66/s (and half the real eta)
+        const p = make_progress(100);
+        p.add(10);
+        await Promise.delay(300);
+        p.add(10);
+        assert(p.rate >= 20 && p.rate <= 40, `rate=${p.rate}`);
+        assert(p.eta >= 2 && p.eta <= 4, `eta=${p.eta}`);
+    });
     it('should report unknown eta while the rate is zero', async function () {
         const p = make_progress(100);
         p.add(0);

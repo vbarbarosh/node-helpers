@@ -21,10 +21,16 @@ function make_progress(total)
         progress: null,
         percents: null,
         add: function (delta = 0) {
-            const now_minus_10sec = Date.now() - 10000;
-            history.splice(0, history.findLastIndex(v => v.time < now_minus_10sec) + 1);
-            history.push({time: Date.now(), delta});
+            const now = Date.now();
+            // The oldest sample is the anchor the rate is measured from, so
+            // the newest sample older than 10s is kept: the window then
+            // stays close to 10s instead of shrinking after each eviction
+            const expired = history.findLastIndex(v => v.time < now - 10000);
+            if (expired > 0) {
+                history.splice(0, expired);
+            }
             out.done += delta;
+            history.push({time: now, done: out.done});
             out.refresh();
         },
         update: function (done) {
@@ -32,16 +38,17 @@ function make_progress(total)
         },
         refresh: function () {
             out.duration = (Date.now() - time0)/1000;
-            // `rate` and `eta` are null while unknown (same as before the
-            // first add): a zero time window would give rate = Infinity,
-            // and a zero rate would give eta = Infinity.
-            if (history.length) {
-                const delta = history.reduce((a,v) => a + v.delta, 0);
+            // `rate` and `eta` are null while unknown: a single sample says
+            // nothing about how long its delta took to accumulate (counting
+            // it doubled the rate early on), a zero time window would give
+            // rate = Infinity, and a zero rate would give eta = Infinity.
+            if (history.length > 1) {
+                const delta = out.done - history[0].done;
                 const time_sec = (Date.now() - history[0].time)/1000;
                 out.rate = time_sec ? delta/time_sec : null;
             }
             else {
-                out.rate = out.duration ? out.done/out.duration : null;
+                out.rate = null;
             }
             out.percents = !out.total ? null : out.done/out.total;
             out.eta = (!out.total || !out.rate) ? null : (out.total - out.done)/out.rate;

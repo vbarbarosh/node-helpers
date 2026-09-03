@@ -3,10 +3,13 @@ rows created). Pass the snapshot to `format_progress_bytes` /
 `format_progress_kilo` for display.
 
 **Fields:** `done`, `total`, `duration` (seconds since creation), `rate`
-(units/second over a sliding 10-second history window), `eta` (seconds),
-`percents` (a fraction, `done/total`). `rate` and `eta` are `null` while
-unknown — before the first `add`, or when they would be `Infinity` (zero
-time window, zero rate); `percents` is `null` when `total` is falsy.
+(units/second over a sliding ~10-second history window), `eta` (seconds),
+`percents` (a fraction, `done/total`). The rate is measured between the
+oldest sample in the window and now, so the first sample's own delta is
+not counted (how long it took to accumulate is unknown). `rate` and `eta`
+are `null` while unknown — until two `add` calls exist, or when they would
+be `Infinity` (zero time window, zero rate); `percents` is `null` when
+`total` is falsy.
 
 **Methods:**
 - `add(delta)` — add `delta` to `done` and recompute
