@@ -12,9 +12,10 @@ iterations.
   `'Started...'` status is always pushed first. stdout/stderr are logged
   line by line under the `log_worker_stdout`/`log_worker_stderr` tags.
 - Only exit code 0 is a success — a signal-killed child (code `null`) fails.
-- Unparseable messages and messages without `uid` are skipped; a missing or
-  past `expires_at` fails the message (payloads carry signed urls with
-  limited lifetime).
+- Unparseable messages, valid JSON that is not an object (`null`, numbers,
+  strings), and messages without `uid` are skipped; a missing or past
+  `expires_at` fails the message (payloads carry signed urls with limited
+  lifetime).
 - `options.log` must provide `spawn()`; queue access goes through
   `redis_zshift`/`redis_rpush`, so any redis client from redis@1 to redis@6
   works. See `redis_poll_zshift_callback_rpush` for the in-process

@@ -5,9 +5,10 @@ type, value}` to `redis_output_queue` — `type: 'resolve'` with the callback's
 return value, or `'reject'` with the error stack/message. An empty poll
 sleeps a random 500–1500ms; the loop runs at most 86400 iterations.
 
-- Unparseable messages and messages without `uid` are skipped; a missing or
-  past `expires_at` rejects the message (payloads carry signed urls with
-  limited lifetime).
+- Unparseable messages, valid JSON that is not an object (`null`, numbers,
+  strings), and messages without `uid` are skipped; a missing or past
+  `expires_at` rejects the message (payloads carry signed urls with limited
+  lifetime).
 - `user_friendly_status(value)` rpushes `{uid, version, type:
   'user_friendly_status', value}` to the output queue; a generic
   `'Started...'` status is always pushed first so the consumer starts

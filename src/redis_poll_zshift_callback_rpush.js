@@ -64,6 +64,10 @@ async function redis_poll_zshift_callback_rpush(options)
                 log(`[${log_waiter_error_parse}] ${error.message}`);
                 continue;
             }
+            if (!message || typeof message !== 'object') {
+                log(`[${log_waiter_error_parse}] message is not an object; skipped`);
+                continue;
+            }
 
             try {
                 const uid = message.uid;
