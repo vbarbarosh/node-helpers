@@ -26,4 +26,13 @@ describe('stream_strpbrk', function () {
             assert.deepStrictEqual(actual, expected);
         });
     });
+    it('should not corrupt multi-byte utf8 split across chunks', async function () {
+        const buf = Buffer.from('héllo|wörld|');
+        const chunks = [];
+        for (let i = 0; i < buf.length; ++i) {
+            chunks.push(buf.subarray(i, i + 1)); // 1-byte chunks: the worst case
+        }
+        const actual = await stream.Readable.from(chunks).pipe(stream_strpbrk('|')).toArray();
+        assert.deepStrictEqual(actual, ['héllo', 'wörld']);
+    });
 });

@@ -1,4 +1,5 @@
 const stream = require('stream');
+const {StringDecoder} = require('string_decoder');
 
 /**
  * Split the input stream by consecutive delimiters in `chars`
@@ -6,10 +7,13 @@ const stream = require('stream');
 function stream_strpbrk(chars = '\r\n')
 {
     const pending = [];
+    // StringDecoder buffers a multi-byte character split across chunk
+    // boundaries; plain buf.toString() would corrupt it into �.
+    const decoder = new StringDecoder('utf8');
     return new stream.Transform({
         objectMode: true,
         transform: function (str, encoding, callback) {
-            str = Buffer.isBuffer(str) ? str.toString() : str;
+            str = Buffer.isBuffer(str) ? decoder.write(str) : str;
 
             let off = 0;
             // leading delimiters
@@ -67,6 +71,10 @@ function stream_strpbrk(chars = '\r\n')
             callback();
         },
         flush: function (callback) {
+            const tail = decoder.end();
+            if (tail) {
+                pending.push(tail);
+            }
             if (pending.length) {
                 this.push(''.concat(...pending.splice(0)));
             }
