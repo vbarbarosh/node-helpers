@@ -7,7 +7,7 @@ function shell(args, options)
             if (error) {
                 reject(error);
             }
-            else if (stderr) {
+            else if (stderr.length) {
                 reject(new Error(`Process terminated with the following STDERR:\n\n${stderr}`));
             }
             else {

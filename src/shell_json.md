@@ -3,7 +3,8 @@ Basic helper for running external commands via `execFile`, and parse result by J
 - Fails if the command exits with non-zero code.
 - Fails if anything is printed to `stderr`.
 - Fails if stdout is not valid JSON.
-- Resolves with parsed JSON value.
+- Resolves with parsed JSON value (`{encoding: 'buffer'}` is accepted;
+  `JSON.parse` stringifies the `Buffer`).
 
 ## Signature
 

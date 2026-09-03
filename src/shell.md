@@ -2,7 +2,8 @@ Basic helper for running external commands via `execFile`.
 
 - Fails if the command exits with non-zero code.
 - Fails if anything is printed to `stderr`.
-- Resolves with `stdout` (string), exactly as produced.
+- Resolves with `stdout` (string), exactly as produced; a `Buffer` with
+  `{encoding: 'buffer'}`.
 
 ## Signature
 

@@ -9,6 +9,14 @@ describe('shell_json', function () {
     it('should throw on invalid json', async function () {
         await assert.rejects(shell_json([process.execPath, '-e', 'console.log("not json")']), SyntaxError);
     });
+    it('should parse stdout when encoding is "buffer"', async function () {
+        // an empty stderr Buffer is truthy: it must not be reported as an error
+        const out = await shell_json([process.execPath, '-e', 'console.log(JSON.stringify({a: 1}))'], {encoding: 'buffer'});
+        assert.deepStrictEqual(out, {a: 1});
+    });
+    it('should throw on stderr output when encoding is "buffer"', async function () {
+        await assert.rejects(shell_json([process.execPath, '-e', 'console.error("boom")'], {encoding: 'buffer'}), /STDERR/);
+    });
     it('should throw on non-zero exit code', async function () {
         await assert.rejects(shell_json([process.execPath, '-e', 'process.exit(1)']));
     });
