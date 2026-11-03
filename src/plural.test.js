@@ -2,19 +2,20 @@ const assert = require('assert');
 const plural = require('./plural');
 
 const tests = [
-    ['1 apple', 1, '# apple', '# apples'],
-    ['2 apples', 2, '# apple', '# apples'],
-    ['10 apples', 10, '# apple', '# apples'],
-    ['21 apple', 21, '# apple', '# apples'],
-    ['0 apples', 0, '# apple', '# apples'],
-    ['No apples', 0, '# apple', '# apples', 'No apples'],
+    ['0 steps', 0, '# step', '# steps'],
+    ['no steps', 0, '# step', '# steps', 'no steps'],
+    ['1 step', 1, '# step', '# steps'],
+    ['2 steps', 2, '# step', '# steps'],
+    ['11 steps', 11, '# step', '# steps'],
+    ['21 steps', 21, '# step', '# steps'],
+    ['101 steps', 101, '# step', '# steps'],
 ];
 
 describe('plural', function () {
-    tests.forEach(function ([expected, ...args],) {
+    for (const [expected, ...args] of tests) {
         it(expected, function () {
             const actual = plural(...args);
             assert.deepStrictEqual(actual, expected);
         });
-    });
+    }
 });
