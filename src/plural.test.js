@@ -9,6 +9,12 @@ const tests = [
     ['11 steps', 11, '# step', '# steps'],
     ['21 steps', 21, '# step', '# steps'],
     ['101 steps', 101, '# step', '# steps'],
+    // A form without # comes back as it is: the helper picks a switch case
+    ['0', 0, '1', '2', '0'],
+    ['2', 0, '1', '2'],
+    ['1', 1, '1', '2', '0'],
+    ['2', 2, '1', '2', '0'],
+    ['2', 21, '1', '2', '0'],
 ];
 
 describe('plural', function () {
