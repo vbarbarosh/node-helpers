@@ -52,9 +52,18 @@ async function main()
             return out;
         });
 
-        if (body !== body3) {
+        // <script src="js/browser.js?v=3.79.0&var=h"></script>: the page's own scripts, fetched anew after each release
+        const body4 = body3.replace(/(src="js\/[^"?]+\?v=)[^&"]+/g, function (match, m1) {
+            const out = `${m1}${pkg.version}`;
+            if (match !== out) {
+                console.log(`🔁 [${relative(file.pathname)}] ${match} → ${out}`);
+            }
+            return out;
+        });
+
+        if (body !== body4) {
             console.log(`💾 [${relative(file.pathname)}] Saving...`);
-            await fs_write(file.pathname, body3);
+            await fs_write(file.pathname, body4);
         }
     }
 
