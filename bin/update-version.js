@@ -27,6 +27,11 @@ async function main()
             continue;
         }
 
+        // docs/js/browser.js is the build's copy of dist/browser.js: its version is already the package's
+        if (relative(file.pathname) === 'docs/js/browser.js') {
+            continue;
+        }
+
         const body = await fs_read_utf8(file.pathname);
 
         // <script src="https://unpkg.com/@vbarbarosh/node-helpers@3.66.1/dist/browser.js?var=h"></script>

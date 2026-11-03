@@ -23,7 +23,7 @@
         "!src/**/*.d"
     ],
     "scripts": {
-        "build": "rm -rf dist && webpack",
+        "build": "rm -rf dist && webpack && cp dist/browser.js docs/js/browser.js",
         "check:cdn": "node bin/check-cdn-dependencies.js",
         "coverage": "c8 mocha 'src/**/*.test.js'",
         "lint": "eslint src webpack.config.js eslint.config.js",

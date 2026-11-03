@@ -46,6 +46,6 @@ jobs:
     - run: npm run check:cdn
     - run: npm run lint
     - run: npm run build --if-present
-    - name: Check committed dist is up to date with src
-      run: git diff --exit-code -- dist
+    - name: Check committed dist and its docs copy are up to date with src
+      run: git diff --exit-code -- dist docs/js/browser.js
     - run: npm run coverage
