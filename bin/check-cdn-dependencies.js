@@ -14,6 +14,7 @@ function main()
     const expected = pkg.dependencies.axios;
     const locked = lock.packages['node_modules/axios']?.version;
     const files = [
+        'README.md',
         'dist.templ/index.html',
         'dist/index.html',
         'docs/index.html',
