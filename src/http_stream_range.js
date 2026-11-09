@@ -74,7 +74,11 @@ async function http_stream_range(req, res, file)
     const buf = Buffer.alloc(2*1024*1024);
 
     try {
-        let req_close = false;
+        // The client may be gone already: it can disconnect while the file
+        // is being sized and opened, before anything listens for it. Its
+        // 'close' does not come again, and a write to it returns false with
+        // no 'drain' to follow, so the state is read as well as listened for.
+        let req_close = res.destroyed === true;
         req.once('close', () => req_close = true);
 
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
@@ -96,6 +100,9 @@ async function http_stream_range(req, res, file)
             if (res.write(chunk)) {
                 // req.log(`[http_stream_range_write] ${chunk.length}`);
                 continue;
+            }
+            if (res.destroyed === true) {
+                break;
             }
             await new Promise(function (resolve) {
                 res.on('drain', drain);

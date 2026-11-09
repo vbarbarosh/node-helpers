@@ -24,10 +24,11 @@ http_stream_range(req, res, file) → Promise
 `GET` and `HEAD` responses advertise `Accept-Ranges: bytes`.
 
 Reads in 2 MiB chunks with an `fs_fread` loop, respecting backpressure
-(`res.write` + `drain`) and stopping early when the client disconnects. If the
-file becomes shorter than the size captured at the beginning of the request,
-the handler rejects with code `ERR_HTTP_STREAM_RANGE_SHORT_READ` instead of
-waiting indefinitely.
+(`res.write` + `drain`) and stopping early when the client disconnects, also
+when it is gone before the first chunk is written: the promise settles and the
+file is closed either way. If the file becomes shorter than the size captured
+at the beginning of the request, the handler rejects with code
+`ERR_HTTP_STREAM_RANGE_SHORT_READ` instead of waiting indefinitely.
 
 ```js
 app.get('/file', (req, res) => http_stream_range(req, res, '/data/movie.mp4'));

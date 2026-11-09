@@ -7,6 +7,7 @@ const fs_path_resolve = require('./fs_path_resolve');
 const fs_path_tempdir = require('./fs_path_tempdir');
 const fs_rmrf = require('./fs_rmrf');
 const http_stream_range = require('./http_stream_range');
+const net = require('net');
 
 describe('http_stream_range', function () {
     // 3,000,000 is deliberately not a multiple of the internal 2 MiB buffer:
@@ -144,4 +145,114 @@ describe('http_stream_range', function () {
             return true;
         });
     });
+    it('should settle and close the file when the client is gone before the first write', async function () {
+        const file = fs_path_resolve(dir, 'data.bin');
+        const calls = [];
+        const req = Object.assign(new EventEmitter(), {
+            headers: {},
+            method: 'GET',
+        });
+        // A response whose connection closed while the file was being sized
+        // and opened: 'close' was emitted before anything listened for it,
+        // and a write returns false with no 'drain' to follow
+        const res = Object.assign(new EventEmitter(), {
+            destroyed: true,
+            end: () => calls.push('end'),
+            header: function () {},
+            status: function () {},
+            write: function () {
+                calls.push('write');
+                return false;
+            },
+        });
+
+        const fds = open_fds();
+        const outcome = await Promise.race([
+            http_stream_range(req, res, file).then(() => 'settled'),
+            new Promise(resolve => setTimeout(resolve, 500, 'pending')),
+        ]);
+        assert.strictEqual(outcome, 'settled');
+        assert.deepStrictEqual(calls, ['end']);
+        assert.strictEqual(open_fds(), fds);
+    });
+    it('should settle and close the file when the response is destroyed by the time a write returns false', async function () {
+        const file = fs_path_resolve(dir, 'data.bin');
+        const calls = [];
+        const req = Object.assign(new EventEmitter(), {
+            headers: {},
+            method: 'GET',
+        });
+        const res = Object.assign(new EventEmitter(), {
+            destroyed: false,
+            end: () => calls.push('end'),
+            header: function () {},
+            status: function () {},
+            write: function () {
+                calls.push('write');
+                res.destroyed = true;
+                return false;
+            },
+        });
+
+        const fds = open_fds();
+        const outcome = await Promise.race([
+            http_stream_range(req, res, file).then(() => 'settled'),
+            new Promise(resolve => setTimeout(resolve, 500, 'pending')),
+        ]);
+        assert.strictEqual(outcome, 'settled');
+        assert.deepStrictEqual(calls, ['write', 'end']);
+        assert.strictEqual(open_fds(), fds);
+    });
+    it('should settle every handler when clients disconnect right after their request', async function () {
+        this.timeout(10000);
+
+        const handlers = [];
+        const app = express();
+        app.get('/file', function (req, res) {
+            const handler = http_stream_range(req, res, fs_path_resolve(dir, 'data.bin'));
+            handlers.push(handler.then(() => 'settled', () => 'settled'));
+            return handler;
+        });
+        const server2 = await new Promise(function (resolve) {
+            const out = app.listen(0, () => resolve(out));
+        });
+        try {
+            const fds = open_fds();
+            const port = server2.address().port;
+            await Promise.all(Array.from({length: 50}, function () {
+                return new Promise(function (resolve) {
+                    const socket = net.connect(port, '127.0.0.1');
+                    socket.on('error', resolve);
+                    socket.on('close', resolve);
+                    socket.on('connect', function () {
+                        socket.write('GET /file HTTP/1.1\r\nHost: x\r\n\r\n', () => socket.destroy());
+                    });
+                });
+            }));
+            // Every connection is closed on the server side as well
+            while (await new Promise(resolve => server2.getConnections((error, n) => resolve(n)))) {
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            const outcomes = await Promise.race([
+                Promise.all(handlers),
+                new Promise(resolve => setTimeout(resolve, 2000, 'pending')),
+            ]);
+            assert.notStrictEqual(outcomes, 'pending', `${handlers.length} handlers started and some never settled`);
+            assert.strictEqual(open_fds(), fds);
+        }
+        finally {
+            await new Promise(resolve => server2.close(resolve));
+        }
+    });
 });
+
+// Open file descriptors of this process, where the system exposes them
+function open_fds()
+{
+    try {
+        return fs.readdirSync('/proc/self/fd').length;
+    }
+    catch {
+        return null;
+    }
+}
