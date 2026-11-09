@@ -33,6 +33,38 @@ const SENSITIVE_QUERY_WORDS = new Set([
     'token',
 ]);
 
+// A segment that ends with one of these is sensitive as well, once a
+// trailing number and a plural "s" are dropped: `authtoken`, `clientsecret`,
+// `NEWPASSWORD`, `password1`, `tokens`; `tokenizer` and `secretary` are not
+const SENSITIVE_QUERY_ENDINGS = ['apikey', 'passwd', 'password', 'secret', 'token'];
+
+// Names that are sensitive only as the whole name, separators removed:
+// `code` but not `postal_code`, `sid` but not `sidebar`
+const SENSITIVE_QUERY_NAMES = new Set([
+    'accesskey',
+    'assertion',
+    'authkey',
+    'clientassertion',
+    'code',
+    'credential',
+    'credentials',
+    'csrf',
+    'hapikey',
+    'jwt',
+    'otp',
+    'passphrase',
+    'privatekey',
+    'pw',
+    'samlrequest',
+    'samlresponse',
+    'secretkey',
+    'session',
+    'sessionid',
+    'sessionkey',
+    'sid',
+    'xsrf',
+]);
+
 function format_error_report(error)
 {
     if (!error) {
@@ -50,15 +82,15 @@ function format_error_report(error)
     return json_stringify_safe({
         code: error.code,
         name: error.name,
-        message: error.message ?? 'n/a',
-        stack: error.stack && error.stack.split(/\n\s*/)
+        message: mask_text(error.message ?? 'n/a'),
+        stack: error.stack && mask_text(error.stack).split(/\n\s*/)
     }, null, 4);
 }
 
 function fm_axios_response(error)
 {
     return `
-${error.message ?? 'n/a'}
+${mask_text(error.message ?? 'n/a')}
 
 --- REQUEST ---
 
@@ -74,14 +106,14 @@ ${String(error.response.data ?? '').slice(0, 10240) || 'n/a'}
 
 --- STACK ---
 
-${error.stack ?? 'n/a'}
+${mask_text(error.stack ?? 'n/a')}
 `.trimStart();
 }
 
 function fm_axios_config(error)
 {
     return `
-${error.message ?? 'n/a'}
+${mask_text(error.message ?? 'n/a')}
 
 --- REQUEST ---
 
@@ -91,7 +123,7 @@ ${JSON.stringify(mask_headers(error.config.headers||{}), null, 4).slice(1, -1).r
 
 --- STACK ---
 
-${error.stack ?? 'n/a'}
+${mask_text(error.stack ?? 'n/a')}
 `.trimStart();
 }
 
@@ -114,8 +146,12 @@ function mask_headers(headers)
     }
     const out = {};
     Object.entries(headers).forEach(function ([key, value]) {
-        if (SENSITIVE_HEADERS.has(String(key).toLowerCase())) {
+        if (SENSITIVE_HEADERS.has(String(key).toLowerCase()) || is_sensitive_query_name(String(key))) {
             out[key] = MASK;
+        }
+        else if (typeof value === 'string') {
+            // Referer, Location, Origin, ...
+            out[key] = mask_text(value);
         }
         else {
             out[key] = mask_headers(value);
@@ -129,16 +165,81 @@ function mask_headers(headers)
  * parameters with a sensitive-looking name by [MASK]. Works on the raw
  * string so the rest of the URL is reported exactly as it was requested.
  */
-function mask_url(url)
+function mask_url(url, depth = 0)
 {
     if (url === undefined || url === null) {
         return url;
     }
     return String(url)
-        .replace(/^([a-z][a-z0-9+.-]*:\/\/)[^/?#@]*@/i, `$1${MASK}@`)
-        .replace(/([?&])([^=&#]*)=[^&#]*/g, function (match, sep, name) {
-            return is_sensitive_query_name(name) ? `${sep}${name}=${MASK}` : match;
+        // everything up to the last "@" of the authority: a password may
+        // hold an "@" of its own; a scheme-relative //user:pass@host too
+        .replace(/^((?:[a-z][a-z0-9+.-]*:)?\/\/)[^/?#]*@/i, `$1${MASK}@`)
+        // name=value pairs of the query and of the fragment, split by & or ;
+        .replace(/([?&;#])([^=&;#?]*)=([^&;#]*)/g, function (match, sep, name, value) {
+            if (is_sensitive_query_name(name)) {
+                return `${sep}${name}=${MASK}`;
+            }
+            return `${sep}${name}=${mask_value(value, depth)}`;
         });
+}
+
+// A value that is itself a URL, or JSON, may carry a secret of its own
+function mask_value(value, depth)
+{
+    if (depth >= 3 || !/[:=%{[]/.test(value)) {
+        return value;
+    }
+    let decoded = value;
+    try {
+        decoded = decodeURIComponent(value);
+    }
+    catch {
+        // keep the raw value
+    }
+    let masked = decoded;
+    if (/^\s*[{[]/.test(decoded)) {
+        try {
+            const parsed = JSON.parse(decoded);
+            const after = JSON.stringify(mask_json(parsed));
+            // JSON with nothing to mask is reported as it was written
+            if (after !== JSON.stringify(parsed)) {
+                masked = after;
+            }
+        }
+        catch {
+            // not JSON after all
+        }
+    }
+    if (masked === decoded && /\/\/|=/.test(decoded)) {
+        masked = mask_url(decoded, depth + 1);
+    }
+    if (masked === decoded) {
+        return value;
+    }
+    return decoded === value ? masked : encodeURIComponent(masked);
+}
+
+function mask_json(value)
+{
+    if (Array.isArray(value)) {
+        return value.map(mask_json);
+    }
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, is_sensitive_query_name(k) ? MASK : mask_json(v)]));
+    }
+    return typeof value === 'string' ? mask_text(value) : value;
+}
+
+/**
+ * Masks every URL found in a piece of text: a message, a stack, a header
+ * value.
+ */
+function mask_text(text)
+{
+    if (typeof text !== 'string') {
+        return text;
+    }
+    return text.replace(/(?:[a-z][a-z0-9+.-]*:)?\/\/[^\s"'<>\\)]+/gi, v => mask_url(v));
 }
 
 function is_sensitive_query_name(name)
@@ -149,15 +250,23 @@ function is_sensitive_query_name(name)
     catch {
         // keep the raw name
     }
-    // whole names such as `apikey`, `accesstoken`, `api-key`
-    if (SENSITIVE_QUERY_WORDS.has(name.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
+    // whole names such as `apikey`, `accesstoken`, `api-key`, `session_id`
+    const whole = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (SENSITIVE_QUERY_WORDS.has(whole) || SENSITIVE_QUERY_NAMES.has(whole)) {
         return true;
     }
     return name
         .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
         .toLowerCase()
         .split(/[^a-z0-9]+/)
-        .some(segment => SENSITIVE_QUERY_WORDS.has(segment));
+        .some(function (segment) {
+            if (SENSITIVE_QUERY_WORDS.has(segment)) {
+                return true;
+            }
+            // password1, tokens, api_keys
+            const bare = segment.replace(/\d+$/, '').replace(/s$/, '');
+            return SENSITIVE_QUERY_WORDS.has(bare) || SENSITIVE_QUERY_ENDINGS.some(v => bare.endsWith(v));
+        });
 }
 
 module.exports = format_error_report;

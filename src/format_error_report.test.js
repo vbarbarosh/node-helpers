@@ -106,6 +106,69 @@ describe('format_error_report', function () {
         const b = format_error_report({message: 'failed', config: {method: 'get', url: 'https://example.invalid/a/b?q=hello&page=2', headers: {}}, stack: 'stack'});
         assert.ok(b.includes('GET https://example.invalid/a/b?q=hello&page=2'), b);
     });
+    it('should mask credential headers by their name, whatever the vendor', function () {
+        const names = ['X-Goog-Api-Key', 'Private-Token', 'X-Access-Token', 'X-Amz-Security-Token', 'X-CSRF-Token', 'X-XSRF-TOKEN',
+            'apikey', 'CF-Access-Client-Secret', 'X-Vault-Token', 'Ocp-Apim-Subscription-Key', 'DD-API-KEY', 'X-Auth-Key',
+            'X-Shopify-Access-Token', 'X-Session-Token', 'Token', 'X-Hub-Signature', 'Authorization'];
+        const headers = Object.fromEntries(names.map(v => [v, 'H_SECRET']));
+        const out = format_error_report({message: 'failed', config: {method: 'get', url: '/x', headers: {...headers, Accept: 'text/plain', 'Keep-Alive': 'timeout=5'}}, stack: 'stack'});
+        assert.ok(!/SECRET/.test(out), out);
+        assert.ok(out.includes('"Accept": "text/plain"'), out);
+        assert.ok(out.includes('"Keep-Alive": "timeout=5"'), out);
+    });
+    it('should mask userinfo up to the last "@", also in a scheme-relative URL', function () {
+        const a = format_error_report({message: 'failed', config: {method: 'get', url: 'https://admin:P@ss_SECRET@db.example.invalid/x', headers: {}}, stack: 'stack'});
+        assert.ok(a.includes('GET https://***@db.example.invalid/x'), a);
+        const b = format_error_report({message: 'failed', config: {method: 'get', url: '//admin:PASS2_SECRET@db.example.invalid/x', headers: {}}, stack: 'stack'});
+        assert.ok(b.includes('GET //***@db.example.invalid/x'), b);
+    });
+    it('should mask query names written without separators, in the plural or with a number', function () {
+        const names = ['authtoken', 'AUTHTOKEN', 'APIToken', 'accesskey', 'ACCESSKEY', 'secretkey', 'SECRETKEY', 'apisecret', 'clientsecret',
+            'CLIENTSECRET', 'sessiontoken', 'refreshtoken', 'idtoken', 'csrftoken', 'privatekey', 'hapikey', 'tokens', 'api_keys',
+            'password1', 'NEWPASSWORD', 'passphrase', 'pw', 'code', 'jwt', 'sid', 'sessionid', 'session_id', 'otp', 'client_assertion',
+            'SAMLResponse', '_csrf', 'credentials'];
+        names.forEach(function (name) {
+            const out = format_error_report({message: 'failed', config: {method: 'get', url: `/x?${name}=S_SECRET&page=2`, headers: {}}, stack: 'stack'});
+            assert.ok(out.includes(`GET /x?${name}=***&page=2`), `${name}: ${out}`);
+        });
+    });
+    it('should still leave ordinary names alone', function () {
+        const names = ['postal_code', 'barcode', 'encode', 'hotkeys', 'turkey', 'sessions_count', 'codes', 'sidebar'];
+        names.forEach(function (name) {
+            const out = format_error_report({message: 'failed', config: {method: 'get', url: `/x?${name}=visible&page=2`, headers: {}}, stack: 'stack'});
+            assert.ok(out.includes(`GET /x?${name}=visible&page=2`), `${name}: ${out}`);
+        });
+    });
+    it('should mask pairs after ";" and "#", and secrets nested in a value', function () {
+        const urls = [
+            'https://api.example.invalid/x?a=1;token=SEMI_SECRET',
+            'https://api.example.invalid/cb#access_token=FRAG_SECRET&state=1',
+            'https://api.example.invalid/x?next=https://u:NESTED1_SECRET@h.invalid/?token=NESTED2_SECRET',
+            'https://api.example.invalid/x?callback=https%3A%2F%2Fcb.invalid%2Fhook%3Ftoken%3DNESTED3_SECRET',
+            'https://api.example.invalid/x?filter=%7B%22password%22%3A%22JSON_SECRET%22%2C%22page%22%3A2%7D',
+        ];
+        urls.forEach(function (url) {
+            const out = format_error_report({message: 'failed', config: {method: 'get', url, headers: {}}, stack: 'stack'});
+            assert.ok(!/SECRET/.test(out), out);
+        });
+        const out = format_error_report({message: 'failed', config: {method: 'get', url: urls[1], headers: {}}, stack: 'stack'});
+        assert.ok(out.includes('GET https://api.example.invalid/cb#access_token=***&state=1'), out);
+    });
+    it('should mask URLs in the message, the stack and header values', function () {
+        const message = 'Failed to parse URL from https://user:M1_SECRET@127.0.0.1:99999/x?token=M2_SECRET';
+        const error = {
+            message,
+            stack: `TypeError: ${message}\n    at fetch (node:internal/deps/undici/undici:1:1)`,
+            config: {method: 'get', url: '/x', headers: {Referer: 'https://u:R1_SECRET@app.invalid/?token=R2_SECRET'}},
+        };
+        const a = format_error_report(error);
+        assert.ok(!/SECRET/.test(a), a);
+        assert.ok(a.includes('Failed to parse URL from https://***@127.0.0.1:99999/x?token=***'), a);
+        assert.ok(a.includes('"Referer": "https://***@app.invalid/?token=***"'), a);
+        const b = format_error_report(Object.assign(new Error(message), {stack: error.stack}));
+        assert.ok(!/SECRET/.test(b), b);
+        assert.ok(b.includes('at fetch (node:internal/deps/undici/undici:1:1)'), b);
+    });
     it('should mask the request of an axios error with a response and keep the bounded body', function () {
         const config = {
             method: 'get',
