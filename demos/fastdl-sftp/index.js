@@ -9,7 +9,8 @@ cli(main);
 
 async function main()
 {
-    const url = 'sftp://username:password@domain.com/path/to/file/a.zip';
+    // The fingerprint of the server's host key: `ssh-keyscan domain.com | ssh-keygen -lf -`
+    const url = 'sftp://username:password@domain.com/path/to/file/a.zip?fingerprint=SHA256:...';
     await fastdl({
         file: fs_path_basename(new URL(url).pathname),
         read_stream_with_range: (first, last) => sftp_get_stream_range(url, first, last),

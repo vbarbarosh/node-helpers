@@ -1,28 +1,40 @@
+const crypto = require('crypto');
 const ssh2 = require('ssh2');
 
 const {STATUS_CODE} = ssh2.utils.sftp;
 
 const FILE = '/data.bin';
-const HOST_KEYS = [ssh2.utils.generateKeyPairSync('ed25519').private];
+const HOST_KEY = ssh2.utils.generateKeyPairSync('ed25519');
+const HOST_KEYS = [HOST_KEY.private];
+// The fingerprint as `ssh-keygen -l` prints it
+const FINGERPRINT = `SHA256:${crypto.createHash('sha256').update(ssh2.utils.parseKey(HOST_KEY.public).getPublicSSH()).digest('base64').replace(/=+$/, '')}`;
 
 /**
  * In-process sftp server for tests: serves a single virtual file `/data.bin`
  * with the given body; login is user1/pass1.
  *
  * const server = await sftp_server_listen(body);
- * server.url('/data.bin')  // sftp://user1:pass1@127.0.0.1:PORT/data.bin
- * server.closed()          // number of fully closed ssh connections
+ * server.url('/data.bin')           // sftp://user1:pass1@127.0.0.1:PORT/data.bin?fingerprint=SHA256%3A...
+ * server.url_unpinned('/data.bin')  // the same without the fingerprint
+ * server.fingerprint                // SHA256:... of its host key
+ * server.closed()                   // number of fully closed ssh connections
+ * server.logins()                   // number of login attempts it has seen
  * await server.close();
  */
 async function sftp_server_listen(body)
 {
     let closed = 0;
+    let logins = 0;
     const server = new ssh2.Server({hostKeys: HOST_KEYS}, function (client) {
         client.on('error', function () {/* client gone mid-handshake */});
         client.on('close', function () {
             closed++;
         });
         client.on('authentication', function (ctx) {
+            // ssh2 first asks with the method "none" to learn what is allowed
+            if (ctx.method !== 'none') {
+                logins++;
+            }
             if (ctx.method === 'password' && ctx.username === 'user1' && ctx.password === 'pass1') {
                 ctx.accept();
             }
@@ -40,8 +52,11 @@ async function sftp_server_listen(body)
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     return {
-        url: pathname => `sftp://user1:pass1@127.0.0.1:${server.address().port}${pathname}`,
+        url: pathname => `sftp://user1:pass1@127.0.0.1:${server.address().port}${pathname}?fingerprint=${encodeURIComponent(FINGERPRINT)}`,
+        url_unpinned: pathname => `sftp://user1:pass1@127.0.0.1:${server.address().port}${pathname}`,
+        fingerprint: FINGERPRINT,
         closed: () => closed,
+        logins: () => logins,
         close: () => new Promise(resolve => server.close(resolve)),
     };
 }

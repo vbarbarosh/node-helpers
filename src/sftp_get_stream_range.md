@@ -3,6 +3,11 @@ stream. The URL carries the connection details
 (`sftp://user:pass@host:port/path`); credentials are percent-decoded, the
 port defaults to 22. `first` and `last` are inclusive byte offsets.
 
+The server's host key must be pinned: add `?fingerprint=SHA256:...` to the
+URL or pass `{fingerprint}`. Without it the call rejects with the code
+`ERR_SFTP_HOST_KEY_NOT_PINNED` before the password is sent, naming the
+fingerprint the server presented (see `sftp_connect`).
+
 The file is `stat`ed first: `first < 0` or `last >= size` rejects with an
 `Invalid range` error (no clamping, unlike `http_range_parse`). Like
 `http_get_stream_range`, the stream gets `content_range`

@@ -33,6 +33,11 @@ describe('sftp_get_file_info', function () {
             return true;
         });
     });
+    it('should refuse a host key that is not pinned', async function () {
+        await assert.rejects(sftp_get_file_info(server.url_unpinned('/')), {code: 'ERR_SFTP_HOST_KEY_NOT_PINNED'});
+        const info = await sftp_get_file_info(server.url_unpinned('/'), {fingerprint: server.fingerprint});
+        assert.strictEqual(info.readdir.length, 1);
+    });
     it('should throw on wrong credentials', async function () {
         await assert.rejects(sftp_get_file_info(server.url('/').replace(':pass1@', ':wrong@')));
     });

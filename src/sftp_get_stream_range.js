@@ -1,23 +1,16 @@
 const ignore = require('./ignore');
-const ssh2 = require('ssh2');
+const sftp_connect = require('./sftp_connect');
 const waitcb = require('./waitcb');
 
-async function sftp_get_stream_range(url, first, last, {user_friendly_status = ignore} = {})
+async function sftp_get_stream_range(url, first, last, {user_friendly_status = ignore, fingerprint} = {})
 {
-    const u = new URL(url);
-    const host = u.hostname; // u.host would include the :port, breaking dns lookup
-    const port = +u.port || 22;
-    const username = decodeURIComponent(u.username);
-    const password = decodeURIComponent(u.password);
-    const pathname = u.pathname;
+    const pathname = new URL(url).pathname;
 
     user_friendly_status('Establishing connection...');
-    const conn = new ssh2.Client();
-    await new Promise(function (resolve, reject) {
-        conn.on('ready', resolve);
-        conn.on('error', reject);
-        conn.connect({host, port, username, password});
-    });
+    const conn = await sftp_connect(url, {fingerprint});
+    // An error of the connection after this point reaches the caller through
+    // the stream, as before
+    conn.on('error', ignore);
 
     try {
         user_friendly_status('Asking for an sftp service...');
