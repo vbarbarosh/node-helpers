@@ -7,8 +7,8 @@
 const child_process = require('child_process');
 const cli = require('@vbarbarosh/node-helpers/src/cli');
 const fs = require('fs');
-const fs_tempdir = require('@vbarbarosh/node-helpers/src/fs_tempdir');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 const pkg = require('../package.json');
 
@@ -22,17 +22,16 @@ const CONTENT_TYPES = {
     '.svg': 'image/svg+xml',
 };
 
-cli(main);
+cli(main, report);
 
 async function main()
 {
     const expected = pkg.dependencies.axios;
     const chrome = find_chrome();
     const server = await serve(path.resolve(__dirname, '../docs'));
+    const profile = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'check-docs-page-'));
     try {
-        const found = await fs_tempdir(function (profile) {
-            return read_page(chrome, profile, `http://127.0.0.1:${server.address().port}/`);
-        });
+        const found = await read_page(chrome, profile, `http://127.0.0.1:${server.address().port}/`);
         const others = [...new Set([...found.tags, ...found.requested])].filter(v => v !== expected);
         if (!found.ready) {
             throw new Error(`docs/index.html did not finish loading in ${TIMEOUT_MS / 1000} seconds; axios.VERSION was ${JSON.stringify(found.version)}`);
@@ -51,6 +50,20 @@ async function main()
     finally {
         server.closeAllConnections();
         server.close();
+        // Chrome's helper processes may still be writing while they exit:
+        // retry, and never let a leftover folder decide the check
+        await fs.promises.rm(profile, {recursive: true, force: true, maxRetries: 20, retryDelay: 250}).catch(function (error) {
+            console.warn(`Could not remove ${profile}: ${error.message}`);
+        });
+    }
+}
+
+function report(error)
+{
+    console.error(error);
+    if (process.env.GITHUB_ACTIONS) {
+        // Shown on the run's page, beside the failed step
+        console.log(`::error title=check:docs::${String(error.message).replace(/\r?\n/g, ' ')}`);
     }
 }
 
@@ -97,10 +110,11 @@ async function read_page(chrome, profile, url)
     ], {stdio: ['ignore', 'ignore', 'pipe']});
     const exited = new Promise(resolve => proc.once('exit', resolve));
     let ws = null;
+    let send = null;
     try {
         ws = await connect(await devtools_url(proc));
         const requested = [];
-        const send = protocol(ws, function (message) {
+        send = protocol(ws, function (message) {
             const m = message.method === 'Network.requestWillBeSent' && message.params.request.url.match(/\/axios@([^/]+)\/dist\/axios(?:\.min)?\.js/);
             if (m) {
                 requested.push(m[1]);
@@ -128,9 +142,18 @@ async function read_page(chrome, profile, url)
         return {...found, ready: found.helpers > 0, requested};
     }
     finally {
-        ws?.close();
-        proc.kill('SIGKILL');
+        // Ask Chrome to quit, so that it stops its helper processes itself;
+        // kill it only when it does not
+        const timer = setTimeout(() => proc.kill('SIGKILL'), 5000);
+        if (send) {
+            send('Browser.close').catch(function () {/* it is going away */});
+        }
+        else {
+            proc.kill('SIGKILL');
+        }
         await exited;
+        clearTimeout(timer);
+        ws?.close();
     }
 }
 
