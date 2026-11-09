@@ -5,10 +5,17 @@ PING within the interval is fatal — everything else (client errors, floods)
 merely emits a `warning` event.
 
 **Socket:** placed on `/dev/shm` when available (tmpfs, avoids slow disks),
-otherwise `os.tmpdir()`. The path is unique per instance, even for instances
-created within the same second. A ping is any connection that ends cleanly;
-the server replies `OK` and ignores the payload (a client sending over 1 MiB
-is destroyed with a `warning`).
+otherwise `os.tmpdir()`, in a directory of its own with mode `0700`; the
+socket itself gets mode `0600`. Only the user who runs the server can reach
+it, and the path is unique per instance.
+
+**A ping** is a connection that sends exactly `PING` (a trailing newline is
+allowed, so `echo PING` works) and ends cleanly, as `ping_socket` does. The
+server replies `OK` to every connection. An empty connection, a partial frame,
+extra bytes or another word is not a heartbeat: it emits a `warning` and does
+not refresh the deadline. A client that sends more than 64 bytes is destroyed
+with a `warning`, and one that stays silent for a whole interval is dropped.
+Up to v3.79.2 any connection that ended cleanly counted.
 
 **promise():** rejects with `ExitCodeError` (`exit_code = 124`,
 `No heartbeat...`) when the watchdog fires — the instance then disposes

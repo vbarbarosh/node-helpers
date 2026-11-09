@@ -2,16 +2,16 @@ const EventEmitter = require('events');
 const ExitCodeError = require('./errors/ExitCodeError');
 const Promise = require('bluebird');
 const fs = require('fs');
+const fs_path_dirname = require('./fs_path_dirname');
 const fs_path_join = require('./fs_path_join');
 const fs_rmf = require('./fs_rmf');
 const ignore = require('./ignore');
 const net = require('net');
-const now_fs = require('./now_fs');
 const os = require('os');
 
-// now_fs has 1 second resolution: without a counter two instances created
-// within the same second would collide on the socket path (EADDRINUSE)
-let socket_counter = 0;
+// A heartbeat is this frame and nothing else; `echo PING` adds a newline
+const PING = 'PING';
+const PING_MAX_BYTES = 64;
 
 // 💎 Only the lack of a valid PING within WATCHDOG_INTERVAL is fatal
 class HeartbeatServer extends EventEmitter
@@ -35,11 +35,12 @@ class HeartbeatServer extends EventEmitter
 
         this.#timer = setInterval(() => this.#tick(), this.#interval_ms);
 
-        // Put socket on tmpfs to avoid slow disks.
-        const socket_name = `watchdog-${process.pid}-${now_fs()}-${++socket_counter}.sock`;
-        this.#socket_path = fs.existsSync('/dev/shm')
-            ? fs_path_join('/dev/shm', socket_name)
-            : fs_path_join(os.tmpdir(), socket_name);
+        // Put socket on tmpfs to avoid slow disks, in a directory of its own
+        // that only this user can enter (mkdtemp makes it with mode 0700):
+        // the path is unique per instance, and no other local user can reach
+        // the socket, whatever the umask
+        const dir = fs.mkdtempSync(fs_path_join(fs.existsSync('/dev/shm') ? '/dev/shm' : os.tmpdir(), 'watchdog-'));
+        this.#socket_path = fs_path_join(dir, 'heartbeat.sock');
 
         this.#promise = new Promise((resolve, reject) => {
             this.#reject = reject;
@@ -50,7 +51,11 @@ class HeartbeatServer extends EventEmitter
 
         this.#server = net.createServer(function (client) {
             let bytes_received = 0;
+            let payload = '';
             client.setEncoding('utf8');
+            // A client that connects and then says nothing is not a heartbeat
+            // either: it is dropped once a whole interval has passed
+            client.setTimeout(_this.#interval_ms, () => client.destroy());
             client.on('error', function (error) {
                 if (!_this.#server) {
                     return;
@@ -61,6 +66,10 @@ class HeartbeatServer extends EventEmitter
                 if (!_this.#server) {
                     return;
                 }
+                if (payload.trimEnd() !== PING) {
+                    _this.emit('warning', new Error(`Not a heartbeat: expected ${PING}, received ${bytes_received} bytes`));
+                    return;
+                }
                 _this.#last_ping = Date.now();
                 _this.emit('heartbeat');
             });
@@ -68,12 +77,13 @@ class HeartbeatServer extends EventEmitter
                 if (!_this.#server) {
                     return;
                 }
-                // Not really interested in any data
                 bytes_received += buf.length;
-                if (bytes_received > 1024*1024) {
+                if (bytes_received > PING_MAX_BYTES) {
                     _this.emit('warning', new Error(`Client floods. Bytes recieved: ${bytes_received}`));
                     client.destroy();
+                    return;
                 }
+                payload += buf;
             });
             client.end('OK');
         });
@@ -85,6 +95,12 @@ class HeartbeatServer extends EventEmitter
         });
         this.#server.listen(this.#socket_path, function () {
             // started = true;
+            try {
+                fs.chmodSync(_this.#socket_path, 0o600);
+            }
+            catch {
+                // disposed in the meantime: the socket is gone
+            }
         });
     }
 
@@ -140,6 +156,7 @@ class HeartbeatServer extends EventEmitter
         }
         finally {
             await fs_rmf(this.#socket_path);
+            await fs.promises.rmdir(fs_path_dirname(this.#socket_path)).catch(ignore);
             this.#socket_path = null;
         }
     }

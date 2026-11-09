@@ -1,6 +1,8 @@
 const HeartbeatServer = require('./HeartbeatServer');
 const assert = require('assert');
+const fs = require('fs');
 const fs_assert_file_socket = require('./fs_assert_file_socket');
+const fs_path_dirname = require('./fs_path_dirname');
 const net = require('net');
 const ping_socket = require('./ping_socket');
 const wait_while = require('./wait_while');
@@ -69,6 +71,65 @@ describe('HeartbeatServer', function () {
         finally {
             await a.dispose();
         }
+    });
+    it('should count only an exact PING frame as a heartbeat', async function () {
+        const server = new HeartbeatServer();
+        try {
+            let heartbeats = 0;
+            const warnings = [];
+            server.on('heartbeat', () => heartbeats++);
+            server.on('warning', e => warnings.push(e.message));
+            await fs_assert_file_socket(server.socket_path);
+            // an empty connection, a partial frame, extra bytes, another word
+            for (const data of ['', 'PIN', 'PINGPING', 'PING PING', 'ping', 'PONG']) {
+                await ping_socket(server.socket_path, data);
+            }
+            await wait_while(() => warnings.length < 6);
+            assert.strictEqual(heartbeats, 0);
+            assert.ok(warnings.every(v => /Not a heartbeat/.test(v)), JSON.stringify(warnings));
+            // the frame itself, also as `echo PING` sends it
+            await ping_socket(server.socket_path, 'PING');
+            await ping_socket(server.socket_path, 'PING\n');
+            await wait_while(() => heartbeats < 2);
+            assert.strictEqual(heartbeats, 2);
+            assert.strictEqual(warnings.length, 6);
+        }
+        finally {
+            await server.dispose();
+        }
+    });
+    it('should not be kept alive by empty connections', async function () {
+        const server = new HeartbeatServer(100);
+        try {
+            server.on('warning', function () {});
+            await fs_assert_file_socket(server.socket_path);
+            const socket_path = server.socket_path;
+            const timer = setInterval(() => ping_socket(socket_path, '').catch(function () {}), 20);
+            try {
+                await assert.rejects(server.promise(), /No heartbeat/);
+            }
+            finally {
+                clearInterval(timer);
+            }
+        }
+        finally {
+            await server.dispose();
+        }
+    });
+    it('should keep its socket to the user who runs it, and leave nothing behind', async function () {
+        const server = new HeartbeatServer();
+        const socket_path = server.socket_path;
+        const dir = fs_path_dirname(socket_path);
+        try {
+            await fs_assert_file_socket(socket_path);
+            assert.strictEqual(fs.statSync(socket_path).mode & 0o777, 0o600);
+            assert.strictEqual(fs.statSync(dir).mode & 0o777, 0o700);
+        }
+        finally {
+            await server.dispose();
+        }
+        assert.strictEqual(fs.existsSync(socket_path), false);
+        assert.strictEqual(fs.existsSync(dir), false);
     });
     it('should emit a "warning" event when a client floods', async function () {
         const server = new HeartbeatServer();
