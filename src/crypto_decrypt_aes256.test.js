@@ -8,10 +8,12 @@ describe('crypto_decrypt_aes256', function () {
         const envelope = Buffer.from('01000102030405060708090a0b0c0d0e0f101112131415161718191a1bc35fb244f907aedf7c0d3b832c0389d4e2a58c7e83', 'hex');
         assert.strictEqual(crypto_decrypt_aes256('pass123', envelope).toString('utf8'), 'hello');
     });
-    it('should reject the old unauthenticated aes-256-ctr envelope', function () {
+    it('should reject the old unauthenticated aes-256-ctr envelope, naming the helper that reads it', function () {
         // aes-256-ctr, key=sha256('pass123'), iv=000102...0f, data='hello'
         const ivenc = Buffer.from('10000102030405060708090a0b0c0d0e0f27897103cc', 'hex');
-        assert.throws(() => crypto_decrypt_aes256('pass123', ivenc), /malformed envelope/);
+        assert.throws(() => crypto_decrypt_aes256('pass123', ivenc), /written before v3\.78\.1; read it with crypto_decrypt_aes256_legacy/);
+        // an old envelope of empty data: the iv alone
+        assert.throws(() => crypto_decrypt_aes256('pass123', Buffer.alloc(17, 16)), /written before v3\.78\.1/);
     });
     it('should roundtrip binary data', function () {
         const data = Buffer.from(Array.from({length: 256}, (v, i) => i));

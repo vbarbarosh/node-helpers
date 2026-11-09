@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 
 const VERSION = 1;
+const LEGACY_IV_LENGTH = 16;
 const SALT_LENGTH = 16;
 const NONCE_LENGTH = 12;
 const TAG_LENGTH = 16;
@@ -11,6 +12,10 @@ const HEADER_LENGTH = 1 + SALT_LENGTH + NONCE_LENGTH;
  * envelope is malformed, the password is wrong, or the data was tampered
  * with.
  *
+ * An envelope written before v3.78.1 is refused by name: that format has no
+ * integrity check, so it is read only on request, by
+ * crypto_decrypt_aes256_legacy.
+ *
  * @link https://nodejs.org/api/crypto.html#class-decipher
  */
 function crypto_decrypt_aes256(password, ivenc)
@@ -20,6 +25,10 @@ function crypto_decrypt_aes256(password, ivenc)
     }
     if (!Buffer.isBuffer(ivenc)) {
         ivenc = Buffer.from(ivenc.buffer, ivenc.byteOffset, ivenc.byteLength);
+    }
+    // [0x10][16-byte iv][ciphertext]: the first byte was the length of the iv
+    if (ivenc[0] === LEGACY_IV_LENGTH && ivenc.length >= 1 + LEGACY_IV_LENGTH) {
+        throw new Error('crypto_decrypt_aes256: envelope in the format written before v3.78.1; read it with crypto_decrypt_aes256_legacy and encrypt it again');
     }
     if (ivenc[0] !== VERSION) {
         throw new Error('crypto_decrypt_aes256: malformed envelope');

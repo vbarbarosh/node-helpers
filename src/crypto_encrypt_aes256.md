@@ -21,3 +21,8 @@ const envelope = crypto_encrypt_aes256('pass123', 'hello');
 // <Buffer 01 ...> — 50 bytes: version, 16-byte salt, 12-byte nonce, 16-byte tag, 5-byte ciphertext
 crypto_decrypt_aes256('pass123', envelope).toString('utf8');  // 'hello'
 ```
+
+**Changed in v3.78.1.** Earlier versions wrote
+`[0x10][16-byte iv][ciphertext]` (`aes-256-ctr`, key = `sha256(password)`).
+`crypto_decrypt_aes256` no longer reads that format;
+`crypto_decrypt_aes256_legacy` does, for moving old data to this one.
