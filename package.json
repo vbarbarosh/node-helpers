@@ -25,6 +25,7 @@
     "scripts": {
         "build": "rm -rf dist && webpack && cp dist/browser.js docs/js/browser.js",
         "check:cdn": "node bin/check-cdn-dependencies.js",
+        "check:docs": "node bin/check-docs-page.js",
         "coverage": "c8 mocha 'src/**/*.test.js'",
         "lint": "eslint src webpack.config.js eslint.config.js",
         "test": "mocha 'src/**/*.test.js'"

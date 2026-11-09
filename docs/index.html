@@ -14,7 +14,28 @@
 <body>
 
 <script src="https://unpkg.com/axios@1.20.0/dist/axios.min.js"></script>
+<script>
+// The ui-helpers bundle below adds a script tag for an Axios of its own, and
+// that later script would replace the one pinned above. While the bundle runs,
+// a tag for any Axios is pointed at the pinned file, so the page loads and
+// runs one version only (bin/check-docs-page.js checks it in a browser).
+(function () {
+    const pinned = document.querySelector('script[src*="/axios@"]').src;
+    const insert = Element.prototype.insertAdjacentElement;
+    Element.prototype.insertAdjacentElement = function (where, elem) {
+        if (elem instanceof HTMLScriptElement && /\/axios@[^/]+\/dist\/axios(\.min)?\.js$/.test(elem.src)) {
+            elem.src = pinned;
+        }
+        return insert.call(this, where, elem);
+    };
+    window.axios_pin_release = function () {
+        Element.prototype.insertAdjacentElement = insert;
+        delete window.axios_pin_release;
+    };
+})();
+</script>
 <script src="https://unpkg.com/@vbarbarosh/ui-helpers@0.4.0/src/static/js/bundle.js"></script>
+<script>axios_pin_release();</script>
 <script src="js/browser.js?v=3.79.2&var=h"></script>
 <script src="js/components/main-demos.js?v=3.79.2"></script>
 <script src="js/components/main-header.js?v=3.79.2"></script>

@@ -45,6 +45,8 @@ jobs:
         bin/update-version.js
     - name: Check committed docs match the release
       run: git diff --exit-code -- README.md docs
+    - name: Check which Axios the docs page runs, in a browser
+      run: npm run check:docs
     - run: npm test
     - run: npm publish --access public
     - name: Upload GitHub Pages artifact
