@@ -8,6 +8,9 @@ URL or pass `{fingerprint}`. Without it the call rejects with the code
 `ERR_SFTP_HOST_KEY_NOT_PINNED` before the password is sent, naming the
 fingerprint the server presented (see `sftp_connect`).
 
+Under npm 12 the install script of `ssh2` has to be allowed, or transfers
+are many times slower (see `sftp_connect`).
+
 The file is `stat`ed first, and the range is answered as an HTTP server
 answers one. A `last` at or past the end of the file is cut to its last byte,
 so a caller may ask for a range before it knows the size, as `fastdl` does.

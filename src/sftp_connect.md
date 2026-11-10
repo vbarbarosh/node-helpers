@@ -28,3 +28,18 @@ The host key is checked before any credentials are sent:
   then receives the password.
 
 Up to v3.79.2 the sftp helpers accepted any host key.
+
+**Under npm 12.** `ssh2` builds its encryption when it is installed, and
+npm 12 blocks an install script the project has not allowed. The install then
+ends with `install scripts blocked`, `ssh2` falls back to JavaScript, and a
+transfer is about fifty times slower (1 MiB in 4.8 s instead of 0.1 s in this
+package's tests). Allow the two scripts in the project that installs this
+package, then install again or rebuild:
+
+```sh
+npm install-scripts approve ssh2 cpu-features
+npm rebuild ssh2 cpu-features
+```
+
+The list is the project's own `allowScripts` in `package.json`; the one in
+this package covers only its own checkout. The build needs a compiler.

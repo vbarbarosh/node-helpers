@@ -8,6 +8,9 @@ URL or pass `{fingerprint}`. Without it the call rejects with the code
 `ERR_SFTP_HOST_KEY_NOT_PINNED` before the password is sent, naming the
 fingerprint the server presented (see `sftp_connect`).
 
+Under npm 12 the install script of `ssh2` has to be allowed, or transfers
+are many times slower (see `sftp_connect`).
+
 Rejects on connection or authentication errors, and when the path does not
 exist. The optional `user_friendly_status` callback receives progress
 messages (`'Establishing connection...'`, ...).
