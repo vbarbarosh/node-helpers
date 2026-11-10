@@ -104,8 +104,6 @@ describe('fastdl', function () {
     });
     [0, 1, 780, 1024*1024, 1024*1024 + 1].forEach(function (size) {
         it(`should download a file of ${size} bytes over sftp whole and close every connection`, async function () {
-            // Without the encryption ssh2 builds at install time, 1 MiB takes about 5 seconds
-            this.timeout(30000);
             const body = Buffer.alloc(size);
             for (let i = 0; i < size; ++i) {
                 body[i] = i % 251;

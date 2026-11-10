@@ -6,8 +6,6 @@ const wait_while = require('./wait_while');
 const BODY = Buffer.from(Array.from({length: 100000}, (v, i) => i % 251));
 
 describe('sftp_get_stream_range', function () {
-    // Without the encryption ssh2 builds at install time a connection alone takes half a second
-    this.timeout(10000);
     let server;
     let server_empty;
     before(async function () {

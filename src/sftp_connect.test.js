@@ -3,8 +3,6 @@ const sftp_connect = require('./sftp_connect');
 const sftp_server_listen = require('./sftp_get_stream_range.d/sftp_server');
 
 describe('sftp_connect', function () {
-    // Without the encryption ssh2 builds at install time a connection alone takes half a second
-    this.timeout(10000);
     let server;
     before(async function () {
         server = await sftp_server_listen(Buffer.from('hello'));
