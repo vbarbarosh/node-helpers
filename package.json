@@ -82,5 +82,9 @@
         "tree-kill": "^1.2.2",
         "webpack": "^5.98.0",
         "webpack-cli": "^7.2.1"
+    },
+    "allowScripts": {
+        "ssh2": true,
+        "cpu-features": true
     }
 }
