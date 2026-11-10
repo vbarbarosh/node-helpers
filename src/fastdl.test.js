@@ -8,7 +8,10 @@ const fs_readdir = require('./fs_readdir');
 const fs_tempdir = require('./fs_tempdir');
 const fs_write = require('./fs_write');
 const ignore = require('./ignore');
+const sftp_get_stream_range = require('./sftp_get_stream_range');
+const sftp_server_listen = require('./sftp_get_stream_range.d/sftp_server');
 const stream = require('stream');
+const wait_while = require('./wait_while');
 
 describe('fastdl', function () {
     const content = Buffer.alloc(3*1024*1024, 'x');
@@ -71,6 +74,64 @@ describe('fastdl', function () {
             assert.strictEqual(rs0.destroyed, true);
             assert.strictEqual(count_timers(), timers_before);
             assert.deepStrictEqual(await fs_readdir(d), []);
+        });
+    });
+    it('should finish an empty resource as an empty file and close its stream unread', async function () {
+        await fs_tempdir(async function (d) {
+            const file = fs_path_resolve(d, 'out.bin');
+            const timers_before = count_timers();
+            const streams = [];
+
+            await fastdl({
+                concurrency: 2,
+                file,
+                read_stream_with_range: async function () {
+                    // Never ends by itself, as a connection nobody reads
+                    const rs = new stream.Readable({read: ignore});
+                    rs.content_range = {first: null, last: null, total: 0, type: 'bytes'};
+                    streams.push(rs);
+                    return rs;
+                },
+                user_friendly_status: ignore,
+            });
+
+            assert.strictEqual(streams.length, 1);
+            assert.strictEqual(streams[0].destroyed, true);
+            assert.strictEqual(count_timers(), timers_before);
+            assert.deepStrictEqual(await fs_read_buffer(file), Buffer.alloc(0));
+            assert.deepStrictEqual(await fs_readdir(d), ['out.bin']);
+        });
+    });
+    [0, 1, 780, 1024*1024, 1024*1024 + 1].forEach(function (size) {
+        it(`should download a file of ${size} bytes over sftp whole and close every connection`, async function () {
+            const body = Buffer.alloc(size);
+            for (let i = 0; i < size; ++i) {
+                body[i] = i % 251;
+            }
+            const server = await sftp_server_listen(body);
+            try {
+                await fs_tempdir(async function (d) {
+                    const file = fs_path_resolve(d, 'out.bin');
+                    let connections = 0;
+
+                    await fastdl({
+                        concurrency: 2,
+                        file,
+                        read_stream_with_range: function (first, last) {
+                            connections++;
+                            return sftp_get_stream_range(server.url('/data.bin'), first, last);
+                        },
+                        user_friendly_status: ignore,
+                    });
+
+                    assert(body.equals(await fs_read_buffer(file)));
+                    assert.deepStrictEqual(await fs_readdir(d), ['out.bin']);
+                    await wait_while(() => server.closed() !== connections);
+                });
+            }
+            finally {
+                await server.close();
+            }
         });
     });
     [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {

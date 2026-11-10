@@ -8,10 +8,19 @@ URL or pass `{fingerprint}`. Without it the call rejects with the code
 `ERR_SFTP_HOST_KEY_NOT_PINNED` before the password is sent, naming the
 fingerprint the server presented (see `sftp_connect`).
 
-The file is `stat`ed first: `first < 0` or `last >= size` rejects with an
-`Invalid range` error (no clamping, unlike `http_range_parse`). Like
-`http_get_stream_range`, the stream gets `content_range`
-(`{type, first, last, total}`) and `total` (the full file size) attached.
+The file is `stat`ed first, and the range is answered as an HTTP server
+answers one. A `last` at or past the end of the file is cut to its last byte,
+so a caller may ask for a range before it knows the size, as `fastdl` does.
+Only a range that starts outside the file (`first < 0` or `first >= size`)
+rejects with an `Invalid range` error. Like `http_get_stream_range`, the
+stream gets `content_range` (`{type, first, last, total}`, `last` being the
+byte the stream ends at) and `total` (the full file size) attached.
+
+An empty file has no byte to start at: a range from `0` resolves with an
+empty stream whose `content_range` is
+`{type: 'bytes', first: null, last: null, total: 0}`, as
+`Content-Range: bytes */0` parses, and the connection is closed before the
+call returns.
 
 The ssh connection is destroyed when the stream closes — on end, on error,
 and also when the consumer destroys the stream early (e.g. an aborted http
@@ -21,5 +30,6 @@ optional `user_friendly_status` callback receives progress messages.
 
 ```js
 const rs = await sftp_get_stream_range(url, 0, 1023, {user_friendly_status: console.log});
-rs.total // full file size
+rs.total              // full file size
+rs.content_range.last // 1023, or the last byte of a shorter file
 ```

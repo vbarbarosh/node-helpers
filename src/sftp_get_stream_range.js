@@ -1,5 +1,6 @@
 const ignore = require('./ignore');
 const sftp_connect = require('./sftp_connect');
+const stream = require('stream');
 const waitcb = require('./waitcb');
 
 async function sftp_get_stream_range(url, first, last, {user_friendly_status = ignore, fingerprint} = {})
@@ -19,15 +20,30 @@ async function sftp_get_stream_range(url, first, last, {user_friendly_status = i
         user_friendly_status('Requesting file info...');
         const stat = await waitcb(cb => sftp.stat(pathname, cb));
 
-        if (first < 0 || last >= stat.size) {
-            throw new Error(`Invalid range: [first=${first}][last=${last}]`);
+        // An empty file has no byte to open a range at: it is answered with
+        // an empty stream, and the connection has nothing more to do
+        if (stat.size === 0 && first === 0) {
+            const out = new stream.Readable({read: () => out.push(null)});
+            out.content_range = {type: 'bytes', first: null, last: null, total: 0};
+            out.total = 0;
+            conn.destroy();
+            return out;
         }
 
-        const out = sftp.createReadStream(pathname, {start: first, end: last})
+        // Only a range that starts outside the file is refused
+        if (first < 0 || first >= stat.size) {
+            throw new Error(`Invalid range: [first=${first}][last=${last}][total=${stat.size}]`);
+        }
+
+        // A range that ends past the file is cut to its last byte, as an
+        // http server answers one: a caller may ask before it knows the size
+        const actual_last = last >= stat.size ? stat.size - 1 : last;
+
+        const out = sftp.createReadStream(pathname, {start: first, end: actual_last})
         out.content_range = {
             type: 'bytes',
             first,
-            last,
+            last: actual_last,
             total: stat.size,
         };
         out.total = out.content_range.total;

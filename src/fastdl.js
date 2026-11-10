@@ -75,6 +75,14 @@ async function download({file, read_stream_with_range, concurrency, user_friendl
 
     user_friendly_status(`${format_bytes(total)} [${format_thousands(total)} bytes] to download`);
 
+    // An empty resource: the destination is complete as it was created, there
+    // is nothing more to ask, and nobody is going to read the first stream
+    if (total === 0) {
+        rs0.once('error', ignore);
+        rs0.destroy();
+        return;
+    }
+
     try {
         timer = setInterval(tick, 1000);
         await parallel({concurrency, spawn});
