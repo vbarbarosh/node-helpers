@@ -17,9 +17,13 @@ describe('sftp_get_stream_range', function () {
         await server_empty.close();
     });
 
-    it('should refuse a host key that is not pinned and close the connection', async function () {
+    it('should open a range at a url with no fingerprint, as up to v3.79.2', async function () {
+        const rs = await sftp_get_stream_range(server.url_unpinned('/data.bin'), 0, 9);
+        assert.deepStrictEqual(await read_all(rs), BODY.subarray(0, 10));
+    });
+    it('should refuse a host key that does not match and close the connection', async function () {
         const before = server.closed();
-        await assert.rejects(sftp_get_stream_range(server.url_unpinned('/data.bin'), 0, 9), {code: 'ERR_SFTP_HOST_KEY_NOT_PINNED'});
+        await assert.rejects(sftp_get_stream_range(server.url_unpinned('/data.bin'), 0, 9, {fingerprint: 'SHA256:AAAA'}), {code: 'ERR_SFTP_HOST_KEY_MISMATCH'});
         await wait_while(() => server.closed() === before);
         const rs = await sftp_get_stream_range(server.url_unpinned('/data.bin'), 0, 9, {fingerprint: server.fingerprint});
         assert.deepStrictEqual(await read_all(rs), BODY.subarray(0, 10));

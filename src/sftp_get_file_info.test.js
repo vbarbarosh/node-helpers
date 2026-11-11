@@ -33,8 +33,12 @@ describe('sftp_get_file_info', function () {
             return true;
         });
     });
-    it('should refuse a host key that is not pinned', async function () {
-        await assert.rejects(sftp_get_file_info(server.url_unpinned('/')), {code: 'ERR_SFTP_HOST_KEY_NOT_PINNED'});
+    it('should return the info at a url with no fingerprint, as up to v3.79.2', async function () {
+        const info = await sftp_get_file_info(server.url_unpinned('/'));
+        assert.strictEqual(info.readdir.length, 1);
+    });
+    it('should refuse a host key that does not match', async function () {
+        await assert.rejects(sftp_get_file_info(server.url_unpinned('/'), {fingerprint: 'SHA256:AAAA'}), {code: 'ERR_SFTP_HOST_KEY_MISMATCH'});
         const info = await sftp_get_file_info(server.url_unpinned('/'), {fingerprint: server.fingerprint});
         assert.strictEqual(info.readdir.length, 1);
     });

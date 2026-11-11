@@ -134,6 +134,37 @@ describe('fastdl', function () {
             }
         });
     });
+    it('should download over sftp from a url with no fingerprint, as up to v3.79.2, with one warning for all its connections', async function () {
+        const server = await sftp_server_listen(content);
+        const warnings = [];
+        const listener = warning => warnings.push(warning);
+        process.on('warning', listener);
+        try {
+            await fs_tempdir(async function (d) {
+                const file = fs_path_resolve(d, 'out.bin');
+                let connections = 0;
+
+                await fastdl({
+                    concurrency: 2,
+                    file,
+                    read_stream_with_range: function (first, last) {
+                        connections++;
+                        return sftp_get_stream_range(server.url_unpinned('/data.bin'), first, last);
+                    },
+                    user_friendly_status: ignore,
+                });
+
+                assert(content.equals(await fs_read_buffer(file)));
+                assert(connections > 1, `connections: ${connections}`);
+                assert.deepStrictEqual(warnings.map(v => v.code), ['SFTP_HOST_KEY_NOT_VERIFIED']);
+                await wait_while(() => server.closed() !== connections);
+            });
+        }
+        finally {
+            process.off('warning', listener);
+            await server.close();
+        }
+    });
     [0, -1, NaN, Infinity, 1.5].forEach(function (concurrency) {
         it(`should reject invalid concurrency [${concurrency}] before creating a file`, async function () {
             await fs_tempdir(async function (d) {

@@ -1,8 +1,13 @@
 const crypto = require('crypto');
 const ssh2 = require('ssh2');
 
+// The unverified servers already warned about. A transfer in parts opens many
+// connections to one server, and one warning says all there is to say.
+const warned = new Set();
+
 // sftp://user:pass@example.com:22/path?fingerprint=SHA256:mEy/QR7so0+QUZXGSoxOzuLJ5MCzRPdxrxoOivArdH4
 // sftp://user:pass@example.com:22/path?fingerprint=any
+// sftp://user:pass@example.com:22/path  (the host key is not verified, with a warning)
 async function sftp_connect(url, {fingerprint} = {})
 {
     const u = new URL(url);
@@ -14,7 +19,7 @@ async function sftp_connect(url, {fingerprint} = {})
     let denied = null;
 
     if (expected.includes('any')) {
-        process.emitWarning(`sftp_connect: the host key of ${host}:${port} is not verified`, {code: 'SFTP_HOST_KEY_NOT_VERIFIED'});
+        warn_once(`sftp_connect: the host key of ${host}:${port} is not verified`);
     }
 
     // Called with the server's host key before any credentials are sent
@@ -26,14 +31,13 @@ async function sftp_connect(url, {fingerprint} = {})
         if (expected.includes(presented)) {
             return true;
         }
+        // No fingerprint to check against: connects, as up to v3.79.2
         if (expected.length === 0) {
-            denied = new Error(`sftp_connect: the host key of ${host}:${port} is not pinned; it presented ${presented}. If that is the server you expect, add fingerprint=${presented} to the url`);
-            denied.code = 'ERR_SFTP_HOST_KEY_NOT_PINNED';
+            warn_once(`sftp_connect: the host key of ${host}:${port} is not verified, no fingerprint is given; it presented ${presented}. If that is the server you expect, add fingerprint=${presented} to the url`);
+            return true;
         }
-        else {
-            denied = new Error(`sftp_connect: the host key of ${host}:${port} does not match: it presented ${presented}, expected ${expected.join(' or ')}`);
-            denied.code = 'ERR_SFTP_HOST_KEY_MISMATCH';
-        }
+        denied = new Error(`sftp_connect: the host key of ${host}:${port} does not match: it presented ${presented}, expected ${expected.join(' or ')}`);
+        denied.code = 'ERR_SFTP_HOST_KEY_MISMATCH';
         denied.fingerprint = presented;
         return false;
     };
@@ -51,6 +55,19 @@ async function sftp_connect(url, {fingerprint} = {})
         throw error;
     }
     return conn;
+}
+
+function warn_once(message)
+{
+    if (warned.has(message)) {
+        return;
+    }
+    // Bounded: a process that visits servers without end starts over
+    if (warned.size >= 1000) {
+        warned.clear();
+    }
+    warned.add(message);
+    process.emitWarning(message, {code: 'SFTP_HOST_KEY_NOT_VERIFIED'});
 }
 
 // 'SHA256:a,SHA256:b' or ['SHA256:a', 'SHA256:b'] -> ['SHA256:a', 'SHA256:b']

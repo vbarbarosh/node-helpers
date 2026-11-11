@@ -1,7 +1,7 @@
 Connects to an ssh server described by a URL
-(`sftp://user:pass@host:port/path`) and resolves with a ready `ssh2.Client`,
-after checking the server's host key against a pinned fingerprint.
-Credentials are percent-decoded; the port defaults to 22.
+(`sftp://user:pass@host:port/path`) and resolves with a ready `ssh2.Client`.
+When a fingerprint is given, the server's host key is checked against it
+first. Credentials are percent-decoded; the port defaults to 22.
 `sftp_get_file_info` and `sftp_get_stream_range` connect through it.
 
 **Signature:** `sftp_connect(url, {fingerprint} = {}) → Promise<ssh2.Client>`
@@ -16,18 +16,35 @@ const conn = await sftp_connect('sftp://user:pass@example.com/upload?fingerprint
 conn.end();
 ```
 
-The host key is checked before any credentials are sent:
+The host key is looked at before any credentials are sent:
 
-- no fingerprint: rejects with the code `ERR_SFTP_HOST_KEY_NOT_PINNED`. The
-  message and `error.fingerprint` carry the fingerprint the server presented,
-  ready to be pinned once it is confirmed to be the right server
-  (`ssh-keyscan example.com | ssh-keygen -lf -` prints the same);
-- another fingerprint: rejects with the code `ERR_SFTP_HOST_KEY_MISMATCH`;
-- `fingerprint=any`: accepts any host key and emits a process warning with
-  the code `SFTP_HOST_KEY_NOT_VERIFIED`. Whoever answers at that address
-  then receives the password.
+- the fingerprint given: connects;
+- another fingerprint than the one given: rejects with the code
+  `ERR_SFTP_HOST_KEY_MISMATCH`, and `error.fingerprint` carries the one the
+  server presented. Nothing is sent to that server;
+- no fingerprint: connects without verifying, as up to v3.79.2, and emits a
+  process warning with the code `SFTP_HOST_KEY_NOT_VERIFIED`. The warning
+  names the fingerprint the server presented, ready to be pinned once it is
+  confirmed to be the right server
+  (`ssh-keyscan example.com | ssh-keygen -lf -` prints the same). Whoever
+  answers at that address receives the password;
+- `fingerprint=any`: the same, said on purpose: any host key is accepted,
+  with a warning of the same code.
 
-Up to v3.79.2 the sftp helpers accepted any host key.
+The warning comes once for a server in the life of the process, however many
+connections go to it:
+
+```js
+process.on('warning', function (warning) {
+    if (warning.code === 'SFTP_HOST_KEY_NOT_VERIFIED') {
+        // sftp_connect: the host key of example.com:22 is not verified, no fingerprint is given; it presented SHA256:...
+    }
+});
+```
+
+v3.80.0 and v3.80.1 refused a URL with no fingerprint
+(`ERR_SFTP_HOST_KEY_NOT_PINNED`), which stopped every call written for an
+earlier 3.x; later versions connect again, with the warning.
 
 **Under npm 12.** `ssh2` builds its encryption when it is installed, and
 npm 12 blocks an install script the project has not allowed. The install then

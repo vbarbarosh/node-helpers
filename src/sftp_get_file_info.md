@@ -3,10 +3,12 @@ Connects to an sftp server described by a URL
 the path. Credentials are percent-decoded from the URL; the port defaults
 to 22. The connection is always closed afterwards, on success and on failure.
 
-The server's host key must be pinned: add `?fingerprint=SHA256:...` to the
-URL or pass `{fingerprint}`. Without it the call rejects with the code
-`ERR_SFTP_HOST_KEY_NOT_PINNED` before the password is sent, naming the
-fingerprint the server presented (see `sftp_connect`).
+To have the server verified, pin its host key: add
+`?fingerprint=SHA256:...` to the URL or pass `{fingerprint}`. A server with
+another key is then refused with the code `ERR_SFTP_HOST_KEY_MISMATCH` before
+the password is sent. Without a fingerprint the call connects unverified, as
+up to v3.79.2, and a process warning names the fingerprint the server
+presented, once for a server (see `sftp_connect`).
 
 Under npm 12 the install script of `ssh2` has to be allowed, or transfers
 are many times slower (see `sftp_connect`).
