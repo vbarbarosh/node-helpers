@@ -36,5 +36,6 @@ await redis_connect('tls://11.11.11.11:6378?password=xxx&ssl[verify_peer]=0&ssl[
 
 Up to v3.79.2 every `tls://` connection skipped verification.
 
-node-helpers 3.x installs redis 4; 4.0.0 installs redis 6, whose
-`scanIterator` yields arrays of keys and which has no `legacyMode`.
+node-helpers 3.x installs redis 4; from 4.0.0 a project that calls it
+installs redis 4 or newer itself (`npm install redis`). redis 6's
+`scanIterator` yields arrays of keys, and it has no `legacyMode`.

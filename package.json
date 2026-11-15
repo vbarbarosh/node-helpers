@@ -59,9 +59,17 @@
         "sanitize-filename": "^1.6.3",
         "split": "^1.0.1"
     },
-    "optionalDependencies": {
-        "redis": "^6.3.1",
+    "peerDependencies": {
+        "redis": "*",
         "ssh2": "^1.16.0"
+    },
+    "peerDependenciesMeta": {
+        "redis": {
+            "optional": true
+        },
+        "ssh2": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -72,12 +80,14 @@
         "express": "^5.2.1",
         "globals": "^17.7.0",
         "mocha": "^12.0.3",
+        "redis": "^6.3.1",
         "redis-v1": "npm:redis@1",
         "redis-v2": "npm:redis@2",
         "redis-v3": "npm:redis@3",
         "redis-v4": "npm:redis@4",
         "redis-v5": "npm:redis@^5.12.1",
         "redis-v6": "npm:redis@^6.1.0",
+        "ssh2": "^1.16.0",
         "throttle": "^1.0.3",
         "tree-kill": "^1.2.2",
         "webpack": "^5.98.0",

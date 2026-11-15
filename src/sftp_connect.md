@@ -60,3 +60,6 @@ npm rebuild ssh2 cpu-features
 
 The list is the project's own `allowScripts` in `package.json`; the one in
 this package covers only its own checkout. The build needs a compiler.
+
+node-helpers 3.x installs ssh2 itself; from 4.0.0 a project that uses the
+sftp helpers installs it (`npm install ssh2`).
