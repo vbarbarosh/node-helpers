@@ -89,7 +89,7 @@ describe('redis_connect', function () {
             const client = await redis_connect(url, {socket: {ca: cert}});
             try {
                 assert.strictEqual(client.isReady, true);
-                assert.strictEqual(received[0], 'AUTH PW');
+                assert.strictEqual(received[0], 'HELLO 3 AUTH default PW');
             }
             finally {
                 await client.disconnect();
@@ -119,7 +119,7 @@ describe('redis_connect', function () {
                 const client = await redis_connect(`${url}&ssl[verify_peer]=0`);
                 try {
                     assert.strictEqual(client.isReady, true);
-                    assert.strictEqual(received[0], 'AUTH PW');
+                    assert.strictEqual(received[0], 'HELLO 3 AUTH default PW');
                 }
                 finally {
                     await client.disconnect();
