@@ -20,7 +20,7 @@ npm install @vbarbarosh/node-helpers
 A subset of `@vbarbarosh/node-helpers` is available for browser:
 
 ```html
-<script src="https://unpkg.com/axios@1.20.0/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.21.1/dist/axios.min.js"></script>
 <script src="https://unpkg.com/@vbarbarosh/node-helpers@3.80.1/dist/browser.js"></script>
 ```
 
