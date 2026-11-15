@@ -3,7 +3,8 @@ loop alive until it settles, and turns a failure into a proper exit code.
 
 - Resolves → the process exits naturally with code `0`.
 - Rejects or throws → the error is passed to `report` (default
-  `console.error`), then `process.exit(1)`.
+  `console.error`), then `process.exit(1)` once stdout and stderr have
+  written what is queued for them, so a pipe gets all of it.
 - An `ExitCodeError` exits with its `exit_code` instead of `1`.
 - Synchronous throws from `main` are handled the same way as rejections —
   they do not bypass `report` or the exit code handling.

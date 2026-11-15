@@ -19,12 +19,14 @@ function cli(main, report = error => console.error(error))
     function reject(error) {
         clearInterval(timer);
         report(error);
-        if (error instanceof ExitCodeError) {
-            process.exit(error.exit_code);
-        }
-        else {
-            process.exit(1);
-        }
+        const code = (error instanceof ExitCodeError) ? error.exit_code : 1;
+        // process.exit drops what is still queued for a pipe: let stdout,
+        // then stderr, write it all first
+        process.stdout.write('', function () {
+            process.stderr.write('', function () {
+                process.exit(code);
+            });
+        });
     }
 }
 
