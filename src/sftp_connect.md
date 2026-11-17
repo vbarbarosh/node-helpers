@@ -42,6 +42,14 @@ process.on('warning', function (warning) {
 });
 ```
 
+The client keeps an `'error'` listener of its own for its whole life. ssh2
+can emit several errors for one failure (a handshake timeout, then
+`Connection lost before handshake` as the socket closes): `sftp_connect`
+rejects with the first, and none of them ends the process as an `'error'`
+nobody listens to, as the second did up to v3.80.1. Once connected, a lost
+connection reaches the caller through its calls in flight, which fail, and
+the client's `'close'`.
+
 v3.80.0 and v3.80.1 refused a URL with no fingerprint
 (`ERR_SFTP_HOST_KEY_NOT_PINNED`), which stopped every call written for an
 earlier 3.x; later versions connect again, with the warning.

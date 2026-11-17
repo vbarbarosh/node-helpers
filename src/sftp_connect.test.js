@@ -1,4 +1,5 @@
 const assert = require('assert');
+const net = require('net');
 const sftp_connect = require('./sftp_connect');
 const sftp_server_listen = require('./sftp_get_stream_range.d/sftp_server');
 
@@ -91,6 +92,22 @@ describe('sftp_connect', function () {
     });
     it('should reject on wrong credentials once the host key is verified', async function () {
         await assert.rejects(sftp_connect(server.url('/').replace(':pass1@', ':wrong@')), /authentication/i);
+    });
+    it('should reject once and leave the process running when ssh2 emits a second error for the same failure', async function () {
+        // ssh2 refuses the ident with "Invalid identification string", then,
+        // as the socket closes, emits "Connection lost before handshake": the
+        // same two errors as a handshake timeout, without its 20 seconds
+        // Read from, or it never sees the client's end and never closes
+        const raw = net.createServer(socket => socket.resume().end('SSH-1.0-x\r\n'));
+        await new Promise(resolve => raw.listen(0, '127.0.0.1', resolve));
+        try {
+            await assert.rejects(sftp_connect(`sftp://u:p@127.0.0.1:${raw.address().port}/`, {fingerprint: 'any'}), /Invalid identification string/);
+        }
+        finally {
+            // Both sides closed: the second error has been emitted by now
+            await new Promise(resolve => raw.close(resolve));
+            await new Promise(resolve => setImmediate(resolve));
+        }
     });
 });
 
