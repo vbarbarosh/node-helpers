@@ -42,7 +42,12 @@ async function sftp_connect(url, {fingerprint} = {})
     try {
         await new Promise(function (resolve, reject) {
             conn.once('ready', resolve);
-            conn.once('error', error => reject(denied ?? error));
+            // Kept for the connection's whole life: ssh2 emits 'error' more
+            // than once for one failure (a handshake timeout, then "Connection
+            // lost before handshake" as the socket closes), and an 'error'
+            // nobody listens to ends the process. A reject after the first
+            // does nothing.
+            conn.on('error', error => reject(denied ?? error));
             conn.connect({host, port, username, password, hostVerifier: host_verifier});
         });
     }
